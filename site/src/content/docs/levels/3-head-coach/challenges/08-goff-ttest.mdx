@@ -12,20 +12,23 @@ import Challenge from '~/components/Challenge.astro';
 <Challenge difficulty="allpro">
 
 <Fragment slot="prompt">
-Run an independent t-test (Welch's) on Jared Goff's 2024 regular-season
-passing yards, comparing Lions wins to Lions losses. Print the mean for each
-group, the sample sizes, the t-statistic, and the p-value. Then write 1-2
-sentences interpreting the result honestly (n is small).
+Run an independent t-test (Welch's) on Jared Goff's **2022-2024** regular-
+season passing yards, comparing Lions wins to Lions losses. (The single
+2024 season has only 2 losses — the test would be effectively undefined.
+Pool the three seasons to get a sample with actual power.) Print the mean
+for each group, the sample sizes, the t-statistic, and the p-value. Then
+write 1-2 sentences interpreting the result honestly.
 </Fragment>
 
 <Fragment slot="output">
 
-Sample output shape:
+Sample output shape (real numbers will vary slightly with your data
+snapshot):
 
 ```
-Wins:   n=12, mean=287.4
-Losses: n=5,  mean=242.6
-t = 1.12, p = 0.291
+Wins:   n=36, mean=265.x
+Losses: n=15, mean=232.x
+t ≈ 1.x, p ≈ 0.1x
 ```
 Plus a short interpretation.
 
@@ -33,9 +36,11 @@ Plus a short interpretation.
 
 <Fragment slot="hint">
 
-Pull Goff's per-week passing yards and the Lions result for each week (CTE or
-two-query merge). Split into two arrays. `stats.ttest_ind(wins, losses,
-equal_var=False)`.
+Pull Goff's per-week passing yards and the Lions result for each
+2022-2024 regular-season week (CTE or two-query merge). Split into two
+arrays. `stats.ttest_ind(wins, losses, equal_var=False)`. For comparison,
+also report the 2024-only split — it'll be n=15 wins / n=2 losses, and
+you'll see why we pool.
 
 </Fragment>
 
@@ -59,10 +64,11 @@ df = pd.read_sql(
                 ELSE 'L'
             END AS result
         FROM schedules
-        WHERE season = 2024 AND game_type = 'REG'
+        WHERE season BETWEEN 2022 AND 2024
+          AND game_type = 'REG'
           AND (home_team = 'DET' OR away_team = 'DET')
     )
-    SELECT g.week, g.result, ws.passing_yards
+    SELECT g.season, g.week, g.result, ws.passing_yards
     FROM games g
     JOIN weekly_stats ws USING (season, week)
     WHERE ws.player_display_name = 'Jared Goff'
@@ -81,13 +87,17 @@ print(f"Losses: n={len(losses)}, mean={losses.mean():.1f}")
 print(f"t = {t:.2f}, p = {p:.3f}")
 ```
 
-Interpretation: with so few losses (probably 3-5), the t-test is *severely*
-underpowered. Even a 50-yard gap in means can plausibly come from noise. The
-honest read is "we can't conclude much from this sample — Goff was good when
-the team won and we don't have enough losses to compare against."
+Interpretation: 36 wins vs 15 losses gives a real sample. You'll usually
+see a positive gap (Goff's averages are higher in wins than in losses)
+but the p-value is often above the 0.05 convention. The honest read is
+"there's a measurable but not statistically certain edge — and most of
+that gap is probably caused by the game state, not Goff himself."
 
-That's a real-world reminder: situational splits in single seasons are mostly
-noise. The next move would be to pool multiple seasons.
+Now try filtering to `season = 2024` only. You'll get n=15 wins / n=2
+losses — Welch's t-test on n=2 has one degree of freedom; the result is
+mathematically defined but practically meaningless. That's the real-world
+reminder: situational splits inside a single 17-game season are usually
+too small to test.
 
 </Fragment>
 

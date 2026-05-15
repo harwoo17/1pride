@@ -116,8 +116,11 @@ pipe = Pipeline([
     ('model', LinearRegression()),
 ])
 
+# NB: this is regular KFold, which shuffles weeks/seasons together. For game
+# data the right tool is TimeSeriesSplit (used in Challenge 5) — the number
+# below is therefore optimistic. Common-Mistakes section calls this out.
 scores = cross_val_score(pipe, X, y, cv=5, scoring='r2')
-print(f"R² = {scores.mean():.3f} ± {scores.std():.3f}")
+print(f"R² (KFold, optimistic) = {scores.mean():.3f} ± {scores.std():.3f}")
 ```
 
 </LessonSection>

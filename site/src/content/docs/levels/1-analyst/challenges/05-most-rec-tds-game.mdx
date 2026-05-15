@@ -14,7 +14,7 @@ import Challenge from '~/components/Challenge.astro';
 <Fragment slot="prompt">
 Find the Lions player-week in 2024 with the most receiving touchdowns. Return
 the player, the week, the opponent, the receiving yards, and the receiving TDs.
-Tie-break by receiving yards.
+Tie-break by receiving yards, then alphabetical by player name.
 </Fragment>
 
 <Fragment slot="output">
@@ -29,7 +29,7 @@ A single row:
 
 <Fragment slot="hint">
 
-`ORDER BY receiving_tds DESC, receiving_yards DESC` for the tie-break, then
+`ORDER BY receiving_tds DESC, receiving_yards DESC, player_display_name ASC` for the tie-break, then
 `LIMIT 1`. Watch the column name — it's `receiving_tds`, not `rec_tds`.
 
 </Fragment>
@@ -43,7 +43,7 @@ FROM weekly_stats
 WHERE recent_team = 'DET'
   AND season = 2024
   AND season_type = 'REG'
-ORDER BY receiving_tds DESC, receiving_yards DESC
+ORDER BY receiving_tds DESC, receiving_yards DESC, player_display_name ASC
 LIMIT 1;
 ```
 

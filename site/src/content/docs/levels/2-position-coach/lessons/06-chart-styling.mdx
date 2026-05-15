@@ -81,6 +81,8 @@ WITH wr1 AS (
     GROUP BY recent_team, player_display_name
 ),
 top1 AS (
+    -- DISTINCT ON is a Postgres extension that picks the first row per
+    -- group given an ORDER BY. Equivalent to a window-rank + filter.
     SELECT DISTINCT ON (recent_team) recent_team, player_display_name
     FROM wr1
     ORDER BY recent_team, total DESC

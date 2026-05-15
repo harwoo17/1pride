@@ -64,14 +64,17 @@ The Level 3 4th-down analyzer needs:
 SELECT * FROM pbp WHERE posteam = 'DET' AND down = 4 AND season >= 2022;
 ```
 
-A single-column index on `season` helps a little. The right index for this
-workload:
+The default schema ships `idx_pbp_posteam_season` (covering `posteam`,
+`season`) plus a partial `idx_pbp_down` on `down`. Postgres can `BitmapAnd`
+those two — usually fast enough. If you wanted a single composite tuned
+for exactly this workload, you'd add:
 
 ```sql
-CREATE INDEX idx_pbp_team_down_season ON pbp (posteam, down, season);
+CREATE INDEX idx_pbp_posteam_down_season ON pbp (posteam, down, season);
 ```
 
-That serves the L3 capstone fast even as you add more seasons to PBP.
+That's not in the default schema — `EXPLAIN ANALYZE` before adding it and
+confirm the planner reaches for it.
 
 Sometimes you want a **partial index** — only index rows that match a
 predicate. The L3 schema already does this:

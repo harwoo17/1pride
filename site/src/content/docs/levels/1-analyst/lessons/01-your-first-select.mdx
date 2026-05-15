@@ -23,26 +23,30 @@ table. `SELECT` is the door. Everything you do for the next four levels starts h
 
 A SQL query says four things, in order:
 
-1. **What columns** you want — `SELECT player, rushing_yards`
+1. **What columns** you want — `SELECT player_display_name, rushing_yards`
 2. **From which table** — `FROM weekly_stats`
-3. **Which rows** — `WHERE team = 'DET' AND week = 1 AND season = 2024`
+3. **Which rows** — `WHERE recent_team = 'DET' AND week = 1 AND season = 2024`
 4. **In what order** — `ORDER BY rushing_yards DESC`
 
 Only the first two are required. The rest are filters and sorting on top.
 
 ```sql
-SELECT player, rushing_yards
+SELECT player_display_name, rushing_yards
 FROM weekly_stats
-WHERE team = 'DET' AND week = 1 AND season = 2024
+WHERE recent_team = 'DET' AND week = 1 AND season = 2024
 ORDER BY rushing_yards DESC;
 ```
+
+The column names look long because nflverse named them precisely:
+`player_display_name` instead of `player`, `recent_team` instead of `team`.
+That's the schema — get used to typing them.
 
 </LessonSection>
 
 <LessonSection title="Lions example">
 
-The Lions opened the 2024 season at home against the Rams. To find every Detroit
-player with rushing yards that night:
+The Lions opened the 2024 season on the road against the Rams — a Sunday-night
+26-20 OT loss in LA. To find every Detroit player with rushing yards that night:
 
 ```sql
 SELECT player_display_name, rushing_yards, rushing_tds

@@ -91,7 +91,11 @@ print(f"Coefficients: {dict(zip(['attempts', 'completions'], model.coef_))}")
 ```
 
 You'll get an R² in the 0.8+ range — completions and attempts predict
-yards well because they're mechanically tied. Real predictive problems are
+yards well because they're mechanically tied (every completion *is*
+some yards). That's high R² for the wrong reason — it's a target-leakage
+near-miss, since `completions` is observed at the same time as
+`passing_yards`. Lesson 5 covers leakage formally; for now, just notice
+that this number looks too clean. Real predictive problems are
 much harder.
 
 </LessonSection>

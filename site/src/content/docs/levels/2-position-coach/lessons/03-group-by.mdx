@@ -66,7 +66,7 @@ GROUP BY player_display_name
 ORDER BY yards DESC;
 ```
 
-One row per player. Montgomery and Gibbs at the top, then situational backs and
+One row per player. Gibbs (≈1,400 yds) and Montgomery (≈775 yds) at the top, then situational backs and
 the QB-as-runner rows.
 
 You can group across teams to compare position groups. Top NFC North WRs in
@@ -93,10 +93,11 @@ LIMIT 10;
 <LessonSection title="Try it">
 
 Compute **points scored per Lions player** in the 2024 regular season — six
-points per rushing TD, six per receiving TD, four per passing TD (yes, NFL
-math is two for the QB and four for the receiver, but use this simplification
-for the exercise). Group by player. Sort by total descending. Use `GROUP BY`
-plus a hand-rolled `SUM(rushing_tds * 6 + receiving_tds * 6 + passing_tds * 4)`.
+points per rushing TD, six per receiving TD, four per passing TD (standard
+fantasy scoring; real football puts 6 on the board regardless of who threw
+it, but we're using fantasy math here to make the QB stat readable). Group
+by player. Sort by total descending. Use `GROUP BY` plus a hand-rolled
+`SUM(rushing_tds * 6 + receiving_tds * 6 + passing_tds * 4)`.
 
 </LessonSection>
 

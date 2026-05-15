@@ -61,7 +61,7 @@ scouting_grades
   grade_id         PK   SERIAL
   prospect_id      FK→prospects   TEXT
   scout_name            TEXT
-  grade_value           SMALLINT     -- e.g. 1-10 or position-specific
+  grade_value           REAL         -- pick a scale and stick to it (PFF-style 0-99, BLESTO-style 0.0-9.0, or your team's own)
   grade_date            DATE
   notes                 TEXT
 

@@ -79,9 +79,14 @@ games['opp_pts'] = games.apply(
     axis=1,
 )
 games = games[(games['home_team'] == 'DET') | (games['away_team'] == 'DET')]
-games = games[['season', 'week', 'det_pts', 'opp_pts']]
+# Tag the games frame with the team so the merge is self-correcting if you
+# ever pull non-DET stats into the same DataFrame.
+games['recent_team'] = 'DET'
+games = games[['season', 'week', 'recent_team', 'det_pts', 'opp_pts']]
 
-merged = pd.merge(stats, games, on=['season', 'week'], how='inner')
+merged = pd.merge(
+    stats, games, on=['season', 'week', 'recent_team'], how='inner',
+)
 
 # Sum receiving yards per player, with game context preserved
 totals = (

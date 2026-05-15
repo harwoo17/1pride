@@ -66,11 +66,11 @@ df = pd.read_sql(
             LAG(ws.targets)         OVER w AS prev_targets,
             LAG(ws.receptions)      OVER w AS prev_catches
         FROM weekly_stats ws
-        WINDOW w AS (PARTITION BY ws.player_display_name, ws.season ORDER BY ws.week)
         WHERE ws.season BETWEEN 2021 AND 2024
           AND ws.season_type = 'REG'
           AND ws.position_group IN ('WR', 'TE')
           AND ws.targets > 0
+        WINDOW w AS (PARTITION BY ws.player_display_name, ws.season ORDER BY ws.week)
     )
     SELECT l.*,
         (CASE WHEN sc.home_team = l.recent_team THEN 1 ELSE 0 END)::int AS is_home

@@ -58,11 +58,11 @@ df = pd.read_sql(
         LAG(receiving_yards) OVER w AS prev_yards,
         LAG(targets)         OVER w AS prev_targets
     FROM weekly_stats
-    WINDOW w AS (PARTITION BY player_display_name, season ORDER BY week)
     WHERE season BETWEEN 2021 AND 2024
       AND season_type = 'REG'
       AND position_group = 'WR'
       AND targets > 0
+    WINDOW w AS (PARTITION BY player_display_name, season ORDER BY week)
     """,
     eng,
 )

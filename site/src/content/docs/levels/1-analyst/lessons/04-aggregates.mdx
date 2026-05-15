@@ -82,7 +82,7 @@ season? Round to one decimal in your head; the SQL just needs `AVG`.
 
 - **Mixing aggregates with non-aggregated columns.** `SELECT player_display_name,
   SUM(receiving_yards) FROM weekly_stats` is an error without a `GROUP BY`. You
-  either pick one row (with a filter) or you group (Lesson 7+ territory).
+  either pick one row (with a filter) or you group (Level 2 territory).
 - **Forgetting `AVG` ignores `NULL`.** If half the rows have a NULL value, the
   average is over the other half. That's usually what you want, but verify with
   `COUNT(col)` if it matters.

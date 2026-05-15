@@ -70,6 +70,8 @@ from .db import engine
 
 app = FastAPI()
 
+# "Scoring" is per-game, so this pulls from `schedules` even though the
+# endpoint name might suggest `weekly_stats` (which is per-player-week).
 @app.get("/api/lions/weekly-scoring")
 def weekly_scoring(season: int = Query(2024, ge=2000, le=2030)) -> dict:
     with engine().connect() as c:

@@ -63,7 +63,12 @@ Every Lions 4th-down play in 2024 with the situation captured:
 ```python
 import nfl_data_py as nfl
 
-pbp = nfl.import_pbp_data([2024])
+pbp = nfl.import_pbp_data(
+    [2024],
+    columns=['week', 'qtr', 'posteam', 'defteam', 'down', 'ydstogo',
+             'yardline_100', 'score_differential',
+             'game_seconds_remaining', 'play_type', 'desc', 'epa'],
+)
 
 lions_4th = pbp.loc[
     (pbp['posteam'] == 'DET') &
@@ -77,6 +82,10 @@ lions_4th = pbp.loc[
 print(f"Lions 4th-down plays: {len(lions_4th)}")
 print(lions_4th.head(10).to_string(index=False))
 ```
+
+Note: nflverse exposes the play description as `desc` on the DataFrame.
+Our Postgres `pbp` table renames it to `description` to dodge the SQL
+keyword — keep the two contexts straight.
 
 That's the raw material for the L3 capstone. You add an expected-value model
 on top, and you've got the analyzer.

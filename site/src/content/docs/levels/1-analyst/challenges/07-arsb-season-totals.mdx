@@ -49,7 +49,9 @@ WHERE player_display_name = 'Amon-Ra St. Brown'
   AND season_type = 'REG';
 ```
 
-Sanity check: if `yards_per_game * games ≈ rec_yards`, the aggregates agree.
+Sanity check: the totals should land near ARSB's published 2024 line —
+roughly 1,260 yards and 12 TDs on 17 games. If your numbers are off by
+an order of magnitude, the `WHERE` filter probably let in a non-ARSB row.
 
 </Fragment>
 

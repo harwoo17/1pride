@@ -14,13 +14,13 @@ export const metadata = {
 
 export const revalidate = 3600;
 
-const LATEST_SEASON = 2024;
+const LATEST_SEASON = 2025;
 
 export default async function ChartsPage() {
   const [scoring, receivers, fourth] = await Promise.all([
     getWeeklyScoring(LATEST_SEASON),
     getTopReceivers(LATEST_SEASON, 8),
-    getFourthDownDecisions(2022, 2024),
+    getFourthDownDecisions(2022, 2025),
   ]);
 
   return (
@@ -90,7 +90,7 @@ function ScoringChart({ games }: { games: WeeklyGame[] }) {
   return (
     <section>
       <ChartHeader
-        label="Weekly · Season 2024"
+        label="Weekly · Season 2025"
         title="Scoring Margin"
         sub="Lions points scored vs allowed, week by week."
       />
@@ -164,7 +164,7 @@ function ReceiversChart({ receivers }: { receivers: Receiver[] }) {
   return (
     <section>
       <ChartHeader
-        label="Position · Season 2024"
+        label="Position · Season 2025"
         title="The WR Room"
         sub="Receiving yards per player, sorted top to bottom."
       />
@@ -227,9 +227,9 @@ function FourthDownChart({ decisions }: { decisions: FourthDownDecision[] }) {
   return (
     <section>
       <ChartHeader
-        label="Decision · 2022–2024"
+        label="Decision · 2022–2025"
         title="4th Down Identity"
-        sub={`${total} Lions 4th-down plays over three seasons of the Campbell era.`}
+        sub={`${total} Lions 4th-down plays over four seasons of the Campbell era.`}
       />
       <div className="border-2 border-[var(--lions-charcoal)] bg-white">
         <div className="flex h-12 overflow-hidden border-b border-zinc-200">

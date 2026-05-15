@@ -9,7 +9,7 @@ import {
 export const revalidate = 3600;
 
 const ERA_START = 2021;
-const LATEST_SEASON = 2024;
+const LATEST_SEASON = 2025;
 
 export default async function Home() {
   const [scoring, receivers] = await Promise.all([
@@ -288,6 +288,7 @@ function CampbellEra() {
     { y: 2022, rec: "9–8", note: "Late-season surge. Foundation set." },
     { y: 2023, rec: "12–5", note: "NFC North title. NFC Championship loss." },
     { y: 2024, rec: "15–2", note: "Best regular season in franchise history." },
+    { y: 2025, rec: "9–8", note: "Regression year. Still in the playoff mix." },
   ];
   return (
     <section className="bg-[var(--lions-blue-deep)] py-14 text-white">

@@ -12,6 +12,7 @@ import {
   playCheer,
   playClick,
   playDing,
+  playRoar,
   playWhoosh,
   setMuted,
 } from "@/lib/sounds";
@@ -49,6 +50,8 @@ export function Intro() {
 
   const begin = useCallback(() => {
     playClick();
+    // Roar fires immediately on Start — the kneecap-bite calling card.
+    playRoar(0.05);
     setPhase("warmup");
 
     setTimeout(() => {

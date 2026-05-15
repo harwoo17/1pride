@@ -1,0 +1,129 @@
+---
+title: scikit-learn basics
+description: Fit, predict, evaluate. Your first model on a real football question.
+sidebar:
+  order: 4
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 4 · Lesson 4</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+A GM doesn't just describe last season — they predict next season. scikit-learn
+is the tool. Three methods (`fit`, `predict`, `score`) handle almost everything;
+the rest is feature engineering and not lying to yourself about how well it
+works.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+Every sklearn model has the same shape:
+
+```python
+from sklearn.linear_model import LinearRegression
+
+model = LinearRegression()
+model.fit(X_train, y_train)
+predictions = model.predict(X_test)
+r2 = model.score(X_test, y_test)
+```
+
+- **`X`** is a 2-D array (rows = samples, columns = features).
+- **`y`** is a 1-D array of targets (what you're predicting).
+- **`fit(X, y)`** learns from training data.
+- **`predict(X)`** outputs predictions for new data.
+- **`score(X, y)`** returns a default metric (R² for regression,
+  accuracy for classification).
+
+The model menu, starting points:
+
+| Problem | Default first model |
+|---|---|
+| Regression (predict a number) | `LinearRegression`, then `RandomForestRegressor` |
+| Classification (predict a category) | `LogisticRegression`, then `RandomForestClassifier` |
+| When in doubt | Try both linear and tree-based; compare |
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+Predict QB passing yards in a game from rushing yards. (Toy example — the
+real version of this needs more features.)
+
+```python
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sqlalchemy import create_engine
+
+eng = create_engine("postgresql+psycopg://onepride:lions@localhost:5432/onepride")
+
+df = pd.read_sql(
+    """
+    SELECT player_display_name, season, week,
+           passing_yards, attempts, completions
+    FROM weekly_stats
+    WHERE position = 'QB'
+      AND season BETWEEN 2021 AND 2024
+      AND season_type = 'REG'
+      AND attempts >= 15
+    """,
+    eng,
+)
+
+X = df[['attempts', 'completions']].to_numpy()
+y = df['passing_yards'].to_numpy()
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+model = LinearRegression()
+model.fit(X_train, y_train)
+print(f"R² = {model.score(X_test, y_test):.3f}")
+print(f"Coefficients: {dict(zip(['attempts', 'completions'], model.coef_))}")
+```
+
+You'll get an R² in the 0.8+ range — completions and attempts predict
+yards well because they're mechanically tied. Real predictive problems are
+much harder.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Predict **rushing yards per game** for NFL running backs from carries, in
+2024 regular season only. Use a `LinearRegression`. Report R² on the test
+set, plus the coefficient on carries. Interpret the coefficient — what does
+it physically mean?
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **Fitting and scoring on the same data.** Always split train/test. A model
+  that perfectly predicts training data tells you nothing.
+- **Not setting `random_state`.** Train/test splits should be reproducible.
+- **R² on classification.** R² is for regression. For classification, use
+  accuracy, precision, recall, or F1.
+- **Forgetting feature scaling.** Linear models, SVMs, and KNN are scale-
+  sensitive — use `StandardScaler` before fitting. Tree-based models don't
+  care.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. What do `fit`, `predict`, and `score` do?
+2. Why do you need separate train and test sets?
+3. When is feature scaling necessary?
+
+</LessonSection>
+
+</Lesson>

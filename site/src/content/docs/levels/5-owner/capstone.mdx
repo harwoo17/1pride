@@ -1,0 +1,81 @@
+---
+title: Capstone — the deployed app
+description: app.1pride.dev. Live, public, end-to-end. The thing you point a hiring manager at.
+sidebar:
+  order: 99
+---
+
+<span class="level-badge">Level 5 · Capstone</span>
+
+# The deployed Lions analytics app
+
+This is the only capstone with no notebook scaffold. The deliverable *is*
+the deployed system. The Phase 0 scaffold already lives at `app/` in this
+repo, with a FastAPI service in `data/`. Your job is to turn the scaffold
+into something a stranger could land on and learn something from.
+
+## Minimum viable launch (week 13)
+
+A single working slice. Resist the urge to ship five charts at once.
+
+- **One page**: `/charts` with the 2024 weekly scoring + WR room +
+  4th-down decision view (all three are already wired).
+- **One data refresh**: GitHub Actions cron that runs the loader Tuesday
+  mornings.
+- **One env**: Neon Postgres, Fly.io FastAPI, Vercel for the Next.js app.
+- **Live URL**: `app.1pride.dev` resolves, loads in under 2 seconds, looks
+  good on a phone.
+
+That's the bar. Polish comes after.
+
+## Required pieces
+
+1. **Public GitHub repo** with clean commit history. Don't squash the
+   journey out.
+2. **README** at the root of `app/` that a stranger could fork and run
+   locally in under 10 minutes.
+3. **`/api/health`** endpoint returns 200 even when Postgres is down (just
+   without DB info). The frontend should degrade gracefully.
+4. **Data source caption** on every chart. "Source: nflverse."
+5. **No NFL marks**. No Lions logo, no NFL shield, no broadcast imagery.
+   Stats and player names are fine; logos and team art are not.
+
+## Stretch deliverables
+
+After the MVP ships:
+
+- **Multi-team selector**. The data layer already supports any team —
+  expose it in the UI.
+- **A 4th-down what-if calculator** powered by the L3 capstone model.
+- **A draft pick projection table** powered by the L4 capstone model.
+- **Sparklines on the WR room** showing each receiver's per-week yardage.
+- **A "freshness" footer** sourced from the load-status endpoint (L5
+  Lesson 3).
+
+## Evaluation criteria
+
+- Live URL loads in under 2 seconds on a cold cache
+- Public repo with README, license, and a meaningful commit history
+- README a stranger could fork and run in under 10 minutes
+- Every chart has title + axes + source caption
+- Source caption is correct (nflverse, not "NFL.com")
+- The app uses real data, not hard-coded numbers
+- Lighthouse scores: performance &gt; 90, accessibility &gt; 90
+
+## What this looks like in your portfolio
+
+Resume bullet:
+
+> Shipped **app.1pride.dev** — a public Lions analytics app built end to
+> end: nflverse data → Postgres ETL → FastAPI service → Next.js UI →
+> deployed to Vercel. Public repo, scheduled weekly data refresh, four
+> seasons of play-by-play data backing every chart.
+
+LinkedIn post:
+
+> 14 weeks ago I started a self-paced data curriculum on real Lions data.
+> Today it shipped: app.1pride.dev. Five levels from SELECT to deployed
+> ML, all open source, all running on real nflverse data going back to
+> 2021.
+
+The point of the L5 capstone is not the chart. It's the URL.

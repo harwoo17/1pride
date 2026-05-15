@@ -1,0 +1,75 @@
+---
+title: TimeSeriesSplit — no peeking at the future
+description: Game data is sequential. Default CV leaks future information into training. Fix it.
+sidebar:
+  order: 5
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 4 · Challenge 5</span>
+
+<Challenge difficulty="allpro">
+
+<Fragment slot="prompt">
+Re-evaluate the pipeline from Challenge 4 with `TimeSeriesSplit` instead
+of default `KFold`. The data should be sorted by (season, week) before
+splitting. Report mean R² ± std across 5 sequential folds.
+
+Compare to your Challenge 4 result. Is the score better, worse, or about
+the same? Why does that make sense?
+</Fragment>
+
+<Fragment slot="output">
+
+```
+KFold        R² = 0.0XX ± 0.0XX  (from Challenge 4)
+TimeSeries   R² = 0.0XX ± 0.0XX
+```
+
+Plus a 2-sentence interpretation.
+
+</Fragment>
+
+<Fragment slot="hint">
+
+```python
+from sklearn.model_selection import TimeSeriesSplit
+
+df = df.sort_values(['season', 'week']).reset_index(drop=True)
+X, y = df[features], df['receiving_yards']
+
+cv = TimeSeriesSplit(n_splits=5)
+scores = cross_val_score(pipe, X, y, cv=cv, scoring='r2')
+```
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```python
+# (same imports / data prep as Challenge 4)
+from sklearn.model_selection import TimeSeriesSplit
+
+df = df.sort_values(['season', 'week']).reset_index(drop=True)
+X = df[['prev_yards', 'prev_targets', 'position_group']]
+y = df['receiving_yards']
+
+preprocess = ColumnTransformer([...])      # same as Challenge 4
+pipe = Pipeline([('prep', preprocess), ('model', LinearRegression())])
+
+cv = TimeSeriesSplit(n_splits=5)
+scores = cross_val_score(pipe, X, y, cv=cv, scoring='r2')
+print(f"TimeSeries R² = {scores.mean():.3f} ± {scores.std():.3f}")
+```
+
+The TimeSeries score will usually be a touch *lower* than the KFold score.
+Two reasons: the model never sees later seasons during training (less
+data on average), and football changes year to year (rule tweaks, scheme
+shifts). KFold artificially inflated the score by allowing the model to
+peek at the future. The TimeSeries number is closer to what you'd actually
+get deploying the model on next week's games.
+
+</Fragment>
+
+</Challenge>

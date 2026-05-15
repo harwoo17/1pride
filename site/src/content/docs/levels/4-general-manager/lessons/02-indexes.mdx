@@ -1,0 +1,128 @@
+---
+title: Indexes — when, what, why
+description: Indexes turn 10-second queries into 10ms queries. They also slow down writes.
+sidebar:
+  order: 2
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 4 · Lesson 2</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+Postgres can read a 50-million-row PBP table in two ways: scan it
+top-to-bottom, or jump to the rows it needs via an index. The first takes
+seconds. The second takes milliseconds. The difference is one `CREATE INDEX`.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+An index is a separate data structure that points back into the table. The
+default flavor in Postgres is a B-tree — sorted, supports `=`, `<`, `>`, `IN`,
+and range queries.
+
+Three rules:
+
+1. **Index what you filter on.** Columns in `WHERE` and `JOIN ... ON` are
+   candidates.
+2. **Composite indexes are ordered.** `(season, week, posteam)` helps queries
+   that filter on `season` alone, on `(season, week)`, or on all three. It
+   does *not* help a query that filters only on `posteam`.
+3. **Indexes cost write speed.** Every `INSERT` updates every index. Index
+   thoughtfully, not maximally.
+
+```sql
+-- This query takes 800ms without an index, 8ms with one:
+SELECT * FROM pbp WHERE posteam = 'DET' AND season = 2024;
+
+-- The index:
+CREATE INDEX idx_pbp_posteam_season ON pbp (posteam, season);
+```
+
+Look at the query plan with `EXPLAIN ANALYZE`:
+
+```sql
+EXPLAIN ANALYZE
+SELECT * FROM pbp WHERE posteam = 'DET' AND season = 2024;
+```
+
+A "Seq Scan" means full table read. An "Index Scan" or "Bitmap Index Scan"
+means it's using your index.
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+The Level 3 4th-down analyzer needs:
+
+```sql
+SELECT * FROM pbp WHERE posteam = 'DET' AND down = 4 AND season >= 2022;
+```
+
+A single-column index on `season` helps a little. The right index for this
+workload:
+
+```sql
+CREATE INDEX idx_pbp_team_down_season ON pbp (posteam, down, season);
+```
+
+That serves the L3 capstone fast even as you add more seasons to PBP.
+
+Sometimes you want a **partial index** — only index rows that match a
+predicate. The L3 schema already does this:
+
+```sql
+CREATE INDEX idx_pbp_down ON pbp (down) WHERE down IS NOT NULL;
+```
+
+That's smaller and faster than a full-column index, because the 4-5% of PBP
+rows with NULL down (kickoffs, extras) are excluded.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Open a `psql` session against your local Postgres. Run:
+
+```sql
+EXPLAIN ANALYZE
+SELECT COUNT(*) FROM weekly_stats WHERE recent_team = 'DET' AND season = 2024;
+```
+
+Note the execution time and which scan type Postgres used. Then drop the
+index `idx_weekly_team_season_week`, re-run the same query, and compare.
+Re-create the index afterward.
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **Index every column.** Postgres maintains every index on every write.
+  Indexes also take disk space. Two indexes per table is reasonable;
+  fifteen is a smell.
+- **Forgetting composite order.** An index on `(a, b)` helps queries
+  filtering on `a` or `(a, b)`, but not on `b` alone. Order columns
+  most-selective-first.
+- **Indexing `LIKE '%foo%'`.** B-tree indexes can't help leading-wildcard
+  matches. Use `pg_trgm` or full-text search.
+- **Not measuring.** Use `EXPLAIN ANALYZE`. Don't add an index without
+  evidence that the planner is reaching for it.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. What's the difference between a "Seq Scan" and an "Index Scan" in the
+   query plan?
+2. Does an index on `(season, week, posteam)` help a query filtered only on
+   `posteam`?
+3. Why is "more indexes = always faster" wrong?
+
+</LessonSection>
+
+</Lesson>

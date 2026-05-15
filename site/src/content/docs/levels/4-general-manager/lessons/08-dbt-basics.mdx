@@ -1,0 +1,127 @@
+---
+title: dbt basics
+description: Transform Postgres into a data warehouse with version-controlled SQL models.
+sidebar:
+  order: 8
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 4 · Lesson 8</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+A CTE inside a notebook lives and dies with that notebook. A **dbt model**
+is that same SQL, version-controlled, runnable from a CLI, and chained into
+other models. Same logic, vastly more leverage.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+dbt (data build tool) treats SQL queries as files in a folder. Each file
+is a **model** — a `SELECT` statement that dbt materializes as a view or a
+table in your database. You reference other models with `{{ ref('name') }}`,
+and dbt figures out the run order.
+
+```sql
+-- models/staging/stg_weekly_stats.sql
+SELECT
+    player_id,
+    player_display_name,
+    recent_team       AS team,
+    season,
+    week,
+    season_type,
+    rushing_yards,
+    receiving_yards,
+    passing_yards
+FROM {{ source('nflverse', 'weekly_stats') }}
+WHERE season_type = 'REG';
+```
+
+```sql
+-- models/marts/lions_season_totals.sql
+SELECT
+    player_display_name,
+    season,
+    SUM(rushing_yards)   AS rush,
+    SUM(receiving_yards) AS rec,
+    SUM(passing_yards)   AS pass
+FROM {{ ref('stg_weekly_stats') }}
+WHERE team = 'DET'
+GROUP BY player_display_name, season;
+```
+
+Then:
+
+```bash
+dbt run   # builds every model
+dbt test  # runs data quality checks
+dbt docs generate && dbt docs serve   # auto-generated lineage docs
+```
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+For the 1PRIDE project, a dbt setup would have:
+
+```
+data/dbt/
+  dbt_project.yml
+  profiles.yml
+  models/
+    staging/
+      stg_weekly_stats.sql       (clean weekly, regular season only)
+      stg_schedules.sql          (one row per game, DET-perspective columns)
+      stg_pbp_4th_down.sql       (PBP filtered to 4th downs)
+    marts/
+      lions_season_totals.sql
+      lions_4th_down_decisions.sql
+      lions_wr_room_metrics.sql
+```
+
+The staging layer cleans nflverse data once. The marts layer consumes
+staging and builds analysis-ready tables. The L5 FastAPI then queries the
+marts directly — no ad-hoc joins, no per-request transformations.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+(No SQL exercise for this lesson — it's conceptual.) Sketch a dbt model
+hierarchy for the L5 capstone. Three staging models, three mart models,
+one final reporting view. Just titles and dependencies.
+
+If you want hands-on practice, install dbt-core and run through the
+"Getting Started" tutorial (about 30 minutes) before tackling the L4
+capstone.
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **Treating dbt as a runner for one-off queries.** It's a transformation
+  layer. Every model should be reusable.
+- **Skipping the staging layer.** Going from source to mart in one query
+  means every mart re-does the cleaning. Stage once, reuse everywhere.
+- **No tests.** `dbt test` checks uniqueness, not-null, and referential
+  integrity. Add them on primary keys at minimum.
+- **Materializing everything as a table.** Views are fine until they're
+  slow. Default to view; flip to table when query times start hurting.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. What's the difference between a dbt staging model and a mart model?
+2. How does `{{ ref('other_model') }}` differ from naming a table directly?
+3. When would you materialize a model as a `table` instead of a `view`?
+
+</LessonSection>
+
+</Lesson>

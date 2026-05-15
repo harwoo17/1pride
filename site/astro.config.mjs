@@ -75,12 +75,29 @@ export default defineConfig({
 				{
 					label: 'Level 4 — General manager',
 					collapsed: true,
-					items: [{ label: 'Overview', slug: 'levels/4-general-manager' }],
+					items: [
+						{ label: 'Overview', slug: 'levels/4-general-manager' },
+						{
+							label: 'Lessons',
+							items: [{ autogenerate: { directory: 'levels/4-general-manager/lessons' } }],
+						},
+						{
+							label: 'Challenges',
+							items: [{ autogenerate: { directory: 'levels/4-general-manager/challenges' } }],
+						},
+					],
 				},
 				{
 					label: 'Level 5 — Owner',
 					collapsed: true,
-					items: [{ label: 'Overview', slug: 'levels/5-owner' }],
+					items: [
+						{ label: 'Overview', slug: 'levels/5-owner' },
+						{
+							label: 'Lessons',
+							items: [{ autogenerate: { directory: 'levels/5-owner/lessons' } }],
+						},
+						{ label: 'Capstone', slug: 'levels/5-owner/capstone' },
+					],
 				},
 			],
 		}),

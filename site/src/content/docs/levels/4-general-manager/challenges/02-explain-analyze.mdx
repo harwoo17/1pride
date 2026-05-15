@@ -1,0 +1,64 @@
+---
+title: EXPLAIN ANALYZE a slow query
+description: Use the query plan to find the bottleneck, then propose an index.
+sidebar:
+  order: 2
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 4 · Challenge 2</span>
+
+<Challenge difficulty="rookie">
+
+<Fragment slot="prompt">
+Drop the index `idx_pbp_posteam_season` (we'll recreate it). Run
+`EXPLAIN ANALYZE` on a query that counts Lions 4th downs by play type for
+2022-2024. Note the scan type and execution time. Re-create the index.
+Run the same query again. Report:
+
+1. Scan type and execution time without the index
+2. Scan type and execution time with the index
+3. The ratio
+
+Paste your two `EXPLAIN ANALYZE` outputs in a comment cell.
+</Fragment>
+
+<Fragment slot="output">
+
+A notebook cell or scratch file with both `EXPLAIN ANALYZE` outputs and
+your numerical comparison.
+
+</Fragment>
+
+<Fragment slot="hint">
+
+```sql
+DROP INDEX idx_pbp_posteam_season;
+
+EXPLAIN ANALYZE
+SELECT play_type, COUNT(*)
+FROM pbp
+WHERE posteam = 'DET' AND down = 4 AND season BETWEEN 2022 AND 2024
+GROUP BY play_type;
+```
+
+Then `CREATE INDEX idx_pbp_posteam_season ON pbp (posteam, season);` and
+re-run.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+Reasonable order-of-magnitude:
+
+- **Without index:** `Seq Scan on pbp`, ~200-400ms on 200K rows.
+- **With index:** `Bitmap Index Scan + Bitmap Heap Scan`, ~5-15ms.
+
+Ratio: roughly 20-50x speedup. Even on a small DB the difference is
+noticeable; on the production scale (millions of plays going back to
+1999) it's the difference between unusable and instant.
+
+</Fragment>
+
+</Challenge>

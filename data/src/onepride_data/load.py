@@ -123,6 +123,7 @@ def load_schedules(years: list[int], truncate: bool) -> int:
     log.info("Pulling schedules for %s", years)
     df = nfl.import_schedules(years)
     df = _select_columns(df, SCHEDULES_COLUMNS)
+    df["gameday"] = pd.to_datetime(df["gameday"], errors="coerce").dt.date
 
     eng = engine()
     with eng.begin() as conn:

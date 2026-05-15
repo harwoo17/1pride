@@ -1,0 +1,128 @@
+---
+title: Query optimization with EXPLAIN
+description: Read query plans, spot the expensive step, and know when to add an index.
+sidebar:
+  order: 3
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 4 · Lesson 3</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+When a query is slow, the question is *why* — not "what other query could I
+write?" `EXPLAIN ANALYZE` answers it. Postgres tells you exactly what it did,
+how long each step took, and how its estimates compared to reality.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+`EXPLAIN ANALYZE` prepends to any query and returns the actual execution plan:
+
+```sql
+EXPLAIN ANALYZE
+SELECT recent_team, SUM(rushing_yards)
+FROM weekly_stats
+WHERE season = 2024
+GROUP BY recent_team;
+```
+
+The output reads bottom-up. Each node has:
+
+- **Cost** — Postgres's estimate (start..total) in arbitrary units.
+- **Actual time** — what really happened, in milliseconds (start..total).
+- **Rows** — estimated and actual.
+- **Loops** — how many times this node executed.
+
+Three nodes you'll see constantly:
+
+| Node | Meaning |
+|---|---|
+| `Seq Scan` | full table read, row by row |
+| `Index Scan` | walked an index |
+| `Bitmap Heap Scan` | used an index to build a bitmap, then fetched rows |
+| `Hash Join` / `Nested Loop` | the join algorithm |
+| `Sort` / `HashAggregate` | for `ORDER BY` and `GROUP BY` |
+
+When estimates and actuals diverge wildly (estimate 100 rows, actual 1M), the
+planner is confused — usually because table statistics are stale. Run
+`ANALYZE table_name;` to update them.
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+Run this against your local Postgres:
+
+```sql
+EXPLAIN ANALYZE
+SELECT player_display_name, SUM(rushing_yards) AS yards
+FROM weekly_stats
+WHERE recent_team = 'DET'
+  AND season BETWEEN 2021 AND 2024
+GROUP BY player_display_name
+ORDER BY yards DESC
+LIMIT 10;
+```
+
+You'll likely see:
+
+```
+Limit (...)
+  -> Sort (...)
+       -> HashAggregate (...)
+            -> Bitmap Heap Scan on weekly_stats (...)
+                 Recheck Cond: ((recent_team = 'DET') AND (season >= 2021) AND (season <= 2024))
+                 -> Bitmap Index Scan on idx_weekly_team_season_week (...)
+```
+
+The index `idx_weekly_team_season_week` is doing the work. Drop it and re-run
+and you'll see a `Seq Scan` instead, with the time per step jumping
+noticeably even on a small table.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Take a 4th-down query from the L3 capstone:
+
+```sql
+SELECT play_type, COUNT(*), AVG(epa)
+FROM pbp
+WHERE posteam = 'DET' AND down = 4 AND season >= 2022
+GROUP BY play_type;
+```
+
+Run it with `EXPLAIN ANALYZE`. Identify the most expensive node. Try
+**without** the partial index on `down`, and confirm Postgres falls back to
+a sequential scan (or chooses a different plan).
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **Reading the plan top-down.** Plans execute bottom-up. The leaf nodes run
+  first.
+- **Confusing cost units with milliseconds.** "Cost" is arbitrary planner
+  units. "Actual time" is real ms. Look at actual time when measuring.
+- **Stale statistics.** If estimated rows are off by 10x, run `ANALYZE`.
+- **Adding an index without checking.** Run `EXPLAIN ANALYZE` *before*
+  creating the index, then again *after*. If the plan doesn't switch to it,
+  the index isn't helping (and is now slowing down your writes).
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. What's the difference between cost and actual time in `EXPLAIN ANALYZE`?
+2. When would you run `ANALYZE` on a table?
+3. What does it mean if Postgres uses `Seq Scan` despite an index existing?
+
+</LessonSection>
+
+</Lesson>

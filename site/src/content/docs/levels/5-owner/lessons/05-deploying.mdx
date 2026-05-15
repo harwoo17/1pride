@@ -1,0 +1,130 @@
+---
+title: Deploying — Vercel + Neon + Fly
+description: Three providers, three commands, one URL.
+sidebar:
+  order: 5
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 5 · Lesson 5</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+The last mile of "ship it" is three providers, glued by environment
+variables. Vercel hosts the static + Next.js site. Neon hosts Postgres. Fly
+or Render hosts the FastAPI service. Each is one signup + one config; all
+together cost $0 to start.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+The minimum prod stack:
+
+| Component | Service | Free tier |
+|---|---|---|
+| Static site (`1pride.dev`) | Vercel | yes, generous |
+| App (`app.1pride.dev`)     | Vercel | yes, generous |
+| Postgres                   | [Neon](https://neon.tech) | yes, 0.5GB |
+| FastAPI                    | [Fly.io](https://fly.io) or [Render](https://render.com) | small free tier |
+
+Environment variables connect them. From the app, you need:
+
+```bash
+# .env.production (set in Vercel dashboard)
+NEXT_PUBLIC_API_BASE=https://api.1pride.dev
+```
+
+From the API:
+
+```bash
+DATABASE_URL=postgresql+psycopg://user:pass@ep-x.neon.tech:5432/onepride?sslmode=require
+```
+
+Custom domains:
+
+- **Vercel project → Settings → Domains** — add `1pride.dev` and
+  `app.1pride.dev`.
+- **DNS at your registrar** — Vercel shows the exact records.
+- **For the API** — a `CNAME api.1pride.dev → fly.dev hostname`, then add
+  the cert in Fly.
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+Concrete `vercel.json` for the app already lives at `app/vercel.json` —
+nothing to add. The first deploy:
+
+```bash
+cd app
+npx vercel               # preview
+npx vercel --prod        # production
+```
+
+For the API, a one-time Fly setup:
+
+```bash
+cd data
+fly launch                       # creates fly.toml, no DB please
+fly secrets set DATABASE_URL='postgresql+psycopg://...neon.tech/onepride?sslmode=require'
+fly deploy
+```
+
+Fly auto-detects a Python app from `pyproject.toml`. The `Procfile` (or
+fly.toml `processes` block) needs the uvicorn command:
+
+```
+web: uvicorn onepride_data.api:app --host 0.0.0.0 --port 8080
+```
+
+Then `fly certs add api.1pride.dev` after pointing DNS.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Don't try the live deploy here — it's coupled to your domain purchase.
+Instead, sketch the **rollout checklist** for going live:
+
+1. Buy `1pride.dev`.
+2. Create Neon project, copy `DATABASE_URL`.
+3. Run the loader once against Neon: `DATABASE_URL=... uv run python -m onepride_data.load --years 2021-2024 --tables all`.
+4. `vercel --prod` from `site/` and from `app/`.
+5. `fly launch` + `fly deploy` from `data/`.
+6. Point DNS for `1pride.dev`, `app.1pride.dev`, `api.1pride.dev`.
+7. Set `NEXT_PUBLIC_API_BASE=https://api.1pride.dev` in Vercel's app project.
+8. Re-deploy the app (Vercel picks up new env vars).
+
+The whole rollout from "have a clean repo" to "live URL" is under an hour
+if you've done it before, ~2 hours the first time.
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **DB on Vercel.** Vercel doesn't host Postgres. Use Neon, Supabase,
+  Render, or a managed RDS.
+- **`localhost` URLs in prod env vars.** Replace `NEXT_PUBLIC_API_BASE`
+  when promoting to prod or the app calls 127.0.0.1 from a browser. Funny
+  error to debug at 11pm.
+- **Forgetting `sslmode=require` on managed Postgres.** Neon enforces it;
+  the connection refuses without it.
+- **Hot-reloading uvicorn in prod.** `--reload` watches files. Production
+  doesn't have files to watch. Drop the flag.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. Why doesn't Vercel host the FastAPI service or the Postgres DB?
+2. What env var connects the Next.js app to the API in production?
+3. What's the difference between a Vercel preview deploy and a prod deploy?
+
+</LessonSection>
+
+</Lesson>

@@ -1,0 +1,135 @@
+---
+title: Caching, CORS, and the boring web stuff
+description: Everything you don't think about until you're shipping a public site.
+sidebar:
+  order: 4
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 5 · Lesson 4</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+The chart loads instantly the second time. The page works on mobile. The
+browser doesn't block your API calls. None of that happens by itself. Three
+boring topics — caching, CORS, and headers — are the difference between
+"works on my laptop" and "works on the internet."
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+**Caching.** Lions stats don't change minute-to-minute. Cache responses.
+
+Next.js server components cache via `fetch` options:
+
+```ts
+const res = await fetch(url, {
+  next: { revalidate: 3600 },  // re-fetch at most once per hour
+});
+```
+
+The API can cache too. FastAPI doesn't bake this in, but you can either:
+
+- Add `Cache-Control: public, max-age=3600` headers, or
+- Use a CDN (Cloudflare) in front of the API.
+
+**CORS.** When the browser at `app.1pride.dev` calls `api.1pride.dev`, the
+browser blocks the request unless the API explicitly opts in via headers.
+
+```python
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "https://app.1pride.dev",
+    ],
+    allow_methods=["GET"],
+    allow_headers=["*"],
+)
+```
+
+Three failure modes:
+
+- `*` for `allow_origins` works in dev but fails the moment you want
+  credentials. Be specific.
+- Forgetting `OPTIONS` requests. FastAPI handles them; bare frameworks
+  don't.
+- Adding the middleware *after* route definitions. Middleware order matters.
+
+**Security headers.** A few headers worth setting on every response:
+
+```python
+@app.middleware("http")
+async def security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
+```
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+The L5 capstone API already has CORS configured for localhost and the
+production domain. To add caching headers:
+
+```python
+@app.middleware("http")
+async def add_cache_header(request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/api/lions/"):
+        # Lions data updates weekly — 1 hour edge cache is generous
+        response.headers["Cache-Control"] = "public, max-age=3600"
+    return response
+```
+
+With this, every GET on a `/api/lions/*` endpoint can be cached by Vercel's
+edge for an hour. Page loads after the first one don't even hit your API.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Add the cache-header middleware to `api.py`. Re-run uvicorn, hit
+`/api/lions/seasons` and inspect headers:
+
+```bash
+curl -I http://localhost:8000/api/lions/seasons
+```
+
+You should see `cache-control: public, max-age=3600`. Notice the difference
+in your browser dev tools when you load the L5 app twice — the second load
+should serve from cache.
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **`allow_origins=["*"]`** with credentials. The browser will reject the
+  combination silently.
+- **Caching dynamic responses.** Don't cache health checks or anything that
+  needs to be fresh.
+- **No revalidate window.** Without `next: { revalidate: N }`, Next.js
+  caches forever (until redeploy). For data that changes, that's a bug.
+- **Forgetting `Vary` headers.** If responses depend on query params, the
+  cache needs to key on them — which most CDNs do by default, but verify.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. What's the right `Cache-Control` value for weekly-updated Lions stats?
+2. Why does CORS exist as a thing the browser enforces?
+3. Where should the cache live — in the API, in the frontend, or at a CDN?
+
+</LessonSection>
+
+</Lesson>

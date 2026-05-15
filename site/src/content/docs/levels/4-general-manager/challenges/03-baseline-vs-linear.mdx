@@ -1,0 +1,89 @@
+---
+title: Beat the constant baseline
+description: Predict next-week WR receiving yards from last-week stats. Compare to a dumb baseline.
+sidebar:
+  order: 3
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 4 · Challenge 3</span>
+
+<Challenge difficulty="starter">
+
+<Fragment slot="prompt">
+Build a model that predicts an NFL WR's **next-week receiving yards** from
+their last-week receiving yards and last-week targets (2021-2024, regular
+season, WRs only, only weeks 2-18 since they need a prior week).
+
+Compare a `DummyRegressor(strategy='mean')` baseline to a
+`LinearRegression`. Use 5-fold cross-validation. Report mean R² ± std for
+both. Comment on whether the linear model adds real signal.
+</Fragment>
+
+<Fragment slot="output">
+
+```
+Constant     R² = 0.000 ± 0.001
+Linear       R² = 0.0XX ± 0.0XX
+```
+
+Plus a short interpretation (the gap is small in absolute terms; that's
+expected for a noisy outcome).
+
+</Fragment>
+
+<Fragment slot="hint">
+
+The SQL is the hard part — you need `LAG` window functions to pull
+last-week stats. The model itself is two `cross_val_score` calls.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```python
+import pandas as pd
+from sklearn.dummy import DummyRegressor
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import cross_val_score
+from sqlalchemy import create_engine
+
+eng = create_engine("postgresql+psycopg://onepride:lions@localhost:5432/onepride")
+
+df = pd.read_sql(
+    """
+    SELECT
+        player_display_name, recent_team, season, week, receiving_yards,
+        LAG(receiving_yards) OVER w AS prev_yards,
+        LAG(targets)         OVER w AS prev_targets
+    FROM weekly_stats
+    WINDOW w AS (PARTITION BY player_display_name, season ORDER BY week)
+    WHERE season BETWEEN 2021 AND 2024
+      AND season_type = 'REG'
+      AND position_group = 'WR'
+      AND targets > 0
+    """,
+    eng,
+)
+df = df.dropna(subset=['prev_yards', 'prev_targets'])
+
+X = df[['prev_yards', 'prev_targets']]
+y = df['receiving_yards']
+
+for name, model in [
+    ('Constant', DummyRegressor(strategy='mean')),
+    ('Linear',   LinearRegression()),
+]:
+    scores = cross_val_score(model, X, y, cv=5, scoring='r2')
+    print(f"{name:10s}  R² = {scores.mean():.3f} ± {scores.std():.3f}")
+```
+
+Expect R² in the 0.05-0.15 range for Linear. That's *real* in the sense
+that it beats the baseline, but the absolute number is low because
+week-over-week receiving is largely noise. The model is finding the small
+amount of week-over-week signal that does exist.
+
+</Fragment>
+
+</Challenge>

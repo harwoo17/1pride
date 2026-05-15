@@ -1,0 +1,140 @@
+---
+title: FastAPI basics
+description: One Python file, one decorator, one typed endpoint. From CLI script to JSON API.
+sidebar:
+  order: 2
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 5 · Lesson 2</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+FastAPI turns a Python function into a JSON HTTP endpoint with a decorator
+and a type hint. You don't write the JSON serialization, you don't write the
+validation, you don't write the docs. It's the lowest-friction way to wrap a
+database in an API.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+```python
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/api/lions/seasons")
+def seasons() -> dict:
+    return {"seasons": [2021, 2022, 2023, 2024]}
+```
+
+Run it:
+
+```bash
+uvicorn module:app --reload
+```
+
+You get:
+
+- `GET /api/lions/seasons` returning JSON
+- Auto-generated docs at `/docs` (Swagger) and `/redoc`
+- Type-checked request and response with pydantic
+- Hot reload on file change
+
+Add query parameters with type hints:
+
+```python
+@app.get("/api/lions/weekly-scoring")
+def weekly_scoring(season: int = 2024) -> dict:
+    ...
+```
+
+FastAPI parses `?season=2024`, validates that it's an integer, and rejects
+`?season=foo` with a clean 422 error — for free.
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+The actual L5 endpoint serving the chart at app.1pride.dev:
+
+```python
+from fastapi import FastAPI, Query
+from sqlalchemy import text
+from .db import engine
+
+app = FastAPI()
+
+@app.get("/api/lions/weekly-scoring")
+def weekly_scoring(season: int = Query(2024, ge=2000, le=2030)) -> dict:
+    with engine().connect() as c:
+        rows = c.execute(text("""
+            SELECT
+                week,
+                CASE WHEN home_team = 'DET' THEN away_team ELSE home_team END AS opp,
+                CASE WHEN home_team = 'DET' THEN home_score ELSE away_score END AS scored,
+                CASE WHEN home_team = 'DET' THEN away_score ELSE home_score END AS allowed
+            FROM schedules
+            WHERE season = :season
+              AND game_type = 'REG'
+              AND (home_team = 'DET' OR away_team = 'DET')
+            ORDER BY week
+        """), {"season": season}).mappings().all()
+    return {"season": season, "games": [dict(r) for r in rows]}
+```
+
+Three habits:
+
+1. **`Query(..., ge=..., le=...)`** — bound your inputs. If someone hits
+   `?season=999`, you'd rather return a clean 422 than execute the SQL.
+2. **`text(...)`** with `:bind` params, not f-strings. SQL injection
+   matters even for a public read-only API.
+3. **`.mappings().all()`** — returns dict-shaped rows instead of tuples,
+   serializes to JSON cleanly.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Add a `/api/lions/qb-weekly` endpoint that takes a `season` query parameter
+(default 2024) and returns Jared Goff's per-week passing yards from
+`weekly_stats`. Bind the season; don't string-format it.
+
+Hit it locally:
+
+```bash
+curl 'http://localhost:8000/api/lions/qb-weekly?season=2023'
+```
+
+Verify Swagger docs at `http://localhost:8000/docs` show the endpoint.
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **String-formatted SQL.** Even on a read-only public API, treat parameter
+  binding as non-negotiable.
+- **No bounds on numeric params.** `?season=99999` will hit the DB and
+  return an empty result, but it's cheap noise. Reject early.
+- **Returning ORM objects directly.** FastAPI handles dicts and pydantic
+  models cleanly; SQLAlchemy `Row` objects need conversion.
+- **Forgetting to close connections.** Use a context manager (`with
+  engine().connect() as c:`) so connections return to the pool.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. What's the difference between `season: int = 2024` and
+   `season: int = Query(2024, ge=2000, le=2030)`?
+2. Why bind SQL parameters instead of f-string formatting?
+3. What does `/docs` give you, and when would you use it?
+
+</LessonSection>
+
+</Lesson>

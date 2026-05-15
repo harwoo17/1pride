@@ -1,0 +1,130 @@
+---
+title: Feature importance for a random forest
+description: Train, fit, then ask the model which features it actually used.
+sidebar:
+  order: 6
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 4 · Challenge 6</span>
+
+<Challenge difficulty="allpro">
+
+<Fragment slot="prompt">
+Train a `RandomForestRegressor` to predict per-game `receiving_yards` for
+**all NFL receivers (WR + TE)** in 2021-2024 regular season. Use these
+features:
+
+- `prev_yards` (LAG receiving yards)
+- `prev_targets` (LAG targets)
+- `prev_catches` (LAG receptions)
+- `position_group` (categorical)
+- `is_home` (joined from schedules)
+- `week` (numeric)
+
+After fitting, return a table of feature importances sorted descending.
+Plot them as a horizontal bar chart, Lions blue.
+</Fragment>
+
+<Fragment slot="output">
+
+A `(feature, importance)` table plus a horizontal bar chart with title,
+labels, and source caption.
+
+</Fragment>
+
+<Fragment slot="hint">
+
+`RandomForestRegressor` exposes `feature_importances_` after fitting. Be
+aware: for one-hot encoded categoricals, you get one importance per
+*encoded* column, not per original feature. To group them, sum across the
+encoded columns or use `permutation_importance` (which is more robust).
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```python
+import matplotlib.pyplot as plt
+import pandas as pd
+from sklearn.compose import ColumnTransformer
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sqlalchemy import create_engine
+
+eng = create_engine("postgresql+psycopg://onepride:lions@localhost:5432/onepride")
+
+df = pd.read_sql(
+    """
+    WITH lagged AS (
+        SELECT
+            ws.player_display_name, ws.recent_team, ws.season, ws.week,
+            ws.receiving_yards, ws.position_group,
+            LAG(ws.receiving_yards) OVER w AS prev_yards,
+            LAG(ws.targets)         OVER w AS prev_targets,
+            LAG(ws.receptions)      OVER w AS prev_catches
+        FROM weekly_stats ws
+        WINDOW w AS (PARTITION BY ws.player_display_name, ws.season ORDER BY ws.week)
+        WHERE ws.season BETWEEN 2021 AND 2024
+          AND ws.season_type = 'REG'
+          AND ws.position_group IN ('WR', 'TE')
+          AND ws.targets > 0
+    )
+    SELECT l.*,
+        (CASE WHEN sc.home_team = l.recent_team THEN 1 ELSE 0 END)::int AS is_home
+    FROM lagged l
+    JOIN schedules sc
+      ON sc.season = l.season AND sc.week = l.week
+     AND (sc.home_team = l.recent_team OR sc.away_team = l.recent_team)
+    """,
+    eng,
+).dropna(subset=['prev_yards', 'prev_targets', 'prev_catches'])
+
+num_cols = ['prev_yards', 'prev_targets', 'prev_catches', 'week', 'is_home']
+cat_cols = ['position_group']
+
+preprocess = ColumnTransformer([
+    ('num', StandardScaler(), num_cols),
+    ('cat', OneHotEncoder(handle_unknown='ignore'), cat_cols),
+])
+
+pipe = Pipeline([
+    ('prep', preprocess),
+    ('model', RandomForestRegressor(n_estimators=300, random_state=42, n_jobs=-1)),
+])
+
+X = df[num_cols + cat_cols]
+y = df['receiving_yards']
+pipe.fit(X, y)
+
+# Extract feature names + importances
+feat_names = (num_cols
+              + list(pipe.named_steps['prep']
+                         .named_transformers_['cat']
+                         .get_feature_names_out(cat_cols)))
+importances = pipe.named_steps['model'].feature_importances_
+
+imp_df = (pd.DataFrame({'feature': feat_names, 'importance': importances})
+            .sort_values('importance', ascending=True))
+
+fig, ax = plt.subplots(figsize=(8, 5))
+ax.barh(imp_df['feature'], imp_df['importance'], color='#0076B6')
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+ax.set_title('Random forest feature importance — predicting weekly receiving yards')
+ax.set_xlabel('Importance')
+fig.text(0.99, 0.01, 'Source: nflverse', ha='right', fontsize=8, color='gray')
+plt.tight_layout()
+plt.savefig('feature-importance.png', dpi=150)
+print(imp_df.to_string(index=False))
+```
+
+`prev_targets` and `prev_yards` will dominate. `is_home` and `week`
+contribute a small amount. The one-hot position columns barely register
+because once you've got volume features, position is largely captured.
+
+</Fragment>
+
+</Challenge>

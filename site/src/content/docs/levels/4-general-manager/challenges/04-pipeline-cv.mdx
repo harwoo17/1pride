@@ -1,0 +1,112 @@
+---
+title: Pipeline + cross-validation
+description: Take Challenge 3's model, wrap it in a Pipeline, add scaling and one-hot encoding, evaluate properly.
+sidebar:
+  order: 4
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 4 · Challenge 4</span>
+
+<Challenge difficulty="starter">
+
+<Fragment slot="prompt">
+Extend Challenge 3:
+
+1. Add `position_group` as a categorical feature.
+2. Wrap the preprocessing + model in a single `Pipeline` using
+   `ColumnTransformer`.
+3. Run 5-fold cross-validation.
+4. Compare two final models — `LinearRegression` and
+   `RandomForestRegressor(n_estimators=200)`.
+
+Report mean R² ± std for both. Comment on whether the extra complexity of
+the RF is justified by the gain.
+</Fragment>
+
+<Fragment slot="output">
+
+```
+Linear       R² = 0.0XX ± 0.0XX
+RandomForest R² = 0.0XX ± 0.0XX
+```
+
+Plus your read on whether the RF earns its complexity.
+
+</Fragment>
+
+<Fragment slot="hint">
+
+```python
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+
+preprocess = ColumnTransformer([
+    ('num', StandardScaler(), ['prev_yards', 'prev_targets']),
+    ('cat', OneHotEncoder(handle_unknown='ignore'), ['position_group']),
+])
+pipe = Pipeline([('prep', preprocess), ('model', LinearRegression())])
+```
+
+Same SQL as Challenge 3, just expand the SELECT to include
+`position_group` and broaden the position filter to `IN ('WR', 'TE')`.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```python
+import pandas as pd
+from sklearn.compose import ColumnTransformer
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import cross_val_score
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sqlalchemy import create_engine
+
+eng = create_engine("postgresql+psycopg://onepride:lions@localhost:5432/onepride")
+
+df = pd.read_sql(
+    """
+    SELECT
+        player_display_name, recent_team, season, week,
+        receiving_yards, position_group,
+        LAG(receiving_yards) OVER w AS prev_yards,
+        LAG(targets)         OVER w AS prev_targets
+    FROM weekly_stats
+    WINDOW w AS (PARTITION BY player_display_name, season ORDER BY week)
+    WHERE season BETWEEN 2021 AND 2024
+      AND season_type = 'REG'
+      AND position_group IN ('WR', 'TE')
+      AND targets > 0
+    """,
+    eng,
+)
+df = df.dropna(subset=['prev_yards', 'prev_targets'])
+
+X = df[['prev_yards', 'prev_targets', 'position_group']]
+y = df['receiving_yards']
+
+preprocess = ColumnTransformer([
+    ('num', StandardScaler(), ['prev_yards', 'prev_targets']),
+    ('cat', OneHotEncoder(handle_unknown='ignore'), ['position_group']),
+])
+
+for name, est in [
+    ('Linear',       LinearRegression()),
+    ('RandomForest', RandomForestRegressor(n_estimators=200, random_state=42)),
+]:
+    pipe = Pipeline([('prep', preprocess), ('model', est)])
+    scores = cross_val_score(pipe, X, y, cv=5, scoring='r2')
+    print(f"{name:13s} R² = {scores.mean():.3f} ± {scores.std():.3f}")
+```
+
+If RF beats Linear by less than one standard deviation, the simpler model
+wins — fewer hyperparameters, faster, more interpretable.
+
+</Fragment>
+
+</Challenge>

@@ -1,0 +1,89 @@
+---
+title: Design a scouting-board schema
+description: Pencil-and-paper. Three normalized tables for tracking draft prospects.
+sidebar:
+  order: 1
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 4 · Challenge 1</span>
+
+<Challenge difficulty="rookie">
+
+<Fragment slot="prompt">
+Design a schema (no SQL — just table names, columns, and arrows) for
+tracking the Lions' 2025 draft scouting board. Requirements:
+
+- One row per prospect with biographical info.
+- Multiple scouting grades per prospect (multiple scouts).
+- Combine measurables (40-time, vertical, etc.) if measured.
+- Pre-draft visits (date + attendees).
+- Post-draft career AV by season.
+
+Three to five tables. Identify primary keys and foreign keys.
+</Fragment>
+
+<Fragment slot="output">
+
+A schema sketch — Markdown table or a small diagram. Each table should have
+a name, columns (with types), a primary key, and any foreign keys.
+
+</Fragment>
+
+<Fragment slot="hint">
+
+The pattern: `prospects` (one row per prospect), and child tables that
+reference `prospects.prospect_id` for each multi-valued concept. The
+combine and AV tables are one-to-one with prospects; grades and visits
+are one-to-many.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```
+prospects
+  prospect_id      PK   TEXT
+  full_name             TEXT
+  position              TEXT
+  college               TEXT
+  birthdate             DATE
+
+combine_results
+  prospect_id      PK,FK→prospects   TEXT
+  forty_yd_dash         REAL
+  vertical_inches       REAL
+  broad_jump_inches     REAL
+  bench_reps            SMALLINT
+
+scouting_grades
+  grade_id         PK   SERIAL
+  prospect_id      FK→prospects   TEXT
+  scout_name            TEXT
+  grade_value           SMALLINT     -- e.g. 1-10 or position-specific
+  grade_date            DATE
+  notes                 TEXT
+
+prospect_visits
+  visit_id         PK   SERIAL
+  prospect_id      FK→prospects   TEXT
+  visit_date            DATE
+  visit_type            TEXT         -- 'top30', 'pro_day', 'private_workout'
+
+career_av
+  prospect_id      PK,FK→prospects   TEXT
+  season           PK   SMALLINT
+  approximate_value     SMALLINT
+```
+
+The key shapes:
+
+- `combine_results` and `career_av` use `prospect_id` as PK (one row per
+  prospect, or one row per prospect-season for AV).
+- `scouting_grades` and `prospect_visits` use a `SERIAL` surrogate key
+  because you can have many per prospect.
+
+</Fragment>
+
+</Challenge>

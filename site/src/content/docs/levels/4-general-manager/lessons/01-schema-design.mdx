@@ -1,0 +1,122 @@
+---
+title: Schema design — normalize, then index
+description: Tables, keys, foreign keys, and the cost of getting it wrong.
+sidebar:
+  order: 1
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 4 · Lesson 1</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+Up through Level 3 you've been reading from nflverse's flat tables. As a GM,
+you start *building* tables — for your team's draft board, for your own
+analyses, for the L5 capstone's API. Schema design is what separates "a folder
+of CSVs" from "a database."
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+Three rules that handle most cases:
+
+1. **One concept per table.** A `players` table holds player attributes. A
+   `player_seasons` table holds per-season stats. Mixing them is the classic
+   beginner mistake.
+2. **Primary keys are required.** Every row needs a stable, unique
+   identifier. `player_id` (nflverse uses GSIS IDs) is better than `name`
+   because names change and duplicate.
+3. **Foreign keys enforce relationships.** A `player_seasons` row referencing
+   a `player_id` that doesn't exist should be rejected at the database level.
+
+Example: the draft pick value model needs three tables, not one.
+
+```sql
+CREATE TABLE players (
+    player_id            TEXT PRIMARY KEY,
+    full_name            TEXT NOT NULL,
+    position             TEXT,
+    college              TEXT,
+    height_inches        SMALLINT,
+    weight_lbs           SMALLINT
+);
+
+CREATE TABLE draft_picks (
+    player_id            TEXT REFERENCES players(player_id),
+    draft_year           SMALLINT,
+    pick_overall         SMALLINT,
+    team                 TEXT,
+    PRIMARY KEY (draft_year, pick_overall)
+);
+
+CREATE TABLE career_av (
+    player_id            TEXT PRIMARY KEY REFERENCES players(player_id),
+    career_av            SMALLINT,
+    seasons_played       SMALLINT
+);
+```
+
+Each table has one concept. Joins reconstruct the wider view when you need it.
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+If you were building a Lions-specific scouting board, you'd model it as:
+
+| Table | Concept |
+|---|---|
+| `prospects` | one row per prospect under consideration |
+| `prospect_scouting_grades` | one row per (prospect, scout, date) |
+| `prospect_combine_results` | one row per prospect with combine measurables |
+| `prospect_visits` | one row per (prospect, visit_date) |
+
+You'd *not* model it as one `prospects` table with 60 columns including a
+`scout_1_grade`, `scout_2_grade`, `scout_3_grade` triple. That breaks the
+moment you add a fourth scout.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Sketch (just on paper or in markdown) a schema for tracking **the Lions'
+2025 draft class** with:
+
+- Picks (round, overall, team)
+- Player attributes (name, position, college, combine 40 time)
+- Year-by-year career AV
+
+Three tables, with primary and foreign keys. Don't write SQL yet — just
+draw the boxes and the arrows.
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **One giant table.** Wide tables are quick to build and slow to maintain.
+  Splitting them later is painful.
+- **Names as keys.** Names duplicate, change, and have apostrophes that break
+  joins. Use a stable surrogate key (an integer `id` or nflverse's
+  `player_id`).
+- **No foreign keys.** Without them, "delete this player" leaves orphan rows
+  in five other tables. The database can enforce this for you — let it.
+- **Premature denormalization for speed.** Don't pre-flatten tables until you've
+  measured the query and confirmed normalization is the bottleneck. Postgres is
+  much faster than you think.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. Why use `player_id` as the key instead of `full_name`?
+2. What does a foreign key constraint prevent?
+3. When would you intentionally denormalize (combine two tables)?
+
+</LessonSection>
+
+</Lesson>

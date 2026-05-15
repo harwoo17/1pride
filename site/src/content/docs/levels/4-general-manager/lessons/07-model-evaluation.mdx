@@ -1,0 +1,141 @@
+---
+title: Model evaluation — baselines, metrics, calibration
+description: Your R² of 0.62 is meaningless without a baseline. Here's how to tell whether the model actually does anything.
+sidebar:
+  order: 7
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 4 · Lesson 7</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+A model with R² = 0.6 sounds great until you discover that predicting "the
+mean" gets R² = 0.55. The gain is what matters — and you can only see it by
+comparing against a baseline.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+Three baselines, ordered by sophistication:
+
+1. **The constant.** Predict the mean (regression) or the most-common class
+   (classification) for every row. `DummyRegressor(strategy='mean')` and
+   `DummyClassifier(strategy='most_frequent')` give you this.
+2. **A single-feature rule.** "Predicted yards = 7 × attempts." If your
+   model can't beat one hand-crafted rule, the features aren't earning their
+   complexity.
+3. **A simple model.** `LinearRegression` for regression, `LogisticRegression`
+   for classification. Beat these before reaching for `RandomForestRegressor`
+   or gradient boosting.
+
+```python
+from sklearn.dummy import DummyRegressor
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import cross_val_score
+
+for name, model in [
+    ('Dummy (mean)', DummyRegressor()),
+    ('Linear',       LinearRegression()),
+    ('RandomForest', RandomForestRegressor(n_estimators=200, random_state=42)),
+]:
+    scores = cross_val_score(model, X, y, cv=5, scoring='r2')
+    print(f"{name:15s}  R² = {scores.mean():.3f} ± {scores.std():.3f}")
+```
+
+If the RF doesn't beat Linear by more than the standard deviation, the
+extra complexity isn't paying off.
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+Predict next-week receiving yards for Lions WRs from last-week stats. Build
+the lagged features, then compare three models against the constant baseline:
+
+```python
+import pandas as pd
+from sklearn.dummy import DummyRegressor
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import cross_val_score
+from sqlalchemy import create_engine
+
+eng = create_engine("postgresql+psycopg://onepride:lions@localhost:5432/onepride")
+
+df = pd.read_sql(
+    """
+    SELECT player_display_name, season, week,
+           receiving_yards, targets, receptions,
+           LAG(receiving_yards) OVER w AS prev_yards,
+           LAG(targets)         OVER w AS prev_targets
+    FROM weekly_stats
+    WINDOW w AS (PARTITION BY player_display_name ORDER BY season, week)
+    WHERE recent_team = 'DET'
+      AND season BETWEEN 2021 AND 2024
+      AND season_type = 'REG'
+      AND position_group IN ('WR', 'TE')
+      AND targets > 0
+    """,
+    eng,
+)
+df = df.dropna(subset=['prev_yards', 'prev_targets'])
+
+X = df[['prev_yards', 'prev_targets']]
+y = df['receiving_yards']
+
+for name, model in [
+    ('Constant',      DummyRegressor(strategy='mean')),
+    ('Linear',        LinearRegression()),
+    ('Random forest', RandomForestRegressor(n_estimators=200, random_state=42)),
+]:
+    scores = cross_val_score(model, X, y, cv=5, scoring='r2')
+    print(f"{name:15s}  R² = {scores.mean():.3f} ± {scores.std():.3f}")
+```
+
+The constant baseline will be ~0. If Linear is at 0.10, that's a real
+finding even though absolute R² is small — week-over-week receiver yardage
+is noisy.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+For the QB-passing-yards model from Lesson 4, build a "predict league
+average" baseline. Compute mean passing yards across the training set.
+Report the R² of the constant predictor and compare it to your linear model.
+What does the gap tell you?
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **No baseline.** R² alone is uninterpretable. "0.6" is excellent for noisy
+  outcomes, terrible for tightly-constrained ones. Compare.
+- **Picking the wrong metric.** R² is fine for regression. For
+  classification with unbalanced classes (1% of plays are TDs), accuracy is
+  misleading — use F1 or AUC.
+- **Overfitting to CV.** If you tune hyperparameters on CV scores, the CV
+  estimate becomes optimistic. Hold out a final test set you only touch
+  once.
+- **Reporting test R² without uncertainty.** "R² = 0.42" is half a number.
+  "R² = 0.42 ± 0.07 across 5 folds" is the whole story.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. Why is a constant-prediction baseline useful?
+2. When is accuracy a misleading metric for classification?
+3. What's the danger of tuning hyperparameters using cross-validation
+   scores?
+
+</LessonSection>
+
+</Lesson>

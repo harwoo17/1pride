@@ -1,0 +1,127 @@
+---
+title: Feature engineering
+description: Most of the gain in ML projects comes from features, not models. Here's how to think about them.
+sidebar:
+  order: 5
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 4 · Lesson 5</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+You can swap models all day and your test R² will barely move. Add the right
+feature and it jumps. Feature engineering is the lever — figuring out *what*
+to feed the model from the raw data you have.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+Five feature-engineering moves you'll use in every football model:
+
+1. **Encode categoricals.** `position`, `team`, `play_type` are strings. ML
+   models want numbers. `pd.get_dummies(df, columns=['position'])` turns
+   categories into 0/1 indicator columns.
+
+2. **Derive rates from totals.** `yards_per_attempt = passing_yards /
+   attempts` is more informative than either alone, because it normalizes
+   volume away.
+
+3. **Bucket continuous values.** `pd.cut(df['ydstogo'], bins=[0, 2, 5, 10,
+   100])` turns a 0-100 yardline into "short / medium / long / very long" —
+   useful when relationships are non-linear.
+
+4. **Add lagged features.** "Last week's yards" and "3-game rolling average"
+   give the model recent context. SQL window functions are the right tool.
+
+5. **Interactions.** `is_redzone * is_third_down` captures "third down inside
+   the 20" specifically. Trees figure these out implicitly; linear models
+   need them spelled out.
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+The L4 draft pick value model wants to predict career AV from college +
+combine + draft position. Raw inputs you'd pull:
+
+| Raw column | Engineered feature |
+|---|---|
+| `position` | one-hot encode (QB, RB, WR, OL, ...) |
+| `combine_40_time` | invert ("speed score") + by-position rank |
+| `pick_overall` | `pick_value = log(pick_overall)` — picks have diminishing returns |
+| `school_strength` | conference one-hot (SEC, ACC, B1G, ...) |
+| `birthdate` | derive `age_at_draft` |
+| `college_total_yards` | divide by `games_played` for per-game rate |
+
+The transformation from "rows of facts" to "rows of features the model can
+learn from" is the work.
+
+```python
+import pandas as pd
+
+# Toy version using nflverse player data
+df = pd.read_sql("SELECT * FROM weekly_stats WHERE season = 2024 LIMIT 10000", eng)
+
+# Move 1: rate features
+df['ypa']  = df['passing_yards']    / df['attempts']
+df['yard_per_carry'] = df['rushing_yards'] / df['carries']
+df['catch_rate']     = df['receptions']    / df['targets']
+
+# Move 2: bucket
+df['big_game'] = (df['receiving_yards'] >= 100).astype(int)
+
+# Move 3: one-hot encode position
+df = pd.get_dummies(df, columns=['position_group'], prefix='pos')
+```
+
+Then `X = df[engineered_columns].to_numpy()` is what goes into the model.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+For the QB-passing-yards model from Lesson 4, add three engineered features:
+
+- `cmp_pct = completions / attempts`
+- `ypa = passing_yards / attempts` *(careful — this leaks the target; do
+  the engineering on `previous-game` stats or skip it for the prediction
+  set)*
+- `is_home` from joining `schedules`
+
+Then refit `LinearRegression` and report whether R² improved. (For the
+`ypa` feature, this is intentionally a trap — see if you spot why.)
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **Target leakage.** Features that include information about the target
+  give artificially high R². "Yards per attempt" leaks "yards." Always ask:
+  *would I know this feature before the game started?*
+- **Forgetting to one-hot encode strings.** `LinearRegression` will throw
+  `TypeError`. `RandomForestRegressor` will sometimes silently treat strings
+  as garbage.
+- **Scaling AFTER train/test split is fit on combined data.** Fit the scaler
+  on `X_train` only, then transform both train and test. Otherwise you've
+  leaked test-set info into training.
+- **Engineering features the model doesn't need.** Trees find their own
+  interactions. Don't manually compute every cross-product for a random
+  forest.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. What does "target leakage" mean and why is it the biggest trap?
+2. When do you bucket a continuous variable vs leave it raw?
+3. What's the right way to scale features when you have a train/test split?
+
+</LessonSection>
+
+</Lesson>

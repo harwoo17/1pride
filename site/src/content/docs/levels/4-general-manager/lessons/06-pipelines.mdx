@@ -1,0 +1,158 @@
+---
+title: Pipelines and cross-validation
+description: Pipelines bundle preprocessing + model. Cross-validation tells you if it actually works.
+sidebar:
+  order: 6
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 4 · Lesson 6</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+Once you have preprocessing + a model, you have two problems: keeping them
+in sync between train and test, and trusting that the test score isn't just
+luck. Pipelines fix the first. Cross-validation fixes the second.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+A `Pipeline` is a chain of transformations ending in a model. The whole
+thing acts like a single model — `fit`, `predict`, `score`.
+
+```python
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LinearRegression
+
+pipe = Pipeline([
+    ('scaler', StandardScaler()),
+    ('model', LinearRegression()),
+])
+
+pipe.fit(X_train, y_train)
+pipe.score(X_test, y_test)
+```
+
+The scaler `fit`s on train data and `transform`s both train and test
+correctly — no manual bookkeeping.
+
+For mixed numeric + categorical features, use `ColumnTransformer`:
+
+```python
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+
+preprocess = ColumnTransformer([
+    ('num', StandardScaler(), ['carries', 'attempts']),
+    ('cat', OneHotEncoder(handle_unknown='ignore'), ['position_group']),
+])
+
+pipe = Pipeline([
+    ('prep', preprocess),
+    ('model', LinearRegression()),
+])
+```
+
+**Cross-validation** trains the model on K-1 folds and evaluates on the held-
+out fold, K times. The result is K scores instead of one. The standard
+deviation across folds tells you how reliable the score is.
+
+```python
+from sklearn.model_selection import cross_val_score
+scores = cross_val_score(pipe, X, y, cv=5, scoring='r2')
+print(f"R² = {scores.mean():.3f} ± {scores.std():.3f}")
+```
+
+A model with R² = 0.62 ± 0.03 is trustworthy. R² = 0.62 ± 0.20 is not.
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+A full pipeline predicting Lions QB passing yards, with cross-validation:
+
+```python
+import pandas as pd
+from sklearn.compose import ColumnTransformer
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import cross_val_score
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sqlalchemy import create_engine
+
+eng = create_engine("postgresql+psycopg://onepride:lions@localhost:5432/onepride")
+
+df = pd.read_sql(
+    """
+    SELECT ws.season, ws.week, ws.passing_yards, ws.attempts,
+           ws.completions, ws.interceptions, sc.roof
+    FROM weekly_stats ws
+    JOIN schedules sc
+      ON sc.season = ws.season
+     AND sc.week   = ws.week
+     AND (sc.home_team = ws.recent_team OR sc.away_team = ws.recent_team)
+    WHERE ws.position = 'QB'
+      AND ws.season BETWEEN 2021 AND 2024
+      AND ws.season_type = 'REG'
+      AND ws.attempts >= 15
+    """,
+    eng,
+)
+
+X = df[['attempts', 'completions', 'interceptions', 'roof']]
+y = df['passing_yards']
+
+pipe = Pipeline([
+    ('prep', ColumnTransformer([
+        ('num', StandardScaler(), ['attempts', 'completions', 'interceptions']),
+        ('cat', OneHotEncoder(handle_unknown='ignore'), ['roof']),
+    ])),
+    ('model', LinearRegression()),
+])
+
+scores = cross_val_score(pipe, X, y, cv=5, scoring='r2')
+print(f"R² = {scores.mean():.3f} ± {scores.std():.3f}")
+```
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Take the L4 lesson 4 model. Wrap it in a `Pipeline` with `StandardScaler`.
+Run 5-fold cross-validation. Report the mean R² and standard deviation.
+Compare to the single-split R² from Lesson 4 — is it within one standard
+deviation?
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **Scaling before `train_test_split`.** Leaks information. Use a `Pipeline`
+  and you can't make this mistake.
+- **Time-series leakage with `cross_val_score`.** Default CV shuffles rows.
+  For game-by-game data, use `TimeSeriesSplit` so test folds always come
+  *after* train folds.
+- **One-hot encoding without `handle_unknown='ignore'`.** Test set has a
+  category the train set didn't? Default behavior errors out. Set
+  `handle_unknown='ignore'` and you get a row of zeros.
+- **Cherry-picking the best fold.** Report mean ± std, not the best single
+  score.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. What problem does a `Pipeline` solve that you'd hit doing scaling
+   manually?
+2. When should you use `TimeSeriesSplit` instead of regular `KFold`?
+3. How do you interpret R² = 0.50 ± 0.18?
+
+</LessonSection>
+
+</Lesson>

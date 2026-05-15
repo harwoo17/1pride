@@ -1,0 +1,123 @@
+---
+title: The L5 architecture
+description: nflverse → Postgres → FastAPI → Next.js → Vercel. Five components, one URL.
+sidebar:
+  order: 1
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 5 · Lesson 1</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+You've spent four levels writing queries against a local Postgres. The L5
+capstone wraps that database in an API and a UI, then deploys both behind a
+custom domain. Every box in the stack has to talk to its neighbors. The
+sooner you can see the whole picture, the easier the rest is.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│  nflverse   │ →  │  Postgres   │ →  │   FastAPI   │ →  │   Next.js   │ → users
+│ (parquet)   │    │  (managed)  │    │   (Python)  │    │  (Vercel)   │
+└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
+       ↑                  ↑                   ↑
+       │                  │                   │
+   nfl_data_py        psycopg/SQLA        uvicorn
+       └──── ETL ────────┘
+       (scheduled, Python)
+```
+
+Five components, three boundaries:
+
+| Boundary | What crosses it |
+|---|---|
+| `nflverse → Postgres` | scheduled ETL writes raw stats once a week |
+| `Postgres → FastAPI` | per-request SQL aggregations |
+| `FastAPI → Next.js` | JSON responses, cached at the edge |
+
+The architecture choices each have a reason:
+
+- **Postgres**, not parquet files. Aggregations are interactive (sub-100ms)
+  with indexes, much slower with parquet.
+- **FastAPI**, not direct DB-from-frontend. The client doesn't see the DB
+  URL. The API can cache, validate, rate-limit, and version.
+- **Next.js**, not a static dashboard. Server components can talk to the API
+  with credentials and cache responses without writing JS.
+- **Vercel**, because both Astro and Next.js deploy there with one command.
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+The actual 1PRIDE setup lives across two Vercel projects + one Postgres host:
+
+| Layer | Where it runs | Source |
+|---|---|---|
+| `nflverse → Postgres` (ETL) | local laptop (for now), then GitHub Actions | `data/src/onepride_data/load.py` |
+| Postgres | local on dev, [Neon](https://neon.tech) in prod | `data/schema.sql` |
+| FastAPI | local on dev, [Fly.io](https://fly.io) or [Render](https://render.com) in prod | `data/src/onepride_data/api.py` |
+| Next.js | Vercel | `app/` |
+
+For dev:
+
+```bash
+# Terminal 1: API
+cd data
+uv run --python 3.11 --extra api uvicorn onepride_data.api:app --reload
+
+# Terminal 2: Web
+cd app
+npm run dev
+```
+
+You hit `http://localhost:3000` and the page renders from `:8000`. Same shape
+in prod, just different hostnames.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Draw the architecture diagram for the L5 capstone, including:
+
+- Where the database lives in dev vs prod
+- The two domains (`1pride.dev`, `app.1pride.dev`)
+- The ETL job that refreshes data each week
+- A failure case: what happens if the API is down?
+
+Five minutes with a pen. The goal is to be able to talk through the whole
+system on a 30-second whiteboard.
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **Putting the API and the UI in one process.** Tempting for "small"
+  projects, painful the moment you want to deploy them independently. The
+  L5 architecture has them split.
+- **Skipping the ETL step and reading nflverse directly from the API.**
+  Every page load downloads parquet files. Don't.
+- **Storing secrets in the frontend.** `NEXT_PUBLIC_*` env vars ship to the
+  browser. The DB URL must never have a `NEXT_PUBLIC_` prefix.
+- **No CORS config.** Browser blocks calls from the UI to the API. FastAPI's
+  `CORSMiddleware` solves it — the L5 capstone already wires this up.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. Why Postgres instead of just reading parquet files in the API?
+2. Why FastAPI in front of the database instead of letting the UI query it
+   directly?
+3. What gets refreshed by the weekly ETL — the schema, or just the rows?
+
+</LessonSection>
+
+</Lesson>

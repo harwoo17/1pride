@@ -1,0 +1,137 @@
+---
+title: ETL orchestration
+description: A scheduled job that pulls nflverse and refreshes Postgres. Runs reliably without you watching.
+sidebar:
+  order: 3
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 5 · Lesson 3</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+The data layer is only useful if it stays fresh. A scheduled ETL job pulls
+nflverse on a cadence, writes the new rows to Postgres, and tells you when
+something breaks. Build it once and don't think about it again.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+ETL = Extract, Transform, Load. The loader you've been running from the CLI
+is already most of an ETL — `load.py` extracts (pulls nflverse), transforms
+(picks columns, coerces types), and loads (writes to Postgres). What it
+lacks for production:
+
+- **A schedule.** Cron, GitHub Actions, or a cloud scheduler.
+- **Idempotency.** Re-running should not duplicate rows. (Yours already
+  handles this via DELETE-by-year.)
+- **Failure alerting.** Something should yell if the job exits non-zero.
+- **A status table.** "Last successful run was at X. Loaded Y rows." Lets
+  the API surface freshness.
+
+The simplest production setup, in increasing order of magic:
+
+| Option | Pros | Cons |
+|---|---|---|
+| Cron on a laptop | free, simple | only runs when the laptop's on |
+| GitHub Actions cron | free, runs in cloud | 5-min minimum schedule, public logs |
+| Cloud scheduler (Vercel, Render, etc.) | tied to your deploy | usually paid past a free tier |
+| Airflow / Dagster | full DAGs, deps | heavy for one job |
+
+For 1PRIDE, GitHub Actions is the right answer.
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+A GitHub Actions workflow that runs every Tuesday at 6am UTC (Monday night
+games are in by then):
+
+```yaml
+# .github/workflows/refresh-data.yml
+name: refresh-data
+on:
+  schedule:
+    - cron: '0 6 * * 2'   # Tuesdays 06:00 UTC
+  workflow_dispatch:       # also runnable on-demand
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - run: pip install uv
+      - run: uv sync --extra api
+        working-directory: data
+      - run: uv run python -m onepride_data.load --years 2024 --tables all
+        working-directory: data
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+```
+
+Two things to do once:
+
+1. **In GitHub repo settings**: add `DATABASE_URL` as a secret pointing at
+   your prod Postgres (Neon connection string).
+2. **In Neon/Supabase**: allowlist GitHub Actions IPs, or use a connection
+   pooler URL.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Add a `last_loaded` table to the schema:
+
+```sql
+CREATE TABLE IF NOT EXISTS load_status (
+    table_name   TEXT PRIMARY KEY,
+    last_loaded  TIMESTAMP NOT NULL,
+    rows_loaded  INT
+);
+```
+
+Modify `load.py` so each `load_*` function writes a row to `load_status`
+after a successful insert. Add an endpoint to the FastAPI service:
+
+```python
+@app.get("/api/status")
+def status() -> dict:
+    """Show when each table was last refreshed."""
+    ...
+```
+
+Expose this in a small footer on the L5 app so users (and you) can see
+data freshness.
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **No idempotency.** Running the loader twice doubles your rows. Always
+  delete-by-key (your loader does this) or use `INSERT ... ON CONFLICT`.
+- **No alerting.** A silent failure looks the same as success. Wire the
+  workflow to send a Slack / email notification on failure.
+- **Pulling all years on every run.** Pull only the current season for
+  weekly refreshes; backfill historical years once.
+- **Long-running jobs in serverless.** Vercel functions have a hard
+  timeout. ETL jobs that take more than a minute belong in a real runner,
+  not a serverless function.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. What's the smallest change that makes a CLI loader "production"?
+2. Why pull only the current season weekly, instead of all years?
+3. What does idempotency mean in this context?
+
+</LessonSection>
+
+</Lesson>

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Honolulu Blue square -->
+  <rect width="32" height="32" rx="4" fill="#0076B6"/>
+  <!-- "1P" wordmark in white, condensed display style -->
+  <text
+    x="16"
+    y="22"
+    text-anchor="middle"
+    font-family="Helvetica Neue, Arial Black, sans-serif"
+    font-weight="900"
+    font-size="20"
+    font-stretch="condensed"
+    fill="#ffffff"
+    letter-spacing="-0.5"
+  >1P</text>
+</svg>

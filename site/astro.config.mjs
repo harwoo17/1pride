@@ -11,6 +11,69 @@ export default defineConfig({
 			description:
 				'Run your reps. Climb the depth chart. A self-paced data curriculum on Detroit Lions data.',
 			customCss: ['./src/styles/custom.css'],
+			// Open Graph + Twitter + theme color. The og:image points at
+			// the L5 app's dynamic OG endpoint so both sites share one
+			// branded image. Cross-domain OG works fine on every major
+			// platform.
+			head: [
+				{
+					tag: 'meta',
+					attrs: { property: 'og:type', content: 'website' },
+				},
+				{
+					tag: 'meta',
+					attrs: { property: 'og:site_name', content: '1PRIDE' },
+				},
+				{
+					tag: 'meta',
+					attrs: {
+						property: 'og:image',
+						content: 'https://app.1pride.app/opengraph-image',
+					},
+				},
+				{
+					tag: 'meta',
+					attrs: {
+						property: 'og:image:alt',
+						content: '1PRIDE — Lions Analytics, Campbell Era',
+					},
+				},
+				{
+					tag: 'meta',
+					attrs: { property: 'og:image:width', content: '1200' },
+				},
+				{
+					tag: 'meta',
+					attrs: { property: 'og:image:height', content: '630' },
+				},
+				{
+					tag: 'meta',
+					attrs: { name: 'twitter:card', content: 'summary_large_image' },
+				},
+				{
+					tag: 'meta',
+					attrs: {
+						name: 'twitter:image',
+						content: 'https://app.1pride.app/opengraph-image',
+					},
+				},
+				{
+					tag: 'meta',
+					attrs: { name: 'theme-color', content: '#0076B6' },
+				},
+				{
+					tag: 'meta',
+					attrs: {
+						name: 'keywords',
+						content:
+							'Detroit Lions, NFL analytics, Dan Campbell, data curriculum, nflverse, SQL, Python, FastAPI',
+					},
+				},
+				{
+					tag: 'meta',
+					attrs: { name: 'author', content: 'Joe Harwood' },
+				},
+			],
 			social: [
 				{
 					icon: 'github',

@@ -13,7 +13,14 @@ import { ScoringBars } from "@/components/ScoringBars";
 import { SkeletonBox } from "@/components/Skeleton";
 
 export const metadata = {
-  title: "The Chart Room — 1PRIDE",
+  title: "The Chart Room",
+  description:
+    "Weekly scoring margin, NFC North receiving leaders, and the 4th-down identity of the Campbell-era Lions. Every chart wired to a FastAPI service over real nflverse data.",
+  openGraph: {
+    title: "The Chart Room — 1PRIDE",
+    description:
+      "Lions weekly scoring + WR room + 4th-down EPA. Real data, 2021-present.",
+  },
 };
 
 export const revalidate = 3600;

@@ -133,7 +133,7 @@ export function Intro() {
       />
 
       {/* Header strip */}
-      <div className="absolute left-0 right-0 top-0 flex items-center justify-between border-b-2 border-[#B0B7BC] bg-[#0f1318] px-6 py-2 font-display text-xs font-bold uppercase tracking-[0.25em] text-[#B0B7BC]">
+      <div className="absolute left-0 right-0 top-0 flex items-center justify-between border-b-2 border-[#B0B7BC] bg-[#002a47] px-6 py-2 font-display text-xs font-bold uppercase tracking-[0.25em] text-[#B0B7BC]">
         <span>1PRIDE · Pregame</span>
         <span className="font-mono text-[10px] tracking-wider text-[#B0B7BC]/70">
           PRESS ENTER · ESC TO SKIP

@@ -1,14 +1,27 @@
 @import "tailwindcss";
 
 :root {
-  /* 1PRIDE palette */
+  /* 1PRIDE palette — Lions Honolulu Blue + Silver as the dominant
+     surface tones. Dark sections use the team's deep navy, not pure
+     black, to cut eye strain on long reads. */
   --lions-blue: #0076b6;
   --lions-blue-dark: #00558a;
   --lions-blue-deep: #002a47;
+  --lions-blue-darker: #001b30;    /* footer / deepest backdrops */
   --lions-silver: #b0b7bc;
   --lions-silver-dark: #6a7178;
-  --lions-charcoal: #0f1318;
-  --lions-bg: #ffffff;
+  --lions-silver-light: #d8dde0;   /* hairlines / muted accents */
+  /* Slightly navy-tinted near-black for body text. Reads softer than
+     pure #0f0f0f without losing contrast on light surfaces. */
+  --lions-charcoal: #0a1929;
+  /* Paper-ish off-whites tinted toward silver — used instead of pure
+     #ffffff for body and most light sections. Lower glare, same legibility. */
+  --lions-paper: #f5f7f9;
+  --lions-paper-warm: #fafbfc;
+  --lions-bg: var(--lions-paper-warm);
+  /* Off-white for text on dark backgrounds — silver-tinted so it sits
+     next to silver accents cleanly, while still 14:1 against deep navy. */
+  --lions-ink-inverse: #e8eef2;
 
   --background: var(--lions-bg);
   --foreground: var(--lions-charcoal);
@@ -20,9 +33,14 @@
   --color-lions-blue: var(--lions-blue);
   --color-lions-blue-dark: var(--lions-blue-dark);
   --color-lions-blue-deep: var(--lions-blue-deep);
+  --color-lions-blue-darker: var(--lions-blue-darker);
   --color-lions-silver: var(--lions-silver);
   --color-lions-silver-dark: var(--lions-silver-dark);
+  --color-lions-silver-light: var(--lions-silver-light);
   --color-lions-charcoal: var(--lions-charcoal);
+  --color-lions-paper: var(--lions-paper);
+  --color-lions-paper-warm: var(--lions-paper-warm);
+  --color-lions-ink-inverse: var(--lions-ink-inverse);
   --font-sans: var(--font-sans);
   --font-display: var(--font-display);
   --font-mono: var(--font-mono);
@@ -87,15 +105,17 @@ body {
     linear-gradient(180deg, transparent 0px, rgba(15,19,24,0.02) 1px, transparent 1px) 0 0 / 100% 200px;
 }
 
-/* Hard-hat / construction warning stripes — section dividers */
+/* Lions-stripe section divider — deep blue + silver diagonal pattern.
+   Replaces the old hard-hat (black + yellow) which fought the team
+   palette. Same class name kept for backward compatibility. */
 .hardhat-rule {
-  height: 8px;
+  height: 6px;
   background-image: repeating-linear-gradient(
     45deg,
-    #0f1318 0,
-    #0f1318 12px,
-    #ffcb05 12px,
-    #ffcb05 24px
+    var(--lions-blue-deep) 0,
+    var(--lions-blue-deep) 12px,
+    var(--lions-silver) 12px,
+    var(--lions-silver) 24px
   );
 }
 
@@ -111,16 +131,16 @@ body {
   animation-play-state: paused;
 }
 
-/* DUB / ROUT badge — big punchy chip for blowout wins */
+/* DUB / ROUT badge — solid silver pill in Lions deep navy text */
 .dub-badge {
   display: inline-flex;
   align-items: center;
   padding: 0.05em 0.5em;
-  background: #ffcb05;
-  color: #0f1318;
+  background: var(--lions-silver);
+  color: var(--lions-blue-deep);
   font-weight: 900;
   letter-spacing: 0.06em;
-  border: 2px solid #0f1318;
+  border: 2px solid var(--lions-blue-deep);
 }
 
 /* Stamp — slightly rotated "stamp" effect for impact callouts */

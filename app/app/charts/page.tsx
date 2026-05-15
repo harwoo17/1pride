@@ -66,7 +66,7 @@ export default async function ChartsPage() {
         <FourthDownChart decisions={fourth?.decisions ?? []} />
       </main>
 
-      <footer className="border-t-2 border-[var(--lions-blue-deep)] bg-[var(--lions-charcoal)] text-zinc-400">
+      <footer className="border-t-2 border-[var(--lions-blue-deep)] bg-[var(--lions-blue-deep)] text-[var(--lions-silver-light)]/85">
         <div className="mx-auto flex max-w-6xl flex-col gap-2 px-6 py-6 text-xs sm:flex-row sm:items-center sm:justify-between">
           <div>
             <span className="font-display font-bold text-white">1PRIDE</span> ·
@@ -94,7 +94,7 @@ function ScoringChart({ games }: { games: WeeklyGame[] }) {
         title="Scoring Margin"
         sub="Lions points scored vs allowed, week by week."
       />
-      <div className="border-2 border-[var(--lions-charcoal)] bg-white">
+      <div className="border-2 border-[var(--lions-blue-deep)] bg-white">
         <div className="grid grid-cols-[60px_1fr] gap-2 p-6">
           <div className="flex flex-col-reverse justify-between text-right font-mono text-[10px] text-[var(--lions-silver-dark)]">
             <div>0</div>
@@ -133,7 +133,7 @@ function ScoringChart({ games }: { games: WeeklyGame[] }) {
                     className={`font-display text-[10px] font-bold ${
                       result === "W"
                         ? "text-[var(--lions-blue)]"
-                        : "text-zinc-400"
+                        : "text-[var(--lions-silver-light)]/85"
                     }`}
                   >
                     {g.opp}
@@ -168,7 +168,7 @@ function ReceiversChart({ receivers }: { receivers: Receiver[] }) {
         title="The WR Room"
         sub="Receiving yards per player, sorted top to bottom."
       />
-      <div className="border-2 border-[var(--lions-charcoal)] bg-white">
+      <div className="border-2 border-[var(--lions-blue-deep)] bg-white">
         <div className="divide-y divide-zinc-100">
           {receivers.map((r, i) => (
             <div
@@ -231,7 +231,7 @@ function FourthDownChart({ decisions }: { decisions: FourthDownDecision[] }) {
         title="4th Down Identity"
         sub={`${total} Lions 4th-down plays over four seasons of the Campbell era.`}
       />
-      <div className="border-2 border-[var(--lions-charcoal)] bg-white">
+      <div className="border-2 border-[var(--lions-blue-deep)] bg-white">
         <div className="flex h-12 overflow-hidden border-b border-zinc-200">
           {decisions.map((d, i) => {
             const pct = (d.plays / total) * 100;

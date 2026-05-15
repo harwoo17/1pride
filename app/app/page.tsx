@@ -154,9 +154,9 @@ function Ticker({
   const updTag = lastUpdated.split(" ").slice(1, 4).join(" ");
 
   return (
-    <div className="relative border-b-2 border-[#ffcb05] bg-[var(--lions-blue-deep)]">
+    <div className="relative border-b-2 border-[var(--lions-silver)] bg-[var(--lions-blue-deep)]">
       <div className="overflow-hidden">
-        <div className="ticker-track flex w-max gap-10 py-2 whitespace-nowrap font-display text-base font-semibold tracking-wider text-white uppercase">
+        <div className="ticker-track flex w-max gap-10 py-2 whitespace-nowrap font-display text-base font-semibold tracking-wider text-[var(--lions-ink-inverse)] uppercase">
           {entries.map((g, i) => {
             const margin = g.scored - g.allowed;
             const result = margin > 0 ? "W" : margin < 0 ? "L" : "T";
@@ -188,7 +188,7 @@ function Ticker({
         </div>
       </div>
       <div className="absolute right-3 top-1/2 hidden -translate-y-1/2 items-center gap-2 bg-[var(--lions-blue-deep)] pl-3 font-mono text-[9px] tracking-[0.2em] text-[var(--lions-silver-dark)] md:flex">
-        <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[#ffcb05]" />
+        <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--lions-silver)]" />
         LIVE · UPD {updTag}
       </div>
     </div>
@@ -200,15 +200,15 @@ function Ticker({
 function QuoteTicker({ quotes }: { quotes: string[] }) {
   const entries = [...quotes, ...quotes];
   return (
-    <div className="border-b-2 border-[var(--lions-charcoal)] bg-[#ffcb05] overflow-hidden">
-      <div className="ticker-track-slow flex w-max items-center gap-10 py-2 whitespace-nowrap font-display text-sm font-bold tracking-wider text-[var(--lions-charcoal)] uppercase">
+    <div className="border-b-2 border-[var(--lions-blue-deep)] bg-[var(--lions-silver)] overflow-hidden">
+      <div className="ticker-track-slow flex w-max items-center gap-10 py-2 whitespace-nowrap font-display text-sm font-bold tracking-wider text-[var(--lions-blue-deep)] uppercase">
         {entries.map((q, i) => (
           <span key={i} className="flex items-center gap-4 px-3">
-            <span className="font-mono text-[10px] tracking-[0.2em] text-[var(--lions-charcoal)]/60">
+            <span className="font-mono text-[10px] tracking-[0.2em] text-[var(--lions-blue-deep)]/60">
               {String((i % quotes.length) + 1).padStart(2, "0")}
             </span>
             <span className="text-base">&ldquo;{q}&rdquo;</span>
-            <span className="text-xs text-[var(--lions-charcoal)]/60">
+            <span className="text-xs text-[var(--lions-blue-deep)]/60">
               — D.C., HC
             </span>
           </span>
@@ -369,13 +369,13 @@ function StatBox({
     <div
       className={`flex flex-col justify-between border-l-4 ${
         emphasize
-          ? "border-[#ffcb05] bg-[var(--lions-charcoal)] text-white"
+          ? "border-[var(--lions-silver)] bg-[var(--lions-blue-deep)] text-[var(--lions-ink-inverse)]"
           : "border-[var(--lions-blue)] bg-white"
       } p-4 shadow-sm`}
     >
       <div
         className={`font-display text-xs font-bold uppercase tracking-[0.18em] ${
-          emphasize ? "text-[#ffcb05]" : "text-[var(--lions-silver-dark)]"
+          emphasize ? "text-[var(--lions-silver-light)]" : "text-[var(--lions-silver-dark)]"
         }`}
       >
         {label}
@@ -487,7 +487,7 @@ function DefiningMoments({ games }: { games: WeeklyGame[] }) {
                 </div>
                 <div className="text-3xl font-black">
                   <span className="text-[var(--lions-blue)]">DET {g.scored}</span>
-                  <span className="text-zinc-400"> · </span>
+                  <span className="text-[var(--lions-silver-light)]/85"> · </span>
                   <span className="text-[var(--lions-charcoal)]">
                     {g.opp} {g.allowed}
                   </span>
@@ -533,17 +533,17 @@ function GoForIt({ decisions }: { decisions: FourthDownDecision[] }) {
       .reduce((s, d) => s + d.plays * Number(d.avg_epa), 0) / Math.max(go, 1);
 
   return (
-    <section className="bg-[var(--lions-charcoal)] py-14 text-white">
+    <section className="bg-[var(--lions-blue-deep)] py-14 text-[var(--lions-ink-inverse)]">
       <div className="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-[1fr_1.2fr] lg:items-end">
         <div>
-          <div className="mb-3 flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.25em] text-[#ffcb05]">
-            <span className="inline-block h-1.5 w-6 bg-[#ffcb05]" />
+          <div className="mb-3 flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.25em] text-[var(--lions-silver-light)]">
+            <span className="inline-block h-1.5 w-6 bg-[var(--lions-silver)]" />
             Identity · 4th Down
           </div>
           <h2 className="font-display text-5xl font-black uppercase leading-none tracking-tight sm:text-6xl">
             Go.
             <br />
-            <span className="text-[#ffcb05]">For.</span>
+            <span className="text-[var(--lions-silver-light)]">For.</span>
             <br />
             It.
           </h2>
@@ -582,18 +582,18 @@ function DarkStat({
   highlight?: boolean;
 }) {
   return (
-    <div className="border-l-4 border-[#ffcb05]/60 bg-white/[0.04] p-4">
-      <div className="font-display text-[10px] font-bold uppercase tracking-[0.18em] text-[#ffcb05]/80">
+    <div className="border-l-4 border-[var(--lions-silver)]/60 bg-white/[0.04] p-4">
+      <div className="font-display text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--lions-silver-light)]/80">
         {label}
       </div>
       <div
         className={`mt-1 font-display text-4xl font-black tabular ${
-          highlight ? "text-[#ffcb05]" : "text-white"
+          highlight ? "text-[var(--lions-silver-light)]" : "text-white"
         }`}
       >
         {value}
         {suffix && (
-          <span className="ml-1 text-base text-zinc-400">{suffix}</span>
+          <span className="ml-1 text-base text-[var(--lions-silver-light)]/85">{suffix}</span>
         )}
       </div>
     </div>
@@ -699,7 +699,7 @@ function FromTheData({
 
 function PullQuote() {
   return (
-    <section className="bg-[var(--lions-blue)] py-20 text-white">
+    <section className="bg-[var(--lions-blue)] py-20 text-[var(--lions-ink-inverse)]">
       <div className="mx-auto max-w-5xl px-6">
         <div className="mb-6 flex items-center gap-3 font-display text-xs font-bold uppercase tracking-[0.3em] text-white/80">
           <span className="inline-block h-1.5 w-10 bg-white" />
@@ -766,7 +766,7 @@ function StatLeaders({
 
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="border-b-2 border-[var(--lions-charcoal)] font-display text-xs font-bold uppercase tracking-wider text-[var(--lions-silver-dark)]">
+            <thead className="border-b-2 border-[var(--lions-blue-deep)] font-display text-xs font-bold uppercase tracking-wider text-[var(--lions-silver-dark)]">
               <tr>
                 <th className="py-2">#</th>
                 <th className="py-2">Player</th>
@@ -840,9 +840,9 @@ function DivisionStandings({
           title="Division"
           sub="Final regular-season standings."
         />
-        <div className="border-2 border-[var(--lions-charcoal)] bg-white">
+        <div className="border-2 border-[var(--lions-blue-deep)] bg-white">
           <table className="w-full text-left font-display">
-            <thead className="border-b-2 border-[var(--lions-charcoal)] text-xs font-bold uppercase tracking-wider text-[var(--lions-silver-dark)]">
+            <thead className="border-b-2 border-[var(--lions-blue-deep)] text-xs font-bold uppercase tracking-wider text-[var(--lions-silver-dark)]">
               <tr>
                 <th className="py-2 px-4">Team</th>
                 <th className="py-2 px-4 text-right">W</th>
@@ -866,7 +866,7 @@ function DivisionStandings({
                       <span
                         className={`font-mono text-xs ${
                           i === 0
-                            ? "text-[#ffcb05]"
+                            ? "text-[var(--lions-silver-light)]"
                             : "text-[var(--lions-silver-dark)]"
                         }`}
                       >
@@ -931,10 +931,10 @@ function CampbellEra() {
     { y: 2025, rec: "9–8", note: "Regression. Still scary." },
   ];
   return (
-    <section className="bg-[var(--lions-blue-deep)] py-14 text-white">
+    <section className="bg-[var(--lions-blue-deep)] py-14 text-[var(--lions-ink-inverse)]">
       <div className="mx-auto max-w-6xl px-6">
-        <div className="mb-3 flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.25em] text-[#ffcb05]">
-          <span className="inline-block h-1.5 w-6 bg-[#ffcb05]" />
+        <div className="mb-3 flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.25em] text-[var(--lions-silver-light)]">
+          <span className="inline-block h-1.5 w-6 bg-[var(--lions-silver)]" />
           {ERA_START}–Present
         </div>
         <h2 className="font-display text-4xl font-black uppercase tracking-tight sm:text-5xl">
@@ -951,7 +951,7 @@ function CampbellEra() {
           {years.map((y) => (
             <div
               key={y.y}
-              className="border-l-4 border-[#ffcb05] bg-[var(--lions-blue-deep)]/40 p-4 ring-1 ring-white/10"
+              className="border-l-4 border-[var(--lions-silver)] bg-[var(--lions-blue-deep)]/40 p-4 ring-1 ring-white/10"
             >
               <div className="font-display text-3xl font-black tabular">
                 {y.y}
@@ -959,7 +959,7 @@ function CampbellEra() {
               <div className="font-display text-2xl font-bold uppercase text-[var(--lions-silver)] tabular">
                 {y.rec}
               </div>
-              <div className="mt-2 text-xs text-zinc-400">{y.note}</div>
+              <div className="mt-2 text-xs text-[var(--lions-silver-light)]/85">{y.note}</div>
             </div>
           ))}
         </div>
@@ -1073,35 +1073,35 @@ function Footer({
   lastUpdated: string;
 }) {
   return (
-    <footer className="border-t-2 border-[#ffcb05] bg-[var(--lions-charcoal)] text-zinc-400">
+    <footer className="border-t-2 border-[var(--lions-silver)] bg-[var(--lions-blue-deep)] text-[var(--lions-silver-light)]/85">
       <div className="mx-auto max-w-6xl px-6 py-12">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <div className="mb-3 font-display text-xs font-bold uppercase tracking-[0.25em] text-[#ffcb05]">
+            <div className="mb-3 font-display text-xs font-bold uppercase tracking-[0.25em] text-[var(--lions-silver-light)]">
               About
             </div>
-            <p className="text-sm text-zinc-400">
+            <p className="text-sm text-[var(--lions-silver-light)]/85">
               1PRIDE is a 5-level self-paced data curriculum, with a Lions
               analytics app as the Level 5 capstone. Built on real nflverse
               data going back to 2021.
             </p>
             <div className="mt-3 font-mono text-[10px] tracking-wider">
-              <span className="text-[#ffcb05]">PF</span>{" "}
+              <span className="text-[var(--lions-silver-light)]">PF</span>{" "}
               <span className="text-white">{pointsFor || "—"}</span>{" "}
-              <span className="text-[#ffcb05]">PA</span>{" "}
+              <span className="text-[var(--lions-silver-light)]">PA</span>{" "}
               <span className="text-white">{pointsAgainst || "—"}</span>
             </div>
           </div>
 
           <div>
-            <div className="mb-3 font-display text-xs font-bold uppercase tracking-[0.25em] text-[#ffcb05]">
+            <div className="mb-3 font-display text-xs font-bold uppercase tracking-[0.25em] text-[var(--lions-silver-light)]">
               Data
             </div>
             <ul className="space-y-1 text-sm">
               <li>
                 <a
                   href="https://github.com/nflverse/nflverse-data"
-                  className="hover:text-[#ffcb05]"
+                  className="hover:text-[var(--lions-silver)]"
                 >
                   nflverse-data
                 </a>
@@ -1115,7 +1115,7 @@ function Footer({
           </div>
 
           <div>
-            <div className="mb-3 font-display text-xs font-bold uppercase tracking-[0.25em] text-[#ffcb05]">
+            <div className="mb-3 font-display text-xs font-bold uppercase tracking-[0.25em] text-[var(--lions-silver-light)]">
               Stack
             </div>
             <ul className="space-y-1 text-sm">
@@ -1127,29 +1127,29 @@ function Footer({
           </div>
 
           <div>
-            <div className="mb-3 font-display text-xs font-bold uppercase tracking-[0.25em] text-[#ffcb05]">
+            <div className="mb-3 font-display text-xs font-bold uppercase tracking-[0.25em] text-[var(--lions-silver-light)]">
               Links
             </div>
             <ul className="space-y-1 text-sm">
               <li>
-                <a href="https://1pride.app" className="hover:text-[#ffcb05]">
+                <a href="https://1pride.app" className="hover:text-[var(--lions-silver)]">
                   Curriculum →
                 </a>
               </li>
               <li>
-                <Link href="/charts" className="hover:text-[#ffcb05]">
+                <Link href="/charts" className="hover:text-[var(--lions-silver)]">
                   The Chart Room →
                 </Link>
               </li>
               <li>
-                <a href="/api/health" className="hover:text-[#ffcb05]">
+                <a href="/api/health" className="hover:text-[var(--lions-silver)]">
                   Health
                 </a>
               </li>
               <li>
                 <a
                   href="https://github.com/harwoo17/1pride"
-                  className="hover:text-[#ffcb05]"
+                  className="hover:text-[var(--lions-silver)]"
                 >
                   GitHub →
                 </a>

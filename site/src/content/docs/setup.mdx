@@ -1,0 +1,40 @@
+---
+title: Setup
+description: Get your local environment ready before Level 1.
+---
+
+You'll need a working Python environment, a local Postgres database (Levels 1-3),
+and the `nfl_data_py` package for pulling nflverse data.
+
+:::note
+This page is a placeholder. Detailed setup steps land before Level 1 lesson 1 ships.
+:::
+
+## What you need
+
+- **Python 3.11+** managed with [uv](https://docs.astral.sh/uv/)
+- **Postgres 16** running locally via Docker
+- **`nfl_data_py`** — the Python wrapper around nflverse
+- **Jupyter** for Levels 1-3 notebooks
+- A code editor (VS Code, Cursor, JetBrains — whatever)
+
+## The short version
+
+```bash
+# Python env
+uv init 1pride-reps
+cd 1pride-reps
+uv add nfl-data-py pandas matplotlib jupyter
+
+# Postgres
+docker run -d --name 1pride-pg \
+  -e POSTGRES_PASSWORD=lions \
+  -p 5432:5432 \
+  postgres:16
+
+# Sanity check
+uv run python -c "import nfl_data_py as nfl; print(nfl.import_pbp_data([2024]).shape)"
+```
+
+Full setup walkthrough — schema loading, environment variables, notebook
+configuration — coming soon.

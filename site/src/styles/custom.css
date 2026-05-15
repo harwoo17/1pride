@@ -1,0 +1,81 @@
+/* 1PRIDE — Honolulu Blue + Silver palette
+   Primary:   #0076B6  (Honolulu Blue)
+   Secondary: #B0B7BC  (Silver / steel)
+   Accent:    #1A1A1A  (Near-black)
+*/
+
+:root {
+	--sl-color-accent-low: #002a47;
+	--sl-color-accent: #0076b6;
+	--sl-color-accent-high: #b3d8ec;
+
+	--sl-color-white: #ffffff;
+	--sl-color-gray-1: #eef0f2;
+	--sl-color-gray-2: #c4c9cd;
+	--sl-color-gray-3: #8a9095;
+	--sl-color-gray-4: #545a60;
+	--sl-color-gray-5: #2a2f33;
+	--sl-color-gray-6: #1a1d20;
+	--sl-color-black: #0f1114;
+
+	--sl-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+	--sl-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+:root[data-theme='light'] {
+	--sl-color-accent-low: #cfe5f1;
+	--sl-color-accent: #0076b6;
+	--sl-color-accent-high: #003a5a;
+}
+
+/* Level badge — small inline pill for level numbers */
+.level-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.15rem 0.55rem;
+	border-radius: 999px;
+	background: var(--sl-color-accent-low);
+	color: var(--sl-color-accent-high);
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+}
+
+/* Difficulty pills for challenges */
+.difficulty-pill {
+	display: inline-block;
+	padding: 0.1rem 0.55rem;
+	border-radius: 999px;
+	font-size: 0.7rem;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+.difficulty-rookie {
+	background: #d8eedb;
+	color: #134a1d;
+}
+.difficulty-starter {
+	background: #fde9c7;
+	color: #6a3e08;
+}
+.difficulty-allpro {
+	background: #f6cfcf;
+	color: #6b1212;
+}
+
+/* Section blocks inside lessons */
+.lesson-section {
+	border-left: 3px solid var(--sl-color-accent);
+	padding: 0.25rem 0 0.25rem 1rem;
+	margin: 1.25rem 0;
+}
+.lesson-section > h3:first-child {
+	margin-top: 0;
+	font-size: 0.85rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--sl-color-accent);
+}

@@ -1,0 +1,73 @@
+---
+// Challenge card. Renders prompt, expected output, difficulty pill,
+// and collapsible hint + solution.
+//
+// Usage:
+//   <Challenge difficulty="rookie">
+//     <Fragment slot="prompt">Find the Lions' leading rusher each week of 2024.</Fragment>
+//     <Fragment slot="output">A table with columns: week, player_name, rushing_yards.</Fragment>
+//     <Fragment slot="hint">Try GROUP BY week and a window function for ranking.</Fragment>
+//     <Fragment slot="solution">```sql
+//     SELECT ...
+//     ```</Fragment>
+//   </Challenge>
+
+interface Props {
+	difficulty: 'rookie' | 'starter' | 'allpro';
+}
+const { difficulty } = Astro.props;
+const labels = {
+	rookie: 'Rookie',
+	starter: 'Starter',
+	allpro: 'All-Pro',
+};
+---
+<article class="challenge">
+	<header class="challenge-header">
+		<span class={`difficulty-pill difficulty-${difficulty}`}>{labels[difficulty]}</span>
+	</header>
+
+	<div class="lesson-section">
+		<h3>Prompt</h3>
+		<slot name="prompt" />
+	</div>
+
+	<div class="lesson-section">
+		<h3>Expected output</h3>
+		<slot name="output" />
+	</div>
+
+	<details>
+		<summary><strong>Hint</strong></summary>
+		<div class="lesson-section">
+			<slot name="hint" />
+		</div>
+	</details>
+
+	<details>
+		<summary><strong>Solution</strong></summary>
+		<div class="lesson-section">
+			<slot name="solution" />
+		</div>
+	</details>
+</article>
+
+<style>
+	.challenge {
+		border: 1px solid var(--sl-color-gray-5);
+		border-radius: 0.5rem;
+		padding: 1rem 1.25rem;
+		margin: 1.25rem 0;
+		background: var(--sl-color-gray-6);
+	}
+	.challenge-header {
+		margin-bottom: 0.5rem;
+	}
+	details {
+		margin-top: 0.75rem;
+	}
+	details summary {
+		cursor: pointer;
+		padding: 0.25rem 0;
+	}
+</style>

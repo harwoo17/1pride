@@ -1,0 +1,93 @@
+---
+title: Your first SELECT
+description: The simplest query you can write, on a single Lions game.
+sidebar:
+  order: 1
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 1 · Lesson 1</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+You can't answer questions about football until you can pull a single row out of a
+table. `SELECT` is the door. Everything you do for the next four levels starts here.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+A SQL query says four things, in order:
+
+1. **What columns** you want — `SELECT player, rushing_yards`
+2. **From which table** — `FROM weekly_stats`
+3. **Which rows** — `WHERE team = 'DET' AND week = 1 AND season = 2024`
+4. **In what order** — `ORDER BY rushing_yards DESC`
+
+Only the first two are required. The rest are filters and sorting on top.
+
+```sql
+SELECT player, rushing_yards
+FROM weekly_stats
+WHERE team = 'DET' AND week = 1 AND season = 2024
+ORDER BY rushing_yards DESC;
+```
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+The Lions opened the 2024 season at home against the Rams. To find every Detroit
+player with rushing yards that night:
+
+```sql
+SELECT player_display_name, rushing_yards, rushing_tds
+FROM weekly_stats
+WHERE recent_team = 'DET'
+  AND season = 2024
+  AND week = 1
+ORDER BY rushing_yards DESC;
+```
+
+Expected shape: a small table with David Montgomery and Jahmyr Gibbs at the top,
+then a few smaller contributors.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Write a query that returns every Lions **receiver** with receiving yards in
+Week 1 of 2024, sorted from most to least.
+
+You'll want `receiving_yards` instead of `rushing_yards`, and you can leave the
+`WHERE` clause structure the same.
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **Forgetting the season filter.** `weekly_stats` has every year nflverse has
+  loaded. Without `AND season = 2024` you'll get a decade of Week 1s.
+- **Using `team` instead of `recent_team`.** The nflverse weekly stats table uses
+  `recent_team` for the player's team at that point in time. Watch the column name.
+- **Sorting before filtering in your head.** SQL evaluates `WHERE` before
+  `ORDER BY`, but you should think filter-first too — narrow the rows, then sort
+  what's left.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. What does `SELECT *` return? When should you avoid it?
+2. If you remove `ORDER BY rushing_yards DESC` from the example above, what
+   happens to the result?
+3. Which column would you change to find passing leaders instead of rushing
+   leaders?
+
+</LessonSection>
+
+</Lesson>

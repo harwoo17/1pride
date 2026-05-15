@@ -1,0 +1,52 @@
+---
+title: Lions leading rusher, Week 1 2024
+description: Pull the single player with the most rushing yards for Detroit in Week 1.
+sidebar:
+  order: 1
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 1 · Challenge 1</span>
+
+<Challenge difficulty="rookie">
+
+<Fragment slot="prompt">
+Return the single player who led the Detroit Lions in rushing yards in Week 1 of
+the 2024 season, along with their rushing yards and rushing touchdowns.
+</Fragment>
+
+<Fragment slot="output">
+
+A single row with three columns:
+
+| player_display_name | rushing_yards | rushing_tds |
+|---|---|---|
+| *(player)* | *(int)* | *(int)* |
+
+</Fragment>
+
+<Fragment slot="hint">
+
+You want `ORDER BY rushing_yards DESC` plus `LIMIT 1` to grab only the leader.
+Filter on `recent_team = 'DET'`, `season = 2024`, and `week = 1`.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```sql
+SELECT player_display_name, rushing_yards, rushing_tds
+FROM weekly_stats
+WHERE recent_team = 'DET'
+  AND season = 2024
+  AND week = 1
+ORDER BY rushing_yards DESC
+LIMIT 1;
+```
+
+David Montgomery led the Lions in rushing in their 2024 opener against the Rams.
+
+</Fragment>
+
+</Challenge>

@@ -1,0 +1,41 @@
+---
+title: 1PRIDE
+description: Run your reps. Climb the depth chart. A self-paced data curriculum on Detroit Lions data.
+template: splash
+hero:
+  tagline: Run your reps. Climb the depth chart.
+  actions:
+    - text: Start at Level 1
+      link: /levels/1-analyst/
+      icon: right-arrow
+    - text: How it works
+      link: /how-it-works/
+      icon: open-book
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+A self-paced data curriculum that takes you from `SELECT *` to a deployed analytics
+app, using Detroit Lions data as the substrate and a football-org hierarchy as the
+level progression.
+
+## The depth chart
+
+<CardGrid stagger>
+	<Card title="Level 1 — Analyst" icon="pencil">
+		Pull stats on request. `SELECT`, `WHERE`, `ORDER BY`, basic aggregates.
+	</Card>
+	<Card title="Level 2 — Position coach" icon="puzzle">
+		Develop a position group. `JOIN`, `GROUP BY`, comparative analysis.
+	</Card>
+	<Card title="Level 3 — Head coach" icon="seti:clock">
+		Situational decisions. Window functions, CTEs, expected value.
+	</Card>
+	<Card title="Level 4 — General manager" icon="seti:db">
+		Roster construction. Schema design, scikit-learn, model evaluation.
+	</Card>
+	<Card title="Level 5 — Owner" icon="rocket">
+		Franchise strategy. FastAPI + Next.js, deployed at `app.1pride.dev`.
+	</Card>
+</CardGrid>

@@ -1,21 +1,23 @@
 import Link from "next/link";
 import {
   getFourthDownDecisions,
+  getNfcNorth,
+  getReceiverWeeks,
   getTopReceivers,
   getWeeklyScoring,
   type FourthDownDecision,
   type Receiver,
+  type ReceiverWeek,
+  type StandingsRow,
   type WeeklyGame,
 } from "@/lib/api";
+import { Sparkline } from "@/components/Sparkline";
 
 export const revalidate = 3600;
 
 const ERA_START = 2021;
 const LATEST_SEASON = 2025;
 
-// Public-press-conference Dan Campbell, attributed. These are the
-// kneecap-bite era quotables — not hot-takes, just the man on the
-// record at podiums between 2021 and now.
 const CAMPBELL_QUOTES = [
   "Bite a kneecap off.",
   "Punch you in the mouth.",
@@ -27,11 +29,20 @@ const CAMPBELL_QUOTES = [
   "Earn the right.",
 ];
 
+const TEAM_NAMES: Record<string, string> = {
+  DET: "Lions",
+  GB: "Packers",
+  MIN: "Vikings",
+  CHI: "Bears",
+};
+
 export default async function Home() {
-  const [scoring, receivers, fourth] = await Promise.all([
+  const [scoring, receivers, fourth, weeks, standings] = await Promise.all([
     getWeeklyScoring(LATEST_SEASON),
     getTopReceivers(LATEST_SEASON, 8),
     getFourthDownDecisions(2022, LATEST_SEASON),
+    getReceiverWeeks(LATEST_SEASON, 8),
+    getNfcNorth(LATEST_SEASON),
   ]);
 
   const games = scoring?.games ?? [];
@@ -43,10 +54,11 @@ export default async function Home() {
   const biggestWin = topByMargin(games, "win");
   const worstLoss = topByMargin(games, "loss");
   const gritIndex = computeGritIndex(fourth?.decisions ?? []);
+  const lastUpdated = new Date().toUTCString();
 
   return (
     <>
-      <Ticker games={games} />
+      <Ticker games={games} lastUpdated={lastUpdated} />
       <QuoteTicker quotes={CAMPBELL_QUOTES} />
       <Header />
 
@@ -64,15 +76,30 @@ export default async function Home() {
         <DefiningMoments games={games} />
         <Hardhat />
         <GoForIt decisions={fourth?.decisions ?? []} />
+        <FromTheData
+          games={games}
+          receivers={receivers?.receivers ?? []}
+          decisions={fourth?.decisions ?? []}
+        />
+        <PullQuote />
         <StatLeaders
           season={LATEST_SEASON}
           receivers={receivers?.receivers ?? []}
+          weeks={weeks?.rows ?? []}
+        />
+        <DivisionStandings
+          season={LATEST_SEASON}
+          standings={standings?.standings ?? []}
         />
         <CampbellEra />
         <ChartsPreview />
       </main>
 
-      <Footer pointsFor={pointsFor} pointsAgainst={pointsAgainst} />
+      <Footer
+        pointsFor={pointsFor}
+        pointsAgainst={pointsAgainst}
+        lastUpdated={lastUpdated}
+      />
     </>
   );
 }
@@ -94,55 +121,75 @@ function topByMargin(games: WeeklyGame[], kind: "win" | "loss"): WeeklyGame | nu
 }
 
 function computeGritIndex(decisions: FourthDownDecision[]): number {
-  // GO-FOR-IT share: (pass + run) / total 4th-down plays. Higher = more
-  // aggressive. Scaled to 0-100 with league-average go-rate (~12%) at 50.
   if (!decisions.length) return 0;
   const total = decisions.reduce((s, d) => s + d.plays, 0);
   const go = decisions
     .filter((d) => d.play_type === "pass" || d.play_type === "run")
     .reduce((s, d) => s + d.plays, 0);
   const share = total ? go / total : 0;
-  // 12% league avg -> 50; 30%+ -> 100.
   return Math.max(0, Math.min(100, Math.round((share / 0.24) * 100)));
+}
+
+function recapHeadline(g: WeeklyGame): string {
+  const margin = g.scored - g.allowed;
+  const team = TEAM_NAMES[g.opp] ?? g.opp;
+  if (margin >= 28) return `${team} flattened. Mercy rule.`;
+  if (margin >= 14) return `${team} dispatched. Three phases, full throttle.`;
+  if (margin >= 1) return `${team} edged. Lions hold serve.`;
+  if (margin >= -14) return `Lost late to the ${team}. Stings.`;
+  return `Run over by the ${team}. Tape goes in the bin.`;
 }
 
 // ─── SCORE TICKER ──────────────────────────────────────────────────────────
 
-function Ticker({ games }: { games: WeeklyGame[] }) {
+function Ticker({
+  games,
+  lastUpdated,
+}: {
+  games: WeeklyGame[];
+  lastUpdated: string;
+}) {
   if (!games.length) return null;
   const entries = games.flatMap((g) => [g, g]);
+  const updTag = lastUpdated.split(" ").slice(1, 4).join(" ");
 
   return (
-    <div className="border-b-2 border-[#ffcb05] bg-[var(--lions-blue-deep)] overflow-hidden">
-      <div className="ticker-track flex w-max gap-10 py-2 whitespace-nowrap font-display text-base font-semibold tracking-wider text-white uppercase">
-        {entries.map((g, i) => {
-          const margin = g.scored - g.allowed;
-          const result = margin > 0 ? "W" : margin < 0 ? "L" : "T";
-          const isRout = margin >= 14;
-          return (
-            <span key={i} className="flex items-center gap-3 px-3 tabular">
-              <span className="text-[var(--lions-blue)]">W{g.week}</span>
-              <span>DET</span>
-              <span className="text-[var(--lions-silver)]">{g.scored}</span>
-              <span className="text-zinc-500">·</span>
-              <span>{g.opp}</span>
-              <span className="text-[var(--lions-silver)]">{g.allowed}</span>
-              <span
-                className={
-                  result === "W"
-                    ? isRout
-                      ? "dub-badge rounded-sm text-[10px]"
-                      : "rounded bg-[var(--lions-blue)] px-2 text-white"
-                    : result === "L"
-                      ? "rounded border border-[var(--lions-silver-dark)] px-2 text-[var(--lions-silver)]"
-                      : "rounded bg-[var(--lions-silver)] px-2 text-[var(--lions-blue-deep)]"
-                }
-              >
-                {isRout && result === "W" ? "ROUT" : result}
+    <div className="relative border-b-2 border-[#ffcb05] bg-[var(--lions-blue-deep)]">
+      <div className="overflow-hidden">
+        <div className="ticker-track flex w-max gap-10 py-2 whitespace-nowrap font-display text-base font-semibold tracking-wider text-white uppercase">
+          {entries.map((g, i) => {
+            const margin = g.scored - g.allowed;
+            const result = margin > 0 ? "W" : margin < 0 ? "L" : "T";
+            const isRout = margin >= 14;
+            return (
+              <span key={i} className="flex items-center gap-3 px-3 tabular">
+                <span className="text-[var(--lions-blue)]">W{g.week}</span>
+                <span>DET</span>
+                <span className="text-[var(--lions-silver)]">{g.scored}</span>
+                <span className="text-zinc-500">·</span>
+                <span>{g.opp}</span>
+                <span className="text-[var(--lions-silver)]">{g.allowed}</span>
+                <span
+                  className={
+                    result === "W"
+                      ? isRout
+                        ? "dub-badge rounded-sm text-[10px]"
+                        : "rounded bg-[var(--lions-blue)] px-2 text-white"
+                      : result === "L"
+                        ? "rounded border border-[var(--lions-silver-dark)] px-2 text-[var(--lions-silver)]"
+                        : "rounded bg-[var(--lions-silver)] px-2 text-[var(--lions-blue-deep)]"
+                  }
+                >
+                  {isRout && result === "W" ? "ROUT" : result}
+                </span>
               </span>
-            </span>
-          );
-        })}
+            );
+          })}
+        </div>
+      </div>
+      <div className="absolute right-3 top-1/2 hidden -translate-y-1/2 items-center gap-2 bg-[var(--lions-blue-deep)] pl-3 font-mono text-[9px] tracking-[0.2em] text-[var(--lions-silver-dark)] md:flex">
+        <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[#ffcb05]" />
+        LIVE · UPD {updTag}
       </div>
     </div>
   );
@@ -185,7 +232,19 @@ function Header() {
             EST. {ERA_START} · Kneecap Division
           </div>
         </div>
-        <nav className="font-display text-sm font-semibold uppercase tracking-wider">
+        <nav className="flex items-center gap-1 font-display text-sm font-semibold uppercase tracking-wider">
+          <a
+            href="#leaders"
+            className="hidden border-b-2 border-transparent px-2 py-1 hover:border-[var(--lions-blue)] sm:inline"
+          >
+            Leaders
+          </a>
+          <a
+            href="#standings"
+            className="hidden border-b-2 border-transparent px-2 py-1 hover:border-[var(--lions-blue)] sm:inline"
+          >
+            Standings
+          </a>
           <Link
             href="/charts"
             className="border-b-2 border-transparent px-2 py-1 hover:border-[var(--lions-blue)]"
@@ -194,7 +253,7 @@ function Header() {
           </Link>
           <a
             href="https://1pride.dev"
-            className="ml-2 border-b-2 border-transparent px-2 py-1 hover:border-[var(--lions-blue)]"
+            className="border-b-2 border-transparent px-2 py-1 hover:border-[var(--lions-blue)]"
           >
             Curriculum
           </a>
@@ -203,8 +262,6 @@ function Header() {
     </header>
   );
 }
-
-// ─── HARD-HAT RULE ─────────────────────────────────────────────────────────
 
 function Hardhat() {
   return <div className="hardhat-rule" aria-hidden="true" />;
@@ -270,18 +327,10 @@ function Hero({
               </span>
               <div className="mt-3 flex flex-wrap gap-3">
                 {biggestWin && (
-                  <ResultPill
-                    label="Biggest Win"
-                    accent="win"
-                    game={biggestWin}
-                  />
+                  <ResultPill label="Biggest Win" accent="win" game={biggestWin} />
                 )}
                 {worstLoss && (
-                  <ResultPill
-                    label="Worst Loss"
-                    accent="loss"
-                    game={worstLoss}
-                  />
+                  <ResultPill label="Worst Loss" accent="loss" game={worstLoss} />
                 )}
               </div>
             </div>
@@ -361,9 +410,7 @@ function ResultPill({
   return (
     <div
       className={`flex items-center gap-3 border-2 ${
-        isWin
-          ? "border-[var(--lions-blue)] bg-white"
-          : "border-zinc-300 bg-white"
+        isWin ? "border-[var(--lions-blue)] bg-white" : "border-zinc-300 bg-white"
       } px-3 py-2 font-display tabular`}
     >
       <div className="text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--lions-silver-dark)]">
@@ -414,7 +461,7 @@ function DefiningMoments({ games }: { games: WeeklyGame[] }) {
             const margin = Math.abs(g.scored - g.allowed);
             const isRout = kind === "W" && margin >= 14;
             return (
-              <div
+              <article
                 key={`${g.week}-${kind}`}
                 className={`flex flex-col gap-2 border-2 p-4 font-display tabular ${
                   kind === "W"
@@ -458,7 +505,10 @@ function DefiningMoments({ games }: { games: WeeklyGame[] }) {
                     {margin}
                   </span>
                 </div>
-              </div>
+                <p className="mt-1 font-sans text-xs leading-snug text-zinc-600 normal-case tracking-normal">
+                  {recapHeadline(g)}
+                </p>
+              </article>
             );
           })}
         </div>
@@ -467,21 +517,20 @@ function DefiningMoments({ games }: { games: WeeklyGame[] }) {
   );
 }
 
-// ─── GO-FOR-IT IDENTITY ────────────────────────────────────────────────────
+// ─── GO-FOR-IT ─────────────────────────────────────────────────────────────
 
 function GoForIt({ decisions }: { decisions: FourthDownDecision[] }) {
-  if (!decisions.length) {
-    return null;
-  }
+  if (!decisions.length) return null;
   const total = decisions.reduce((s, d) => s + d.plays, 0);
   const go = decisions
     .filter((d) => d.play_type === "pass" || d.play_type === "run")
     .reduce((s, d) => s + d.plays, 0);
   const kick = total - go;
   const goPct = total ? Math.round((go / total) * 100) : 0;
-  const goEpa = decisions
-    .filter((d) => d.play_type === "pass" || d.play_type === "run")
-    .reduce((s, d) => s + d.plays * Number(d.avg_epa), 0) / Math.max(go, 1);
+  const goEpa =
+    decisions
+      .filter((d) => d.play_type === "pass" || d.play_type === "run")
+      .reduce((s, d) => s + d.plays * Number(d.avg_epa), 0) / Math.max(go, 1);
 
   return (
     <section className="bg-[var(--lions-charcoal)] py-14 text-white">
@@ -551,18 +600,142 @@ function DarkStat({
   );
 }
 
-// ─── STAT LEADERS ──────────────────────────────────────────────────────────
+// ─── FROM THE DATA ─────────────────────────────────────────────────────────
+
+function FromTheData({
+  games,
+  receivers,
+  decisions,
+}: {
+  games: WeeklyGame[];
+  receivers: Receiver[];
+  decisions: FourthDownDecision[];
+}) {
+  const insights: { stat: string; headline: string; sub: string }[] = [];
+
+  if (games.length) {
+    const pf = games.reduce((s, g) => s + g.scored, 0);
+    const ppg = pf / games.length;
+    insights.push({
+      stat: ppg.toFixed(1),
+      headline: "Points per game",
+      sub: `Across ${games.length} regular-season starts. ${
+        ppg >= 28
+          ? "Elite scoring tier."
+          : ppg >= 22
+            ? "Solidly above average."
+            : "Mid-pack output."
+      }`,
+    });
+  }
+
+  if (receivers.length) {
+    const top = receivers[0];
+    const totalYards = receivers.reduce((s, r) => s + (r.yards ?? 0), 0);
+    const share = totalYards ? (top.yards / totalYards) * 100 : 0;
+    insights.push({
+      stat: `${share.toFixed(0)}%`,
+      headline: `${top.name.split(" ").slice(-1)[0]}'s share of the room`,
+      sub: `${top.yards.toFixed(0)} of ${totalYards.toFixed(
+        0,
+      )} top-8 yards. Engine of the passing game.`,
+    });
+  }
+
+  if (decisions.length) {
+    const go = decisions
+      .filter((d) => d.play_type === "pass" || d.play_type === "run")
+      .reduce((s, d) => s + d.plays * Number(d.avg_epa), 0);
+    const goPlays = decisions
+      .filter((d) => d.play_type === "pass" || d.play_type === "run")
+      .reduce((s, d) => s + d.plays, 0);
+    const epaPerGo = goPlays ? go / goPlays : 0;
+    insights.push({
+      stat: `${epaPerGo >= 0 ? "+" : ""}${epaPerGo.toFixed(2)}`,
+      headline: "EPA per go-for-it",
+      sub: `${goPlays} pass/run 4th-down attempts across the Campbell era. ${
+        epaPerGo >= 0.2
+          ? "League-best aggression."
+          : "Productive when they go."
+      }`,
+    });
+  }
+
+  if (!insights.length) return null;
+
+  return (
+    <section className="bg-zinc-50 py-14">
+      <div className="mx-auto max-w-6xl px-6">
+        <SectionHeader
+          eyebrow="Three takeaways"
+          title="From The Data"
+          sub="What the numbers say if you only have 30 seconds."
+        />
+        <div className="grid gap-4 sm:grid-cols-3">
+          {insights.map((it, i) => (
+            <div
+              key={i}
+              className="flex flex-col gap-2 border-l-4 border-[var(--lions-blue)] bg-white p-6 shadow-sm"
+            >
+              <div className="font-display text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--lions-silver-dark)]">
+                Insight {String(i + 1).padStart(2, "0")}
+              </div>
+              <div className="font-display text-6xl font-black tabular text-[var(--lions-blue)]">
+                {it.stat}
+              </div>
+              <div className="font-display text-lg font-bold uppercase tracking-tight text-[var(--lions-charcoal)]">
+                {it.headline}
+              </div>
+              <p className="text-sm text-zinc-600">{it.sub}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── PULL QUOTE ────────────────────────────────────────────────────────────
+
+function PullQuote() {
+  return (
+    <section className="bg-[var(--lions-blue)] py-20 text-white">
+      <div className="mx-auto max-w-5xl px-6">
+        <div className="mb-6 flex items-center gap-3 font-display text-xs font-bold uppercase tracking-[0.3em] text-white/80">
+          <span className="inline-block h-1.5 w-10 bg-white" />
+          The Quote
+        </div>
+        <blockquote className="font-display text-5xl font-black uppercase leading-[0.95] tracking-tight sm:text-7xl">
+          <span className="text-white/40">&ldquo;</span>
+          We're gonna kick you in the teeth
+          <span className="text-white/40"> · </span>
+          <span className="italic">and</span> when you punch us back,
+          <span className="text-white/40"> · </span>
+          we're gonna smile at you.
+          <span className="text-white/40">&rdquo;</span>
+        </blockquote>
+        <div className="mt-6 font-display text-sm font-bold uppercase tracking-[0.25em] text-white/80">
+          — Dan Campbell · Introductory Press Conference · Jan 2021
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── STAT LEADERS (with sparklines) ────────────────────────────────────────
 
 function StatLeaders({
   season,
   receivers,
+  weeks,
 }: {
   season: number;
   receivers: Receiver[];
+  weeks: ReceiverWeek[];
 }) {
   if (!receivers.length) {
     return (
-      <section className="border-y border-zinc-200 bg-white py-12">
+      <section id="leaders" className="border-y border-zinc-200 bg-white py-12">
         <div className="mx-auto max-w-6xl px-6">
           <SectionHeader
             eyebrow={`${season} · The Pass-Catchers`}
@@ -576,14 +749,19 @@ function StatLeaders({
     );
   }
 
+  const byPlayer: Record<string, number[]> = {};
+  for (const w of weeks) {
+    (byPlayer[w.name] ??= []).push(w.yards);
+  }
+
   const leader = receivers[0];
   return (
-    <section className="border-y border-zinc-200 bg-white py-12">
+    <section id="leaders" className="border-y border-zinc-200 bg-white py-12">
       <div className="mx-auto max-w-6xl px-6">
         <SectionHeader
           eyebrow={`${season} · The Pass-Catchers`}
           title="Who Ate"
-          sub="Receiving leaders, sorted by yards. Hover a row for the long version."
+          sub="Receiving leaders, sorted by yards. Sparklines = per-week receiving yards."
         />
 
         <div className="overflow-x-auto">
@@ -598,6 +776,7 @@ function StatLeaders({
                 <th className="py-2 text-right">Rec</th>
                 <th className="py-2 text-right">Yards</th>
                 <th className="py-2 text-right">TD</th>
+                <th className="py-2 pl-4">Trend</th>
               </tr>
             </thead>
             <tbody className="font-display text-base tabular">
@@ -622,6 +801,9 @@ function StatLeaders({
                   <td className="py-2 text-right">{r.catches}</td>
                   <td className="py-2 text-right font-bold">{r.yards}</td>
                   <td className="py-2 text-right">{r.tds ?? "—"}</td>
+                  <td className="py-2 pl-4">
+                    <Sparkline values={byPlayer[r.name] ?? []} />
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -632,8 +814,107 @@ function StatLeaders({
           <span className="font-semibold text-[var(--lions-blue)]">
             {leader.yards} yards
           </span>{" "}
-          on {leader.targets} targets in {leader.games} games.
+          on {leader.targets} targets in {leader.games} games. Per-week
+          receiving yards rendered in-row.
         </p>
+      </div>
+    </section>
+  );
+}
+
+// ─── DIVISION STANDINGS ────────────────────────────────────────────────────
+
+function DivisionStandings({
+  season,
+  standings,
+}: {
+  season: number;
+  standings: StandingsRow[];
+}) {
+  if (!standings.length) return null;
+  return (
+    <section id="standings" className="bg-zinc-50 py-12">
+      <div className="mx-auto max-w-6xl px-6">
+        <SectionHeader
+          eyebrow={`${season} · NFC North`}
+          title="Division"
+          sub="Final regular-season standings."
+        />
+        <div className="border-2 border-[var(--lions-charcoal)] bg-white">
+          <table className="w-full text-left font-display">
+            <thead className="border-b-2 border-[var(--lions-charcoal)] text-xs font-bold uppercase tracking-wider text-[var(--lions-silver-dark)]">
+              <tr>
+                <th className="py-2 px-4">Team</th>
+                <th className="py-2 px-4 text-right">W</th>
+                <th className="py-2 px-4 text-right">L</th>
+                <th className="py-2 px-4 text-right">T</th>
+                <th className="py-2 px-4 text-right">PF</th>
+                <th className="py-2 px-4 text-right">PA</th>
+                <th className="py-2 px-4 text-right">Diff</th>
+              </tr>
+            </thead>
+            <tbody className="text-lg tabular">
+              {standings.map((s, i) => (
+                <tr
+                  key={s.team}
+                  className={`border-b border-zinc-100 ${
+                    s.team === "DET" ? "bg-[var(--lions-blue)]/5 font-bold" : ""
+                  }`}
+                >
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`font-mono text-xs ${
+                          i === 0
+                            ? "text-[#ffcb05]"
+                            : "text-[var(--lions-silver-dark)]"
+                        }`}
+                      >
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span
+                        className={
+                          s.team === "DET"
+                            ? "text-[var(--lions-blue)]"
+                            : "text-[var(--lions-charcoal)]"
+                        }
+                      >
+                        {TEAM_NAMES[s.team] ?? s.team}
+                      </span>
+                      <span className="font-mono text-[10px] uppercase tracking-wider text-[var(--lions-silver-dark)]">
+                        {s.team}
+                      </span>
+                      {i === 0 && (
+                        <span className="dub-badge text-[9px]">DIV</span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="py-3 px-4 text-right">{s.wins}</td>
+                  <td className="py-3 px-4 text-right">{s.losses}</td>
+                  <td className="py-3 px-4 text-right text-[var(--lions-silver-dark)]">
+                    {s.ties}
+                  </td>
+                  <td className="py-3 px-4 text-right text-[var(--lions-silver-dark)]">
+                    {s.points_for}
+                  </td>
+                  <td className="py-3 px-4 text-right text-[var(--lions-silver-dark)]">
+                    {s.points_against}
+                  </td>
+                  <td
+                    className={`py-3 px-4 text-right ${
+                      s.diff >= 0
+                        ? "text-[var(--lions-blue)]"
+                        : "text-zinc-500"
+                    }`}
+                  >
+                    {s.diff >= 0 ? "+" : ""}
+                    {s.diff}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
   );
@@ -785,33 +1066,107 @@ function SectionHeader({
 function Footer({
   pointsFor,
   pointsAgainst,
+  lastUpdated,
 }: {
   pointsFor: number;
   pointsAgainst: number;
+  lastUpdated: string;
 }) {
   return (
     <footer className="border-t-2 border-[#ffcb05] bg-[var(--lions-charcoal)] text-zinc-400">
-      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-6 py-6 text-xs sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <span className="font-display font-bold text-white">1PRIDE</span> ·
-          Lions analytics built on{" "}
-          <a
-            href="https://github.com/nflverse"
-            className="text-[var(--lions-blue)] hover:underline"
-          >
-            nflverse
-          </a>
-          . Quotes are public press-conference statements. Not affiliated with
-          the Detroit Lions or the NFL.
+      <div className="mx-auto max-w-6xl px-6 py-12">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <div className="mb-3 font-display text-xs font-bold uppercase tracking-[0.25em] text-[#ffcb05]">
+              About
+            </div>
+            <p className="text-sm text-zinc-400">
+              1PRIDE is a 5-level self-paced data curriculum, with a Lions
+              analytics app as the Level 5 capstone. Built on real nflverse
+              data going back to 2021.
+            </p>
+            <div className="mt-3 font-mono text-[10px] tracking-wider">
+              <span className="text-[#ffcb05]">PF</span>{" "}
+              <span className="text-white">{pointsFor || "—"}</span>{" "}
+              <span className="text-[#ffcb05]">PA</span>{" "}
+              <span className="text-white">{pointsAgainst || "—"}</span>
+            </div>
+          </div>
+
+          <div>
+            <div className="mb-3 font-display text-xs font-bold uppercase tracking-[0.25em] text-[#ffcb05]">
+              Data
+            </div>
+            <ul className="space-y-1 text-sm">
+              <li>
+                <a
+                  href="https://github.com/nflverse/nflverse-data"
+                  className="hover:text-[#ffcb05]"
+                >
+                  nflverse-data
+                </a>
+              </li>
+              <li>Postgres 16 (local Docker / Neon prod)</li>
+              <li>Updated weekly via GitHub Actions cron</li>
+              <li className="font-mono text-[10px] tracking-wider text-zinc-500">
+                Last UPD · {lastUpdated.split(" ").slice(1, 5).join(" ")}
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <div className="mb-3 font-display text-xs font-bold uppercase tracking-[0.25em] text-[#ffcb05]">
+              Stack
+            </div>
+            <ul className="space-y-1 text-sm">
+              <li>Next.js 16 · React 19</li>
+              <li>FastAPI · uvicorn</li>
+              <li>Tailwind 4</li>
+              <li>Astro Starlight (curriculum)</li>
+            </ul>
+          </div>
+
+          <div>
+            <div className="mb-3 font-display text-xs font-bold uppercase tracking-[0.25em] text-[#ffcb05]">
+              Links
+            </div>
+            <ul className="space-y-1 text-sm">
+              <li>
+                <a href="https://1pride.dev" className="hover:text-[#ffcb05]">
+                  Curriculum →
+                </a>
+              </li>
+              <li>
+                <Link href="/charts" className="hover:text-[#ffcb05]">
+                  The Chart Room →
+                </Link>
+              </li>
+              <li>
+                <a href="/api/health" className="hover:text-[#ffcb05]">
+                  Health
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://github.com/harwoo17/1pride"
+                  className="hover:text-[#ffcb05]"
+                >
+                  GitHub →
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
-        <div className="flex items-center gap-4 font-mono text-[10px] tabular tracking-wider text-zinc-500">
-          <span>
-            PF <span className="text-white">{pointsFor || "—"}</span>
-          </span>
-          <span>
-            PA <span className="text-white">{pointsAgainst || "—"}</span>
-          </span>
-          <span>L5 CAPSTONE · v0.2</span>
+
+        <div className="mt-10 border-t border-zinc-800 pt-6 text-xs text-zinc-500 sm:flex sm:items-center sm:justify-between">
+          <div>
+            <span className="font-display font-bold text-white">1PRIDE</span> ·
+            Lions analytics. Quotes are public press-conference statements. Not
+            affiliated with the Detroit Lions or the NFL.
+          </div>
+          <div className="mt-2 font-mono text-[10px] tracking-wider sm:mt-0">
+            L5 CAPSTONE · v0.3
+          </div>
         </div>
       </div>
     </footer>

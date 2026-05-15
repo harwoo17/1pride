@@ -36,6 +36,22 @@ export interface SeasonRow {
   weeks_played: number;
 }
 
+export interface ReceiverWeek {
+  name: string;
+  week: number;
+  yards: number;
+}
+
+export interface StandingsRow {
+  team: string;
+  wins: number;
+  losses: number;
+  ties: number;
+  points_for: number;
+  points_against: number;
+  diff: number;
+}
+
 async function get<T>(path: string): Promise<T | null> {
   try {
     const res = await fetch(`${API_BASE}${path}`, {
@@ -77,4 +93,17 @@ export async function getSeasons(): Promise<{
   seasons: SeasonRow[];
 } | null> {
   return get(`/api/lions/seasons`);
+}
+
+export async function getReceiverWeeks(
+  season: number,
+  limit = 8,
+): Promise<{ season: number; rows: ReceiverWeek[] } | null> {
+  return get(`/api/lions/receiver-weeks?season=${season}&limit=${limit}`);
+}
+
+export async function getNfcNorth(
+  season: number,
+): Promise<{ season: number; standings: StandingsRow[] } | null> {
+  return get(`/api/standings/nfc-north?season=${season}`);
 }

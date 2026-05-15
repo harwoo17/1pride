@@ -123,6 +123,88 @@ def top_receivers(
     return {"season": season, "receivers": [dict(r) for r in rows]}
 
 
+@app.get("/api/lions/receiver-weeks")
+def receiver_weeks(
+    season: int = Query(2024, ge=2000, le=2030),
+    limit: int = Query(8, ge=1, le=20),
+) -> dict:
+    """Per-week receiving yards for the top N Lions receivers of a season.
+
+    Returns one row per (player, week) so the frontend can render
+    sparklines next to the season totals.
+    """
+    with conn() as c:
+        rows = c.execute(
+            text("""
+                WITH top_recv AS (
+                    SELECT player_display_name
+                    FROM weekly_stats
+                    WHERE recent_team = 'DET'
+                      AND season = :season
+                      AND season_type = 'REG'
+                      AND position_group IN ('WR', 'TE', 'RB')
+                      AND targets > 0
+                    GROUP BY player_display_name
+                    ORDER BY SUM(receiving_yards) DESC
+                    LIMIT :limit
+                )
+                SELECT ws.player_display_name AS name,
+                       ws.week,
+                       COALESCE(ws.receiving_yards, 0) AS yards
+                FROM weekly_stats ws
+                JOIN top_recv USING (player_display_name)
+                WHERE ws.recent_team = 'DET'
+                  AND ws.season = :season
+                  AND ws.season_type = 'REG'
+                ORDER BY ws.player_display_name, ws.week
+            """),
+            {"season": season, "limit": limit},
+        ).mappings().all()
+    return {"season": season, "rows": [dict(r) for r in rows]}
+
+
+@app.get("/api/standings/nfc-north")
+def nfc_north(season: int = Query(2024, ge=2000, le=2030)) -> dict:
+    """NFC North regular-season standings for a given season."""
+    teams = ["DET", "GB", "MIN", "CHI"]
+    with conn() as c:
+        rows = c.execute(
+            text("""
+                WITH games AS (
+                    SELECT season, week, home_team, away_team, home_score, away_score
+                    FROM schedules
+                    WHERE season = :season
+                      AND game_type = 'REG'
+                      AND (home_team = ANY(:teams) OR away_team = ANY(:teams))
+                ),
+                per_team AS (
+                    SELECT team, scored, allowed,
+                        CASE WHEN scored > allowed THEN 1 ELSE 0 END AS w,
+                        CASE WHEN scored < allowed THEN 1 ELSE 0 END AS l,
+                        CASE WHEN scored = allowed THEN 1 ELSE 0 END AS t
+                    FROM (
+                        SELECT home_team AS team, home_score AS scored, away_score AS allowed FROM games
+                        UNION ALL
+                        SELECT away_team AS team, away_score AS scored, home_score AS allowed FROM games
+                    ) sides
+                    WHERE team = ANY(:teams)
+                )
+                SELECT team,
+                       SUM(w) AS wins,
+                       SUM(l) AS losses,
+                       SUM(t) AS ties,
+                       SUM(scored) AS points_for,
+                       SUM(allowed) AS points_against,
+                       SUM(scored) - SUM(allowed) AS diff
+                FROM per_team
+                GROUP BY team
+                ORDER BY wins DESC, diff DESC
+            """),
+            {"season": season, "teams": teams},
+        ).mappings().all()
+    return {"season": season, "standings": [dict(r) for r in rows]}
+
+
 @app.get("/api/lions/4th-down-decisions")
 def fourth_down_decisions(
     season_min: int = Query(2022, ge=2000, le=2030),

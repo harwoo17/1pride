@@ -1,0 +1,81 @@
+---
+title: Jared Goff's 2024 splits by W/L
+description: Goff's averages in Lions wins vs Lions losses.
+sidebar:
+  order: 9
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 2 · Challenge 9</span>
+
+<Challenge difficulty="allpro">
+
+<Fragment slot="prompt">
+Join `weekly_stats` to `schedules` to split Jared Goff's 2024 regular-season
+games into Lions wins and Lions losses. Return two rows (one per result),
+each with: games, avg completions, avg attempts, avg passing yards, avg
+passing TDs, avg INTs.
+</Fragment>
+
+<Fragment slot="output">
+
+| result | games | avg_cmp | avg_att | avg_yards | avg_tds | avg_ints |
+|---|---|---|---|---|---|---|
+| W | ... | ... | ... | ... | ... | ... |
+| L | ... | ... | ... | ... | ... | ... |
+
+</Fragment>
+
+<Fragment slot="hint">
+
+`JOIN weekly_stats` (Goff rows only) to `schedules` on season + week + team
+membership. Build a `result` column with `CASE` based on which side DET was
+on, then `GROUP BY result`.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```sql
+WITH goff AS (
+    SELECT ws.season, ws.week, ws.completions, ws.attempts,
+           ws.passing_yards, ws.passing_tds, ws.interceptions
+    FROM weekly_stats AS ws
+    WHERE ws.player_display_name = 'Jared Goff'
+      AND ws.season = 2024
+      AND ws.season_type = 'REG'
+),
+results AS (
+    SELECT season, week,
+        CASE
+            WHEN home_team = 'DET' AND home_score > away_score THEN 'W'
+            WHEN away_team = 'DET' AND away_score > home_score THEN 'W'
+            WHEN home_score = away_score THEN 'T'
+            ELSE 'L'
+        END AS result
+    FROM schedules
+    WHERE season = 2024
+      AND game_type = 'REG'
+      AND (home_team = 'DET' OR away_team = 'DET')
+)
+SELECT
+    r.result,
+    COUNT(*)                                AS games,
+    ROUND(AVG(g.completions)::numeric, 1)   AS avg_cmp,
+    ROUND(AVG(g.attempts)::numeric, 1)      AS avg_att,
+    ROUND(AVG(g.passing_yards)::numeric, 1) AS avg_yards,
+    ROUND(AVG(g.passing_tds)::numeric, 2)   AS avg_tds,
+    ROUND(AVG(g.interceptions)::numeric, 2) AS avg_ints
+FROM goff AS g
+INNER JOIN results AS r USING (season, week)
+GROUP BY r.result
+ORDER BY r.result;
+```
+
+CTEs (`WITH ... AS`) let you name intermediate results. You'll lean on these
+heavily at Level 3.
+
+</Fragment>
+
+</Challenge>

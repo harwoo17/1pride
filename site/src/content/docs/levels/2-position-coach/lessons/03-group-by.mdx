@@ -1,0 +1,127 @@
+---
+title: GROUP BY
+description: Collapse rows into buckets and aggregate per bucket.
+sidebar:
+  order: 3
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 2 · Lesson 3</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+Level 1 aggregates collapsed everything into one row. `GROUP BY` is the
+upgrade: aggregate **per bucket** — per player, per team, per week. One row
+out per unique combination of group columns.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+```sql
+SELECT group_col, AGG(value)
+FROM table
+WHERE ...
+GROUP BY group_col;
+```
+
+The rule: every column in the `SELECT` list must either be **in `GROUP BY`** or
+**wrapped in an aggregate function**. Mixing raw columns with aggregates is the
+single most common SQL error in your career.
+
+```sql
+-- WRONG: player_display_name is not in GROUP BY and not aggregated
+SELECT player_display_name, recent_team, SUM(rushing_yards)
+FROM weekly_stats
+GROUP BY recent_team;
+```
+
+You can group by multiple columns. The bucket is the *combination* — group by
+`(season, recent_team)` and you get one row per team-season.
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+Lions players' 2024 regular-season **rushing totals**, sorted by yards:
+
+```sql
+SELECT
+    player_display_name,
+    COUNT(*)              AS games,
+    SUM(carries)          AS carries,
+    SUM(rushing_yards)    AS yards,
+    SUM(rushing_tds)      AS tds,
+    ROUND(AVG(rushing_yards)::numeric, 1) AS yards_per_game
+FROM weekly_stats
+WHERE recent_team = 'DET'
+  AND season = 2024
+  AND season_type = 'REG'
+  AND carries IS NOT NULL
+GROUP BY player_display_name
+ORDER BY yards DESC;
+```
+
+One row per player. Montgomery and Gibbs at the top, then situational backs and
+the QB-as-runner rows.
+
+You can group across teams to compare position groups. Top NFC North WRs in
+2024:
+
+```sql
+SELECT
+    player_display_name,
+    recent_team,
+    SUM(receiving_yards) AS yards,
+    SUM(receiving_tds)   AS tds
+FROM weekly_stats
+WHERE recent_team IN ('DET', 'GB', 'MIN', 'CHI')
+  AND season = 2024
+  AND season_type = 'REG'
+  AND position_group = 'WR'
+GROUP BY player_display_name, recent_team
+ORDER BY yards DESC
+LIMIT 10;
+```
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Compute **points scored per Lions player** in the 2024 regular season — six
+points per rushing TD, six per receiving TD, four per passing TD (yes, NFL
+math is two for the QB and four for the receiver, but use this simplification
+for the exercise). Group by player. Sort by total descending. Use `GROUP BY`
+plus a hand-rolled `SUM(rushing_tds * 6 + receiving_tds * 6 + passing_tds * 4)`.
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **Selecting columns that aren't grouped or aggregated.** Postgres will reject
+  it; MySQL will silently pick "any value." Both are bad — be explicit.
+- **Filtering on aggregates in `WHERE`.** You can't. `WHERE` runs before the
+  group-and-aggregate step. Use `HAVING` (Lesson 4).
+- **Grouping by too few columns.** If you want one row per player-team, you
+  need `GROUP BY player_display_name, recent_team` — otherwise a traded player
+  collapses into one row with two teams' worth of stats.
+- **`COUNT(*)` ≠ `COUNT(col)`** within groups. `COUNT(*)` counts every row in
+  the group; `COUNT(col)` skips nulls.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. Which columns in a `SELECT` are legal alongside `GROUP BY`?
+2. What does `GROUP BY player_display_name, season` produce vs just
+   `GROUP BY player_display_name`?
+3. Why does `WHERE SUM(rushing_yards) > 100` fail, and what should you use
+   instead?
+
+</LessonSection>
+
+</Lesson>

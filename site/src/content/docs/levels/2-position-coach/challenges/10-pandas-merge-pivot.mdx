@@ -1,0 +1,87 @@
+---
+title: pandas merge + pivot — NFC North receiving leaderboard
+description: All work in pandas. Pull two queries, merge, groupby, pivot.
+sidebar:
+  order: 10
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 2 · Challenge 10</span>
+
+<Challenge difficulty="allpro">
+
+<Fragment slot="prompt">
+**In pandas only.** Pull all 2024 regular-season WR rows for the NFC North.
+Group by player + team to compute totals. Then **pivot** so that columns are
+teams and rows are a single aggregated metric (`total_rec_yards`). Return the
+resulting DataFrame (one row per team with each NFC North WR1, WR2, etc., as
+columns). Hint: that last requirement implies a rank-within-team step.
+</Fragment>
+
+<Fragment slot="output">
+
+A small DataFrame with rows indexed by `wr_rank` (1, 2, 3, ...) and columns
+indexed by team:
+
+| wr_rank | CHI | DET | GB | MIN |
+|---|---|---|---|---|
+| 1 | *(yards)* | *(yards)* | *(yards)* | *(yards)* |
+| 2 | ... | ... | ... | ... |
+
+</Fragment>
+
+<Fragment slot="hint">
+
+Three pandas steps:
+1. Aggregate to `(team, player, total_yards)`.
+2. Within each team, rank by `total_yards` descending. `df.groupby('recent_team')['total_yards'].rank(method='first', ascending=False).astype(int)` gives you `wr_rank`.
+3. Pivot: `df.pivot(index='wr_rank', columns='recent_team', values='total_yards')`.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```python
+import pandas as pd
+from sqlalchemy import create_engine
+
+eng = create_engine("postgresql+psycopg://onepride:lions@localhost:5432/onepride")
+
+raw = pd.read_sql(
+    """
+    SELECT recent_team, player_display_name, receiving_yards
+    FROM weekly_stats
+    WHERE season = 2024
+      AND season_type = 'REG'
+      AND position_group = 'WR'
+      AND recent_team IN ('DET', 'GB', 'MIN', 'CHI')
+      AND targets IS NOT NULL
+    """,
+    eng,
+)
+
+totals = (
+    raw.groupby(['recent_team', 'player_display_name'], as_index=False)
+       .agg(total_yards=('receiving_yards', 'sum'))
+)
+
+totals['wr_rank'] = (
+    totals.groupby('recent_team')['total_yards']
+          .rank(method='first', ascending=False)
+          .astype(int)
+)
+
+board = totals.pivot(index='wr_rank',
+                     columns='recent_team',
+                     values='total_yards').head(6)
+print(board)
+```
+
+This is the building block for the scouting card capstone — instead of yards
+you'll pivot on six metrics, and instead of just NFC North teams you'll
+compare Detroit's WR room against the league.
+
+</Fragment>
+
+</Challenge>

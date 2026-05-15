@@ -1,0 +1,61 @@
+---
+title: NFC North WR leaders, 2024
+description: Top wide receivers across DET, GB, MIN, CHI by total yards.
+sidebar:
+  order: 3
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 2 · Challenge 3</span>
+
+<Challenge difficulty="rookie">
+
+<Fragment slot="prompt">
+Across the NFC North (DET, GB, MIN, CHI), return the top 15 **wide receivers**
+by 2024 regular-season receiving yards. Show name, team, games, catches,
+yards, TDs, yards per catch.
+</Fragment>
+
+<Fragment slot="output">
+
+15 rows, ordered by yards descending:
+
+| player_display_name | recent_team | games | catches | yards | tds | yards_per_catch |
+|---|---|---|---|---|---|---|
+
+</Fragment>
+
+<Fragment slot="hint">
+
+`GROUP BY player_display_name, recent_team`. Filter `position_group = 'WR'`.
+`recent_team IN ('DET', 'GB', 'MIN', 'CHI')`. `LIMIT 15`.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```sql
+SELECT
+    player_display_name,
+    recent_team,
+    COUNT(*)                                                       AS games,
+    SUM(receptions)                                                AS catches,
+    SUM(receiving_yards)                                           AS yards,
+    SUM(receiving_tds)                                             AS tds,
+    ROUND(SUM(receiving_yards)::numeric / NULLIF(SUM(receptions), 0), 1) AS yards_per_catch
+FROM weekly_stats
+WHERE recent_team IN ('DET', 'GB', 'MIN', 'CHI')
+  AND season = 2024
+  AND season_type = 'REG'
+  AND position_group = 'WR'
+  AND targets IS NOT NULL
+  AND targets > 0
+GROUP BY player_display_name, recent_team
+ORDER BY yards DESC
+LIMIT 15;
+```
+
+</Fragment>
+
+</Challenge>

@@ -1,0 +1,64 @@
+---
+title: Amon-Ra vs Justin Jefferson, 2024
+description: Side-by-side season totals for two divisional WR1s.
+sidebar:
+  order: 5
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 2 · Challenge 5</span>
+
+<Challenge difficulty="starter">
+
+<Fragment slot="prompt">
+Return one row per player with 2024 regular-season totals for both Amon-Ra St.
+Brown and Justin Jefferson: games, targets, catches, yards, TDs, catch rate
+(catches / targets), yards per game.
+</Fragment>
+
+<Fragment slot="output">
+
+| player_display_name | games | targets | catches | yards | tds | catch_rate | yds_per_game |
+|---|---|---|---|---|---|---|---|
+
+</Fragment>
+
+<Fragment slot="hint">
+
+`WHERE player_display_name IN ('Amon-Ra St. Brown', 'Justin Jefferson')`,
+`GROUP BY player_display_name`. Catch rate is `SUM(catches)::numeric /
+NULLIF(SUM(targets), 0)`. Round to two decimals.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```sql
+SELECT
+    player_display_name,
+    COUNT(*)               AS games,
+    SUM(targets)           AS targets,
+    SUM(receptions)        AS catches,
+    SUM(receiving_yards)   AS yards,
+    SUM(receiving_tds)     AS tds,
+    ROUND(
+        SUM(receptions)::numeric / NULLIF(SUM(targets), 0),
+        3
+    ) AS catch_rate,
+    ROUND(
+        SUM(receiving_yards)::numeric / NULLIF(COUNT(*), 0),
+        1
+    ) AS yds_per_game
+FROM weekly_stats
+WHERE player_display_name IN ('Amon-Ra St. Brown', 'Justin Jefferson')
+  AND season = 2024
+  AND season_type = 'REG'
+  AND targets IS NOT NULL
+GROUP BY player_display_name
+ORDER BY yards DESC;
+```
+
+</Fragment>
+
+</Challenge>

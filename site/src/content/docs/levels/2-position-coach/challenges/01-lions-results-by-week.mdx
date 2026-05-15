@@ -1,0 +1,73 @@
+---
+title: Lions results by week, 2024
+description: Week, opponent, Lions points, opponent points, W/L. Your first JOIN.
+sidebar:
+  order: 1
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 2 · Challenge 1</span>
+
+<Challenge difficulty="rookie">
+
+<Fragment slot="prompt">
+Return one row per Lions 2024 regular-season game: week, opponent, Lions
+points, opponent points, and W/L. Order by week. Use a JOIN between the
+`weekly_stats` table (filtered to a single QB row per game to dedupe) and
+`schedules`.
+</Fragment>
+
+<Fragment slot="output">
+
+18 rows:
+
+| week | opponent | det_pts | opp_pts | result |
+|---|---|---|---|---|
+| 1 | LA | ... | ... | L/W |
+
+</Fragment>
+
+<Fragment slot="hint">
+
+The simplest dedupe is to skip the join and pull from `schedules` directly,
+since `schedules` already has one row per game. But the goal here is to
+practice the JOIN. Join `weekly_stats` filtered to QBs (`position = 'QB'`)
+with `schedules` on `season`, `week`, and the team check.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```sql
+SELECT DISTINCT
+    ws.week,
+    CASE WHEN sc.home_team = 'DET' THEN sc.away_team ELSE sc.home_team END AS opponent,
+    CASE WHEN sc.home_team = 'DET' THEN sc.home_score ELSE sc.away_score END AS det_pts,
+    CASE WHEN sc.home_team = 'DET' THEN sc.away_score ELSE sc.home_score END AS opp_pts,
+    CASE
+        WHEN sc.home_team = 'DET' AND sc.home_score > sc.away_score THEN 'W'
+        WHEN sc.away_team = 'DET' AND sc.away_score > sc.home_score THEN 'W'
+        WHEN sc.home_score = sc.away_score THEN 'T'
+        ELSE 'L'
+    END AS result
+FROM weekly_stats AS ws
+INNER JOIN schedules AS sc
+    ON sc.season = ws.season
+   AND sc.week   = ws.week
+   AND (sc.home_team = ws.recent_team OR sc.away_team = ws.recent_team)
+WHERE ws.recent_team = 'DET'
+  AND ws.season = 2024
+  AND ws.season_type = 'REG'
+  AND ws.position = 'QB'
+ORDER BY ws.week;
+```
+
+`DISTINCT` is a belt-and-suspenders move in case multiple QBs got a snap in
+the same game (it happens). For the rest of L2 you'll generally pull from
+`schedules` directly for game-level info — the join is here to build the
+muscle.
+
+</Fragment>
+
+</Challenge>

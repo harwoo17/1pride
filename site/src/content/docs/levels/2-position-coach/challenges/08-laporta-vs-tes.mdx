@@ -1,0 +1,78 @@
+---
+title: Sam LaPorta vs NFC North tight ends, 2024
+description: One LaPorta row, one combined "rest of NFC North TEs" row.
+sidebar:
+  order: 8
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 2 · Challenge 8</span>
+
+<Challenge difficulty="allpro">
+
+<Fragment slot="prompt">
+Return two rows:
+
+1. Sam LaPorta's 2024 regular-season totals.
+2. The combined totals of **every other NFC North tight end** in 2024 — every
+   GB, MIN, and CHI player with `position_group = 'TE'`, aggregated into a
+   single row labeled `NFC North TEs (ex-DET)`.
+
+Both rows should have the same columns: label, games, catches, yards, TDs.
+</Fragment>
+
+<Fragment slot="output">
+
+| label | games | catches | yards | tds |
+|---|---|---|---|---|
+| Sam LaPorta | ... | ... | ... | ... |
+| NFC North TEs (ex-DET) | ... | ... | ... | ... |
+
+</Fragment>
+
+<Fragment slot="hint">
+
+Two queries `UNION ALL`'d together. The first selects literal `'Sam LaPorta'`
+as the label; the second selects literal `'NFC North TEs (ex-DET)'`. Both
+queries aggregate from `weekly_stats` with different `WHERE` filters.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```sql
+SELECT
+    'Sam LaPorta'             AS label,
+    COUNT(*)                  AS games,
+    SUM(receptions)           AS catches,
+    SUM(receiving_yards)      AS yards,
+    SUM(receiving_tds)        AS tds
+FROM weekly_stats
+WHERE player_display_name = 'Sam LaPorta'
+  AND season = 2024
+  AND season_type = 'REG'
+
+UNION ALL
+
+SELECT
+    'NFC North TEs (ex-DET)'  AS label,
+    COUNT(*)                  AS games,
+    SUM(receptions)           AS catches,
+    SUM(receiving_yards)      AS yards,
+    SUM(receiving_tds)        AS tds
+FROM weekly_stats
+WHERE recent_team IN ('GB', 'MIN', 'CHI')
+  AND position_group = 'TE'
+  AND season = 2024
+  AND season_type = 'REG'
+  AND targets > 0;
+```
+
+`UNION ALL` stacks rows. `UNION` (without `ALL`) deduplicates, which you don't
+want here. Column names come from the first query; the second query must
+match column count and types.
+
+</Fragment>
+
+</Challenge>

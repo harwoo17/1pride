@@ -1,0 +1,60 @@
+---
+title: Efficient RBs across the NFL, 2024
+description: HAVING-filter on derived metrics. Volume + efficiency together.
+sidebar:
+  order: 7
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 2 · Challenge 7</span>
+
+<Challenge difficulty="starter">
+
+<Fragment slot="prompt">
+NFL running backs in the 2024 regular season with at least **100 carries** and
+**4.5+ yards per carry**. Return name, team, carries, yards, TDs, and YPC.
+Sort by YPC descending.
+</Fragment>
+
+<Fragment slot="output">
+
+| player_display_name | recent_team | carries | yards | tds | ypc |
+|---|---|---|---|---|---|
+
+</Fragment>
+
+<Fragment slot="hint">
+
+Two `HAVING` conditions combined with `AND`. The YPC condition needs to repeat
+the aggregate expression (no aliases inside `HAVING` in standard SQL).
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```sql
+SELECT
+    player_display_name,
+    recent_team,
+    SUM(carries)                                       AS carries,
+    SUM(rushing_yards)                                 AS yards,
+    SUM(rushing_tds)                                   AS tds,
+    ROUND(SUM(rushing_yards)::numeric / SUM(carries), 2) AS ypc
+FROM weekly_stats
+WHERE season = 2024
+  AND season_type = 'REG'
+  AND position_group = 'RB'
+  AND carries IS NOT NULL
+GROUP BY player_display_name, recent_team
+HAVING SUM(carries) >= 100
+   AND SUM(rushing_yards)::numeric / NULLIF(SUM(carries), 0) >= 4.5
+ORDER BY ypc DESC;
+```
+
+The expected starter for an All-Pro YPC season is 5.0+. The 100-carry filter
+keeps QB scramblers out.
+
+</Fragment>
+
+</Challenge>

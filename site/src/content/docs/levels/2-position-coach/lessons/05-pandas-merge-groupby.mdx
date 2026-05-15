@@ -1,0 +1,137 @@
+---
+title: pandas merge and groupby
+description: JOIN, GROUP BY, and HAVING in DataFrames. The same shapes, different syntax.
+sidebar:
+  order: 5
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 2 · Lesson 5</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+Everything you just learned in SQL has a pandas twin. `pd.merge` is `JOIN`.
+`df.groupby(...).agg(...)` is `GROUP BY`. Knowing both gives you flexibility:
+heavy aggregation in SQL (database is faster), shaping for charts in pandas.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+The translation table:
+
+| SQL | pandas |
+|---|---|
+| `INNER JOIN` | `pd.merge(a, b, on='key', how='inner')` |
+| `LEFT JOIN`  | `pd.merge(a, b, on='key', how='left')` |
+| `GROUP BY col SELECT agg(...)` | `df.groupby('col').agg(...)` |
+| `HAVING agg(...) > N` | `df.groupby('col').filter(lambda g: g[col].sum() > N)` |
+
+Aggregation in pandas uses `.agg()` with a dict mapping output names to
+functions:
+
+```python
+totals = (
+    weekly.groupby('player_display_name', as_index=False)
+          .agg(games=('week', 'count'),
+               yards=('rushing_yards', 'sum'),
+               tds=('rushing_tds', 'sum'))
+          .sort_values('yards', ascending=False)
+)
+```
+
+`as_index=False` keeps the group column as a column (instead of an index),
+which makes downstream work — sorting, filtering, plotting — feel like SQL.
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+The Level 2 Lesson 1 join (Lions stats + game scores) in pandas:
+
+```python
+import pandas as pd
+from sqlalchemy import create_engine
+
+eng = create_engine("postgresql+psycopg://onepride:lions@localhost:5432/onepride")
+
+stats = pd.read_sql(
+    "SELECT * FROM weekly_stats WHERE recent_team = 'DET' AND season = 2024",
+    eng,
+)
+games = pd.read_sql(
+    """SELECT season, week, home_team, away_team, home_score, away_score
+       FROM schedules WHERE season = 2024 AND game_type = 'REG'""",
+    eng,
+)
+
+# Build a Lions-side game frame
+games['det_pts'] = games.apply(
+    lambda r: r['home_score'] if r['home_team'] == 'DET' else r['away_score'],
+    axis=1,
+)
+games['opp_pts'] = games.apply(
+    lambda r: r['away_score'] if r['home_team'] == 'DET' else r['home_score'],
+    axis=1,
+)
+games = games[(games['home_team'] == 'DET') | (games['away_team'] == 'DET')]
+games = games[['season', 'week', 'det_pts', 'opp_pts']]
+
+merged = pd.merge(stats, games, on=['season', 'week'], how='inner')
+
+# Sum receiving yards per player, with game context preserved
+totals = (
+    merged.groupby('player_display_name', as_index=False)
+          .agg(games=('week', 'count'),
+               rec_yards=('receiving_yards', 'sum'),
+               points_for=('det_pts', 'mean'))
+          .sort_values('rec_yards', ascending=False)
+)
+```
+
+Same shape as the SQL version — the database can do the work too. In practice
+you'll lean on whichever tool feels more natural for the analysis you're
+running.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Using pandas (no SQL aggregation), produce a DataFrame of Lions 2024 regular-
+season **receivers** with: name, games played (rows with non-null `receptions`),
+total catches, total yards, total TDs, yards per catch. Sort by yards
+descending.
+
+Lean on `groupby('player_display_name').agg(...)` and add the yards-per-catch
+column with `.assign(ypc=lambda d: d['yards'] / d['catches'])`.
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **Forgetting `as_index=False`.** Without it, the group column becomes the
+  DataFrame index, and you can't merge or sort on it without `.reset_index()`.
+- **`.agg('sum')` on a non-numeric column.** Filter the input frame to numeric
+  columns first, or use the dict-of-tuples form (`agg(yards=('rushing_yards',
+  'sum'))`) to be explicit.
+- **`pd.merge` without `on=`.** It guesses based on shared column names, which
+  is fine until two tables share *more* columns than you intended.
+- **Chained inplace operations.** `df.merge(...).fillna(0, inplace=True)`
+  modifies a temporary, not `df`. Skip `inplace=True` and rebind: `df = df.merge(...).fillna(0)`.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. How do `pd.merge(a, b, how='inner')` and `pd.merge(a, b, how='left')`
+   differ?
+2. What does `as_index=False` do on `groupby`?
+3. Translate this SQL to pandas: `SELECT recent_team, SUM(rushing_yards) FROM weekly_stats GROUP BY recent_team HAVING SUM(rushing_yards) > 1000`.
+
+</LessonSection>
+
+</Lesson>

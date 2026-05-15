@@ -1,0 +1,74 @@
+---
+title: Lions points by week, 2024
+description: A clean game-level view via the schedules table — week, opponent, points, result.
+sidebar:
+  order: 6
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 2 · Challenge 6</span>
+
+<Challenge difficulty="starter">
+
+<Fragment slot="prompt">
+Return Lions 2024 regular-season points scored and points allowed, by week,
+plus the running cumulative point differential. (Cumulative diff = sum of
+(scored - allowed) through that week.)
+</Fragment>
+
+<Fragment slot="output">
+
+18 rows:
+
+| week | opponent | scored | allowed | diff | cum_diff |
+|---|---|---|---|---|---|
+
+</Fragment>
+
+<Fragment slot="hint">
+
+You can compute the per-week values from `schedules` alone. For the running
+cumulative, this is technically a Level 3 window function (`SUM(...) OVER
+(ORDER BY week)`) — but you can also do it in pandas after pulling the
+per-week frame.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+SQL with a window function (sneak peek of Level 3):
+
+```sql
+WITH lions_games AS (
+    SELECT
+        week,
+        CASE WHEN home_team = 'DET' THEN away_team ELSE home_team END AS opponent,
+        CASE WHEN home_team = 'DET' THEN home_score ELSE away_score END AS scored,
+        CASE WHEN home_team = 'DET' THEN away_score ELSE home_score END AS allowed
+    FROM schedules
+    WHERE season = 2024
+      AND game_type = 'REG'
+      AND (home_team = 'DET' OR away_team = 'DET')
+)
+SELECT
+    week,
+    opponent,
+    scored,
+    allowed,
+    scored - allowed AS diff,
+    SUM(scored - allowed) OVER (ORDER BY week) AS cum_diff
+FROM lions_games
+ORDER BY week;
+```
+
+Or in pandas after pulling the per-week frame:
+
+```python
+df['diff'] = df['scored'] - df['allowed']
+df['cum_diff'] = df['diff'].cumsum()
+```
+
+</Fragment>
+
+</Challenge>

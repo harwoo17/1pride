@@ -1,0 +1,113 @@
+---
+title: HAVING
+description: Filter on aggregates. WHERE runs before GROUP BY; HAVING runs after.
+sidebar:
+  order: 4
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 2 · Lesson 4</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+You can filter rows before aggregating with `WHERE`. You filter the *aggregates
+themselves* with `HAVING`. "Players with at least 100 carries" is a `HAVING`
+filter — the threshold is on a `SUM`, which doesn't exist until after grouping.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+Order of operations:
+
+1. `FROM` / `JOIN` — load and combine tables.
+2. `WHERE` — filter individual rows.
+3. `GROUP BY` — bucket the survivors.
+4. **`HAVING` — filter buckets.**
+5. `SELECT` — pick output columns.
+6. `ORDER BY` — sort.
+
+```sql
+SELECT group_col, SUM(value) AS total
+FROM table
+WHERE row_filter         -- pre-aggregation
+GROUP BY group_col
+HAVING SUM(value) > 100  -- post-aggregation
+ORDER BY total DESC;
+```
+
+You can use the alias `total` only in `ORDER BY`, not in `HAVING` (in standard
+SQL). Repeat the aggregate.
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+NFC North wide receivers with **at least 60 receptions** in the 2024 regular
+season — a real "starter" threshold:
+
+```sql
+SELECT
+    player_display_name,
+    recent_team,
+    SUM(receptions)        AS rec,
+    SUM(receiving_yards)   AS yards,
+    SUM(receiving_tds)     AS tds
+FROM weekly_stats
+WHERE recent_team IN ('DET', 'GB', 'MIN', 'CHI')
+  AND season = 2024
+  AND season_type = 'REG'
+  AND position_group = 'WR'
+GROUP BY player_display_name, recent_team
+HAVING SUM(receptions) >= 60
+ORDER BY yards DESC;
+```
+
+You can stack multiple `HAVING` conditions with `AND` and `OR`:
+
+```sql
+HAVING SUM(receptions) >= 60 AND SUM(receiving_tds) >= 5
+```
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Find every NFL **running back** in 2024 who averaged at least **4.5 yards per
+carry** *and* had at least **100 carries**. Group by player + team. Return
+name, team, carries, total yards, and YPC.
+
+The yards-per-carry threshold is a derived metric — `SUM(rushing_yards)::numeric
+/ NULLIF(SUM(carries), 0) >= 4.5`. The carries threshold is a separate `HAVING`
+condition combined with `AND`.
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **Filtering aggregates in `WHERE`.** `WHERE SUM(...) > 100` errors out. Move
+  to `HAVING`.
+- **Filtering rows in `HAVING`.** `HAVING recent_team = 'DET'` works in
+  Postgres but it's slow — the database aggregates everything before throwing
+  rows away. Use `WHERE` for row-level conditions.
+- **Using a column alias in `HAVING`.** Standard SQL says no; Postgres usually
+  errors. Repeat the aggregate expression.
+- **No `GROUP BY` with `HAVING`.** Legal, but the query treats the whole set as
+  one group. Usually a sign you meant `GROUP BY` something.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. When does `WHERE` execute relative to `GROUP BY`? When does `HAVING`?
+2. Why can't you use a column alias from `SELECT` inside `HAVING`?
+3. `WHERE rushing_yards > 100` vs `HAVING SUM(rushing_yards) > 100` — what's
+   the difference in meaning?
+
+</LessonSection>
+
+</Lesson>

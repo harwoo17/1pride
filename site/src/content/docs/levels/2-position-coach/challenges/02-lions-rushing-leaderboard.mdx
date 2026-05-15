@@ -1,0 +1,59 @@
+---
+title: Lions rushing leaderboard, 2024
+description: GROUP BY player. Season totals per Lions ball-carrier.
+sidebar:
+  order: 2
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 2 · Challenge 2</span>
+
+<Challenge difficulty="rookie">
+
+<Fragment slot="prompt">
+Return Lions 2024 regular-season rushing **leaderboard**: player name, games
+with at least one carry, total carries, total rushing yards, total rushing
+TDs, yards per carry. Sort by yards descending.
+</Fragment>
+
+<Fragment slot="output">
+
+| player_display_name | games | carries | yards | tds | ypc |
+|---|---|---|---|---|---|
+| *(player)* | *(int)* | *(int)* | *(int)* | *(int)* | *(decimal)* |
+
+</Fragment>
+
+<Fragment slot="hint">
+
+`GROUP BY player_display_name`. `COUNT(*)` for games (already filtered to
+rows with carries). YPC is `SUM(rushing_yards)::numeric / NULLIF(SUM(carries), 0)`.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```sql
+SELECT
+    player_display_name,
+    COUNT(*)                                                AS games,
+    SUM(carries)                                            AS carries,
+    SUM(rushing_yards)                                      AS yards,
+    SUM(rushing_tds)                                        AS tds,
+    ROUND(SUM(rushing_yards)::numeric / NULLIF(SUM(carries), 0), 2) AS ypc
+FROM weekly_stats
+WHERE recent_team = 'DET'
+  AND season = 2024
+  AND season_type = 'REG'
+  AND carries IS NOT NULL
+  AND carries > 0
+GROUP BY player_display_name
+ORDER BY yards DESC;
+```
+
+Montgomery and Gibbs on top, then situational backs, then Goff sneaks.
+
+</Fragment>
+
+</Challenge>

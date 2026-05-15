@@ -15,6 +15,8 @@ capstone app will live in a sibling repo (`1pride-app`).
 |---|---|
 | [`site/`](./site) | Curriculum site — Astro + Starlight, deploys to `1pride.dev` |
 | [`data/`](./data) | Local Postgres + Python loader for nflverse data |
+| [`app/`](./app)   | Level 5 capstone — Next.js + Tailwind app, deploys to `app.1pride.dev` |
+| [`DEPLOY.md`](./DEPLOY.md) | How to deploy both Vercel projects |
 | [`1pride_brief.md`](./1pride_brief.md) | The project brief |
 
 ## The depth chart

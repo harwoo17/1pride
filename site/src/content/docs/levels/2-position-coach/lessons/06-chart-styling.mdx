@@ -1,0 +1,161 @@
+---
+title: matplotlib styling
+description: Take a default chart from "fine" to "presentation-ready" with five small choices.
+sidebar:
+  order: 6
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 2 · Lesson 6</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+The same data, charted with default matplotlib vs five small tweaks, looks like
+two different reports. None of these are decoration — each removes a question
+the reader would have to ask.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+The five moves that turn a default chart into a clean one:
+
+1. **Set the figure size.** Default is square-ish and tiny. `figsize=(8, 5)` for
+   most things, `(10, 6)` if you have long labels.
+2. **Pick one color per series, intentionally.** No rainbows. Honolulu Blue
+   (`#0076B6`) for Lions, neutral gray for comparisons.
+3. **Kill the top and right spines.** They're chartjunk.
+4. **Add comparison context.** A second team, a league average line, a
+   previous-season ghost — whatever makes the number mean something.
+5. **Annotate the point that matters.** If the chart has a "story" data point,
+   call it out with `ax.annotate(...)`.
+
+```python
+import matplotlib.pyplot as plt
+
+LIONS = '#0076B6'
+NEUTRAL = '#999999'
+
+fig, ax = plt.subplots(figsize=(8, 5))
+
+# ... plot calls here ...
+
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+ax.set_title('Title that names the metric, the subject, and the period',
+             fontsize=13, pad=12)
+ax.set_xlabel('X label', fontsize=10)
+ax.set_ylabel('Y label', fontsize=10)
+ax.grid(axis='y', linestyle='--', alpha=0.4)
+fig.text(0.99, 0.01, 'Source: nflverse', ha='right', fontsize=8, color='gray')
+plt.tight_layout()
+```
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+Comparing Amon-Ra St. Brown's 2024 weekly receiving yards against the
+NFC North WR1 group average:
+
+```python
+import matplotlib.pyplot as plt
+import pandas as pd
+from sqlalchemy import create_engine
+
+eng = create_engine("postgresql+psycopg://onepride:lions@localhost:5432/onepride")
+
+q = """
+WITH wr1 AS (
+    SELECT recent_team,
+           player_display_name,
+           SUM(receiving_yards) AS total
+    FROM weekly_stats
+    WHERE season = 2024 AND season_type = 'REG'
+      AND position_group = 'WR'
+      AND recent_team IN ('DET', 'GB', 'MIN', 'CHI')
+    GROUP BY recent_team, player_display_name
+),
+top1 AS (
+    SELECT DISTINCT ON (recent_team) recent_team, player_display_name
+    FROM wr1
+    ORDER BY recent_team, total DESC
+)
+SELECT ws.week,
+       ws.player_display_name,
+       ws.recent_team,
+       ws.receiving_yards
+FROM weekly_stats ws
+JOIN top1 USING (recent_team, player_display_name)
+WHERE ws.season = 2024 AND ws.season_type = 'REG'
+ORDER BY ws.week, ws.recent_team;
+"""
+
+df = pd.read_sql(q, eng)
+arsb = df[df['player_display_name'] == 'Amon-Ra St. Brown']
+peers = df[df['player_display_name'] != 'Amon-Ra St. Brown']
+peer_avg = peers.groupby('week', as_index=False)['receiving_yards'].mean()
+
+LIONS = '#0076B6'
+NEUTRAL = '#999999'
+
+fig, ax = plt.subplots(figsize=(9, 5))
+ax.plot(arsb['week'], arsb['receiving_yards'], color=LIONS, marker='o',
+        linewidth=2.5, label='Amon-Ra St. Brown')
+ax.plot(peer_avg['week'], peer_avg['receiving_yards'], color=NEUTRAL,
+        linestyle='--', linewidth=1.5, label='NFC North WR1 avg (GB, MIN, CHI)')
+
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+ax.set_title('ARSB vs NFC North WR1 average — 2024 regular season',
+             fontsize=13, pad=12)
+ax.set_xlabel('Week')
+ax.set_ylabel('Receiving yards')
+ax.grid(axis='y', linestyle='--', alpha=0.4)
+ax.legend(frameon=False, loc='upper left')
+fig.text(0.99, 0.01, 'Source: nflverse', ha='right', fontsize=8, color='gray')
+plt.tight_layout()
+plt.savefig('arsb-vs-nfc-north.png', dpi=150)
+```
+
+That chart answers a question; the default version would just show one line.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Make a horizontal bar chart of the **top 8 NFC North receivers** by 2024 total
+receiving yards. Color Lions players Honolulu Blue, everyone else neutral gray.
+Sort with the leader on top.
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **Default palette.** Tab-orange and tab-blue everywhere. Pick colors that
+  match your subject.
+- **Tiny figures.** A 4x3 PNG looks fine in a notebook and unreadable when
+  embedded in a doc. Default to `figsize=(8, 5)` or larger.
+- **Forgetting `tight_layout()`.** Long labels and titles get clipped in the
+  saved PNG even if they look fine on screen.
+- **Overloading.** Two lines beat five. If you need five, use small multiples
+  (subplots) — one player per panel.
+- **No comparison context.** A solo line on a chart implies "this is good" or
+  "this is bad" but doesn't say compared to what. Always have a peer line, a
+  league average, or a prior-year ghost.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. Which two spines are usually safe to remove?
+2. Why default to `figsize=(8, 5)` instead of matplotlib's default?
+3. What's the one thing a comparison line adds that a solo line cannot?
+
+</LessonSection>
+
+</Lesson>

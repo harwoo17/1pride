@@ -45,7 +45,17 @@ export default defineConfig({
 				{
 					label: 'Level 2 — Position coach',
 					collapsed: true,
-					items: [{ label: 'Overview', slug: 'levels/2-position-coach' }],
+					items: [
+						{ label: 'Overview', slug: 'levels/2-position-coach' },
+						{
+							label: 'Lessons',
+							items: [{ autogenerate: { directory: 'levels/2-position-coach/lessons' } }],
+						},
+						{
+							label: 'Challenges',
+							items: [{ autogenerate: { directory: 'levels/2-position-coach/challenges' } }],
+						},
+					],
 				},
 				{
 					label: 'Level 3 — Head coach',

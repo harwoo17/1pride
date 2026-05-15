@@ -1,0 +1,109 @@
+---
+title: LEFT JOIN
+description: Keep every left-side row, even when there's no match on the right.
+sidebar:
+  order: 2
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 2 · Lesson 2</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+`INNER JOIN` quietly drops rows that don't have a match. Sometimes "no match"
+is the answer — *which weeks did a player miss?* needs every week to show up
+whether or not the player suited up. That's `LEFT JOIN`.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+A `LEFT JOIN` keeps every row from the **left** table. If the right table has a
+match, you get the matched columns; if not, you get `NULL` for those columns.
+
+```sql
+SELECT a.col1, b.col2
+FROM table_a AS a
+LEFT JOIN table_b AS b
+    ON a.shared_key = b.shared_key;
+-- rows in a with no match in b have NULL for b.col2
+```
+
+The "no match" pattern: filter for `b.something IS NULL` to keep *only* the
+unmatched rows. That's how you find "weeks a player didn't play" or "Lions games
+with no rushing TD."
+
+Filter placement matters now. A condition on the **right** table goes in `ON`,
+or it converts your `LEFT JOIN` into an `INNER JOIN` by accident. Conditions
+on the left table go in `WHERE` as usual.
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+Find Lions regular-season **weeks Amon-Ra missed** in 2024. Start from the
+canonical 18-week list (from `schedules`) and left-join his weekly stats:
+
+```sql
+SELECT
+    sc.week,
+    sc.gameday,
+    CASE WHEN sc.home_team = 'DET' THEN sc.away_team ELSE sc.home_team END AS opp,
+    ws.receiving_yards
+FROM schedules AS sc
+LEFT JOIN weekly_stats AS ws
+    ON ws.season = sc.season
+   AND ws.week   = sc.week
+   AND ws.player_display_name = 'Amon-Ra St. Brown'
+WHERE sc.season = 2024
+  AND sc.game_type = 'REG'
+  AND (sc.home_team = 'DET' OR sc.away_team = 'DET')
+  AND ws.player_id IS NULL          -- no stat row = he didn't play
+ORDER BY sc.week;
+```
+
+Two things to notice:
+
+1. The **player filter is on `ON`**, not `WHERE`. If it were in `WHERE`, the
+   `IS NULL` test would drop the unmatched rows we're trying to find.
+2. The "no match" filter uses `ws.player_id IS NULL`. Any column from the right
+   side works — pick something that's never null when a row exists.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Find every **Lions 2024 regular-season game with no Lions rushing TD**. Start
+from `schedules` (game-level rows), left-join `weekly_stats` filtered to Lions
+rushers with TDs, and keep the unmatched rows.
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **Right-side filter in `WHERE`.** Turns a `LEFT JOIN` back into an `INNER JOIN`
+  silently. The rule: anything you want preserved through the join goes in `ON`.
+- **Using `b.col = NULL` instead of `b.col IS NULL`.** Same NULL trap as Level 1.
+- **Forgetting the join can fan out rows.** If a player has multiple stat rows
+  per week (a regular-season stat *and* a playoff stat), the join multiplies.
+  Add `season_type = 'REG'` in `ON` to keep one row per week.
+- **`LEFT JOIN` when you mean `INNER JOIN`.** Defaulting to `LEFT` "to be safe"
+  produces NULL-laden result sets you then have to filter. Use `INNER` when you
+  truly need matches on both sides.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. When `LEFT JOIN` finds no match, what value goes in the right-side columns?
+2. Why does filtering on a right-side column in `WHERE` convert a `LEFT JOIN`
+   into an `INNER JOIN`?
+3. How would you find *weeks a player was inactive* using a `LEFT JOIN`?
+
+</LessonSection>
+
+</Lesson>

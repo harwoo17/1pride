@@ -1,0 +1,57 @@
+---
+title: Receivers with multiple 100-yard games
+description: HAVING filter on a COUNT — players with 3+ century games in 2024.
+sidebar:
+  order: 4
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 2 · Challenge 4</span>
+
+<Challenge difficulty="starter">
+
+<Fragment slot="prompt">
+Across the entire NFL, return every receiver who had **three or more 100-yard
+receiving games** in the 2024 regular season. Show name, team, count of
+century games, and total receiving yards. Sort by century games descending,
+then total yards descending.
+</Fragment>
+
+<Fragment slot="output">
+
+| player_display_name | recent_team | century_games | total_yards |
+|---|---|---|---|
+
+</Fragment>
+
+<Fragment slot="hint">
+
+`WHERE` filters individual games (`receiving_yards >= 100`). `GROUP BY` by
+player + team. `HAVING COUNT(*) >= 3` enforces the threshold.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```sql
+SELECT
+    player_display_name,
+    recent_team,
+    COUNT(*)               AS century_games,
+    SUM(receiving_yards)   AS total_yards
+FROM weekly_stats
+WHERE season = 2024
+  AND season_type = 'REG'
+  AND receiving_yards >= 100
+GROUP BY player_display_name, recent_team
+HAVING COUNT(*) >= 3
+ORDER BY century_games DESC, total_yards DESC;
+```
+
+The total-yards filter here is on the *aggregate* of only the 100-yard games,
+which is intentional — it tells you which century-game streaks were heaviest.
+
+</Fragment>
+
+</Challenge>

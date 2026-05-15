@@ -1,0 +1,112 @@
+---
+title: INNER JOIN
+description: Combine two tables on a shared key. Player stats meet game context.
+sidebar:
+  order: 1
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 2 · Lesson 1</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+`weekly_stats` doesn't tell you whether the Lions won. `schedules` doesn't tell
+you who carried the rock. `JOIN` glues them together so you can ask the
+questions only one table can't answer.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+An `INNER JOIN` returns rows that match on both sides. You pick the **shared key**
+(the thing that exists in both tables) and the database lines up matching rows.
+
+```sql
+SELECT a.col1, b.col2
+FROM table_a AS a
+INNER JOIN table_b AS b
+    ON a.shared_key = b.shared_key
+WHERE ...;
+```
+
+Three habits to form early:
+
+- **Always alias** (`AS a`, `AS b`). It makes the columns explicit and your
+  query readable.
+- **Be explicit about the join type** (`INNER JOIN` not just `JOIN`).
+- **Put the join condition on `ON`**, the filter on `WHERE`. Mixing them works
+  but breaks down with outer joins (Lesson 2).
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+`weekly_stats` has player performance. `schedules` has scores and game context.
+The shared key is **season + week + team**. Tag every Lions player-week with the
+game's final score:
+
+```sql
+SELECT
+    ws.player_display_name,
+    ws.week,
+    ws.opponent_team,
+    ws.rushing_yards,
+    ws.receiving_yards,
+    CASE WHEN sc.home_team = 'DET' THEN sc.home_score ELSE sc.away_score END AS det_pts,
+    CASE WHEN sc.home_team = 'DET' THEN sc.away_score ELSE sc.home_score END AS opp_pts
+FROM weekly_stats AS ws
+INNER JOIN schedules AS sc
+    ON sc.season = ws.season
+   AND sc.week   = ws.week
+   AND (sc.home_team = ws.recent_team OR sc.away_team = ws.recent_team)
+WHERE ws.recent_team = 'DET'
+  AND ws.season = 2024
+  AND ws.season_type = 'REG'
+ORDER BY ws.week, ws.player_display_name;
+```
+
+Now every player row has the game's final score next to it. You couldn't get
+that from either table alone.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Pull every **Lions touchdown game** (any player, any TD type) in 2024 along
+with the final score and the result (W/L). One row per TD-scoring player-week.
+
+You'll join `weekly_stats` (filter: `recent_team = 'DET'`, any of the three TD
+columns > 0) to `schedules` on the same key, and add a `CASE` for the W/L.
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **Forgetting the team in the join key.** `ON sc.season = ws.season AND sc.week
+  = ws.week` matches *every* game in that week — a player gets duplicated by
+  the number of games. Always include the team check.
+- **`JOIN` without `ON`.** That's a Cartesian product. Every row of A pairs
+  with every row of B. With nflverse, you'll get hundreds of thousands of rows
+  back.
+- **Ambiguous column names.** If both tables have a `season` column, you must
+  qualify it: `ws.season` or `sc.season`. Aliases make this painless.
+- **Filtering in `ON` vs `WHERE`.** For `INNER JOIN` it gives the same result.
+  But the moment you switch to `LEFT JOIN`, filtering in `ON` keeps unmatched
+  left-side rows; filtering in `WHERE` drops them. Pick the right one (Lesson 2).
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. What's the difference between `ON` and `WHERE` in an `INNER JOIN`?
+2. Why do you need the team check in the join key when matching `weekly_stats`
+   to `schedules`?
+3. What's a "Cartesian product" and how do you accidentally create one?
+
+</LessonSection>
+
+</Lesson>

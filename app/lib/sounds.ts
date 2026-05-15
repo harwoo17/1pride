@@ -140,136 +140,71 @@ export function playClick(delaySec = 0): void {
 }
 
 // ─── ROAR ──────────────────────────────────────────────────────────────────
-// Lion roar = pitched vocal + breath + onset bite. The pitched layer is
-// what was missing — a real roar has a clear hummable fundamental
-// (around 90-110 Hz) with rich harmonics, fed through a distortion
-// curve for the throat-tearing growl quality.
-//
-// Architecture:
-//   1. ADDITIVE pitched layer — five triangle oscillators at the
-//      fundamental + 4 harmonics, with a slight pitch envelope
-//      (rises briefly, then falls). This is what makes it read as
-//      a voice instead of wind.
-//   2. WaveShaper distortion (soft tanh clipping) on the pitched
-//      layer — adds growl harmonics and rasps the tone the way a
-//      torn-up vocal fold does.
-//   3. Low-pass after distortion tames bright clipping artifacts.
-//   4. Breath texture — brown noise through a bandpass at the open-
-//      mouth formant frequency (1300 Hz). Modest level — it's
-//      ornamentation, not the main event.
-//   5. Onset bite — fast highpass noise burst at the front for the
-//      consonant attack ("RR-").
-//   6. Slow 7 Hz tremolo on the master, the way a real roar wavers.
-export function playRoar(delaySec = 0): void {
+// Real recorded lion roar (royalty-free, Pixabay).
+// File at /public/sounds/lion-roar.mp3 — preload on first user gesture
+// so playback is instant when the user hits Press Start.
+
+const ROAR_URL = "/sounds/lion-roar.mp3";
+let _roarBuffer: AudioBuffer | null = null;
+let _roarLoadPromise: Promise<AudioBuffer | null> | null = null;
+
+/** Fetch + decode the roar MP3. Call before you need it (e.g. on mount). */
+export function preloadRoar(): Promise<AudioBuffer | null> {
+  if (_roarBuffer) return Promise.resolve(_roarBuffer);
+  if (_roarLoadPromise) return _roarLoadPromise;
+
+  _roarLoadPromise = (async () => {
+    const ctx = getCtx();
+    if (!ctx) return null;
+    try {
+      const res = await fetch(ROAR_URL);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const arr = await res.arrayBuffer();
+      const buf = await ctx.decodeAudioData(arr);
+      _roarBuffer = buf;
+      return buf;
+    } catch (e) {
+      console.warn("[1pride] roar load failed:", e);
+      return null;
+    }
+  })();
+  return _roarLoadPromise;
+}
+
+export function playRoar(delaySec = 0, volume = 0.85): void {
   const ctx = getCtx();
   if (!ctx || _muted) return;
-  const t = ctx.currentTime + delaySec;
-  const dur = 1.8;
 
-  // Master bus
-  const master = ctx.createGain();
-  master.connect(ctx.destination);
-  master.gain.setValueAtTime(0.0001, t);
-  master.gain.exponentialRampToValueAtTime(0.75, t + 0.1); // sharp attack
-  master.gain.setValueAtTime(0.75, t + 1.3);
-  master.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  // Kick off preload if we haven't yet. If the buffer's already there
+  // (preloaded), play immediately. If not, play when decode resolves
+  // — there'll be a perceptible delay on the very first user gesture
+  // unless preloadRoar() was called earlier.
+  const start = (buf: AudioBuffer | null) => {
+    if (!buf || _muted) return;
+    const ctxNow = getCtx();
+    if (!ctxNow) return;
+    const t = ctxNow.currentTime + delaySec;
 
-  // Tremolo — slow vocal warble. AM on master gain.
-  const trem = ctx.createOscillator();
-  trem.type = "sine";
-  trem.frequency.value = 7;
-  const tremDepth = ctx.createGain();
-  tremDepth.gain.value = 0.15;
-  trem.connect(tremDepth).connect(master.gain);
+    const src = ctxNow.createBufferSource();
+    src.buffer = buf;
 
-  // ─── PITCHED VOCAL LAYER (additive triangle harmonics) ─────────────────
-  const FUND = 95; // fundamental Hz
-  const harmonics: { mult: number; gain: number }[] = [
-    { mult: 1, gain: 0.55 },
-    { mult: 2, gain: 0.32 },
-    { mult: 3, gain: 0.20 },
-    { mult: 4, gain: 0.12 },
-    { mult: 5, gain: 0.07 },
-  ];
+    // Master gain — a touch of envelope so the roar doesn't click in/out
+    const gain = ctxNow.createGain();
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(volume, t + 0.02);
+    gain.gain.setValueAtTime(volume, t + Math.max(0.1, buf.duration - 0.15));
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + buf.duration);
 
-  const harmSum = ctx.createGain();
-  harmSum.gain.value = 0.42;
+    src.connect(gain).connect(ctxNow.destination);
+    src.start(t);
+    src.stop(t + buf.duration + 0.1);
+  };
 
-  for (const h of harmonics) {
-    const o = ctx.createOscillator();
-    o.type = "triangle";
-    // Pitch envelope: rise slightly then fall (gives the roar shape)
-    o.frequency.setValueAtTime(FUND * h.mult * 0.92, t);
-    o.frequency.linearRampToValueAtTime(FUND * h.mult * 1.06, t + 0.35);
-    o.frequency.exponentialRampToValueAtTime(FUND * h.mult * 0.78, t + dur);
-
-    const g = ctx.createGain();
-    g.gain.value = h.gain;
-    o.connect(g).connect(harmSum);
-    o.start(t);
-    o.stop(t + dur);
+  if (_roarBuffer) {
+    start(_roarBuffer);
+  } else {
+    preloadRoar().then(start);
   }
-
-  // WaveShaper — soft tanh clipping. Adds growl harmonics, rasps the tone.
-  const shaper = ctx.createWaveShaper();
-  const curve = new Float32Array(2048);
-  for (let i = 0; i < 2048; i++) {
-    const x = (i / 2048) * 2 - 1;
-    curve[i] = Math.tanh(x * 2.6);
-  }
-  shaper.curve = curve;
-  shaper.oversample = "4x";
-
-  // Low-pass after distortion to keep the brightness lion-ish, not buzzy
-  const tameLP = ctx.createBiquadFilter();
-  tameLP.type = "lowpass";
-  tameLP.frequency.setValueAtTime(1400, t);
-  tameLP.frequency.exponentialRampToValueAtTime(900, t + dur);
-  tameLP.Q.value = 1.0;
-
-  harmSum.connect(shaper).connect(tameLP).connect(master);
-
-  // ─── BREATH / TEXTURE ──────────────────────────────────────────────────
-  const breathBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
-  const breathData = breathBuf.getChannelData(0);
-  let prev = 0;
-  for (let i = 0; i < breathData.length; i++) {
-    const w = Math.random() * 2 - 1;
-    prev = (prev + 0.03 * w) / 1.03;
-    breathData[i] = prev * 4;
-  }
-  const breath = ctx.createBufferSource();
-  breath.buffer = breathBuf;
-  const breathBP = ctx.createBiquadFilter();
-  breathBP.type = "bandpass";
-  breathBP.frequency.value = 1300;
-  breathBP.Q.value = 1.4;
-  const breathGain = ctx.createGain();
-  breathGain.gain.value = 0.28;
-  breath.connect(breathBP).connect(breathGain).connect(master);
-
-  // ─── ONSET BITE (consonant front) ─────────────────────────────────────
-  const biteBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.08), ctx.sampleRate);
-  const biteData = biteBuf.getChannelData(0);
-  for (let i = 0; i < biteData.length; i++) {
-    biteData[i] = (Math.random() * 2 - 1) * (1 - i / biteData.length);
-  }
-  const bite = ctx.createBufferSource();
-  bite.buffer = biteBuf;
-  const biteHP = ctx.createBiquadFilter();
-  biteHP.type = "highpass";
-  biteHP.frequency.value = 700;
-  const biteGain = ctx.createGain();
-  biteGain.gain.value = 0.45;
-  bite.connect(biteHP).connect(biteGain).connect(ctx.destination);
-
-  // ─── Start / stop ──────────────────────────────────────────────────────
-  trem.start(t);
-  trem.stop(t + dur);
-  breath.start(t);
-  breath.stop(t + dur);
-  bite.start(t);
-  bite.stop(t + 0.08);
 }
 
 // ─── CROWD CHEER ───────────────────────────────────────────────────────────

@@ -14,6 +14,7 @@ import {
   playDing,
   playRoar,
   playWhoosh,
+  preloadRoar,
   setMuted,
 } from "@/lib/sounds";
 
@@ -38,6 +39,9 @@ export function Intro() {
     if (window.sessionStorage.getItem(SESSION_KEY) === "1") {
       setPhase("done");
     }
+    // Kick off the roar download in the background so it's decoded by
+    // the time the user clicks Press Start.
+    preloadRoar();
   }, []);
 
   const finish = useCallback(() => {

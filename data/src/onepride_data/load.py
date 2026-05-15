@@ -8,6 +8,7 @@ Usage:
 from __future__ import annotations
 
 import logging
+import os
 import urllib.error
 from typing import Iterable
 
@@ -425,8 +426,38 @@ def load_schedules(years: list[int], truncate: bool) -> int:
     "--truncate/--no-truncate", default=False,
     help="TRUNCATE before insert (vs delete-by-year, the default).",
 )
-def main(years: str, tables: str, truncate: bool) -> None:
-    """Load nflverse data into the local 1PRIDE Postgres."""
+@click.option(
+    "--neon-url",
+    default=None,
+    envvar="NEON_URL",
+    help=(
+        "Convenience: take a raw Neon connection string (the one their UI "
+        "hands you, beginning with `postgresql://`) and auto-prefix it with "
+        "`postgresql+psycopg://` for SQLAlchemy. Sets DATABASE_URL for this "
+        "process only. Easier than remembering the bash parameter expansion."
+    ),
+)
+def main(years: str, tables: str, truncate: bool, neon_url: str | None) -> None:
+    """Load nflverse data into the local 1PRIDE Postgres (or a remote one)."""
+    if neon_url:
+        # Neon UI ships a `postgresql://` URL; SQLAlchemy + psycopg need
+        # `postgresql+psycopg://`. Auto-fix and stash in the env.
+        if neon_url.startswith("postgresql+psycopg://"):
+            fixed = neon_url
+        elif neon_url.startswith("postgresql://"):
+            fixed = "postgresql+psycopg://" + neon_url[len("postgresql://"):]
+        else:
+            raise click.BadParameter(
+                "Expected a `postgresql://...` connection string from Neon.",
+                param_hint="--neon-url",
+            )
+        os.environ["DATABASE_URL"] = fixed
+        # Log without leaking the password
+        log.info(
+            "Using Neon URL (host: %s)",
+            fixed.split("@")[1].split("/")[0] if "@" in fixed else "?",
+        )
+
     year_list = _parse_years(years)
     log.info("Target years: %s", year_list)
 

@@ -83,45 +83,29 @@ npx vercel --prod
 ```bash
 cd ../data
 
-# Sanity check — make sure DATABASE_URL works against Neon
-DATABASE_URL='<paste-neon-connection-string-here>' \
-  uv run --python 3.11 python -c "
-import os, psycopg
-c = psycopg.connect(os.environ['DATABASE_URL'].replace('postgresql+psycopg', 'postgresql'))
-print('connected:', c.execute('SELECT version()').fetchone()[0][:40])
-"
+# Save the raw Neon connection string (the one their UI gave you)
+export NEON_URL='postgresql://...@ep-xxx.neon.tech/onepride?sslmode=require'
 
 # Apply schema to Neon
-DATABASE_URL='<paste>' \
-  uv run --python 3.11 python -c "
-import os
-from sqlalchemy import create_engine, text
-url = os.environ['DATABASE_URL']
-if not url.startswith('postgresql+psycopg'): url = url.replace('postgresql', 'postgresql+psycopg', 1)
-eng = create_engine(url)
-with eng.begin() as c, open('schema.sql') as f:
-    c.execute(text(f.read()))
-print('schema loaded')
-"
+/opt/homebrew/opt/postgresql@16/bin/psql "$NEON_URL" -f schema.sql
 
-# Load all the Lions data into Neon (5-15 minutes; PBP is the slow part)
-DATABASE_URL='<paste, with postgresql+psycopg:// prefix>' \
-  uv run --python 3.11 python -m onepride_data.load \
-    --years 2021-2024 --tables all
-DATABASE_URL='<paste>' \
-  uv run --python 3.11 python -m onepride_data.load \
-    --years 2025 --tables schedules
-DATABASE_URL='<paste>' \
-  uv run --python 3.11 python -m onepride_data.load \
-    --years 2025 --tables pbp
-DATABASE_URL='<paste>' \
-  uv run --python 3.11 python -m onepride_data.load \
-    --years 2025 --tables derive-weekly
+# Load Lions data into Neon. The --neon-url flag auto-prefixes the URL
+# with `postgresql+psycopg://` so you don't need to remember the
+# SQLAlchemy variant. NEON_URL is also picked up automatically as
+# the env var.
+uv run --python 3.11 python -m onepride_data.load \
+  --years 2021-2024 --tables all                # weekly + schedules + PBP, ~10-15 min
+uv run --python 3.11 python -m onepride_data.load \
+  --years 2025 --tables schedules
+uv run --python 3.11 python -m onepride_data.load \
+  --years 2025 --tables pbp                     # 2025 weekly isn't published yet — schedules + PBP only
+uv run --python 3.11 python -m onepride_data.load \
+  --years 2025 --tables derive-weekly           # rebuild weekly_stats for 2025 from PBP
 ```
 
-`DATABASE_URL` for the loader needs the `postgresql+psycopg://` SQLAlchemy
-prefix; for raw `psycopg.connect` it's just `postgresql://`. The Neon UI
-gives you the plain form — add `+psycopg` after `postgresql` for the loader.
+Note: Neon hands you `postgresql://...`. Internally the loader needs
+`postgresql+psycopg://...` (SQLAlchemy variant). The `--neon-url` flag
+(or `NEON_URL` env var) handles that automatically.
 
 ---
 

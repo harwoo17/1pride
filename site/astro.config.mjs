@@ -15,7 +15,7 @@ export default defineConfig({
 				{
 					icon: 'github',
 					label: 'GitHub',
-					href: 'https://github.com/joeyharwood/1pride',
+					href: 'https://github.com/harwoo17/1pride',
 				},
 			],
 			sidebar: [

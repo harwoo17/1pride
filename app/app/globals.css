@@ -135,6 +135,25 @@ body {
   box-shadow: 0 8px 22px -8px rgba(0, 42, 71, 0.22);
 }
 
+/* Skeleton shimmer — sweeps a soft light band across loading cells */
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 100%
+  );
+  animation: shimmer 1.6s ease-in-out infinite;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .shimmer { animation: none; opacity: 0; }
+}
+
 /* Vertical stripe pattern for hero — abstract field-feel without marks */
 .stripes {
   background-image: linear-gradient(

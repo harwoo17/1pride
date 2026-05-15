@@ -13,6 +13,7 @@ import {
 } from "@/lib/api";
 import { CountUp } from "@/components/CountUp";
 import { FadeIn } from "@/components/FadeIn";
+import { SkeletonRow } from "@/components/Skeleton";
 import { Sparkline } from "@/components/Sparkline";
 
 export const revalidate = 3600;
@@ -314,7 +315,7 @@ function Hero({
             <span className="text-[var(--lions-silver-dark)]">·</span>
             <span className="text-[var(--lions-silver-dark)]">17 of 17</span>
           </div>
-          <h1 className="font-display text-6xl font-black uppercase leading-none tracking-tight text-[var(--lions-charcoal)] sm:text-7xl lg:text-8xl">
+          <h1 className="font-display text-5xl font-black uppercase leading-none tracking-tight text-[var(--lions-charcoal)] sm:text-6xl md:text-7xl lg:text-8xl">
             Don't blink.
             <br />
             <span className="text-[var(--lions-blue)]">Bite the kneecap.</span>
@@ -593,7 +594,7 @@ function GoForIt({ decisions }: { decisions: FourthDownDecision[] }) {
             <span className="inline-block h-1.5 w-6 bg-[var(--lions-silver)]" />
             Identity · 4th Down
           </div>
-          <h2 className="font-display text-5xl font-black uppercase leading-none tracking-tight sm:text-6xl">
+          <h2 className="font-display text-4xl font-black uppercase leading-none tracking-tight sm:text-5xl md:text-6xl">
             Go.
             <br />
             <span className="text-[var(--lions-silver-light)]">For.</span>
@@ -758,7 +759,7 @@ function PullQuote() {
           <span className="inline-block h-1.5 w-10 bg-white" />
           The Quote
         </div>
-        <blockquote className="font-display text-5xl font-black uppercase leading-[0.95] tracking-tight sm:text-7xl">
+        <blockquote className="font-display text-4xl font-black uppercase leading-[0.95] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
           <span className="text-white/40">&ldquo;</span>
           We're gonna kick you in the teeth
           <span className="text-white/40"> · </span>
@@ -793,9 +794,16 @@ function StatLeaders({
           <SectionHeader
             eyebrow={`${season} · The Pass-Catchers`}
             title="Who Ate"
+            sub="Loading receiving leaders…"
           />
-          <p className="text-sm text-zinc-500">
-            API offline — start the FastAPI service to see live leaders.
+          <div className="divide-y divide-zinc-100 border-y border-zinc-200">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <SkeletonRow key={i} />
+            ))}
+          </div>
+          <p className="mt-4 font-mono text-[10px] tracking-wider text-[var(--lions-silver-dark)]">
+            If this hangs, the FastAPI service may be offline. Start it
+            with: <code>uv run --python 3.11 uvicorn onepride_data.api:app</code>
           </p>
         </div>
       </section>

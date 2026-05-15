@@ -1,7 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { PixelFootball, PixelLion } from "./pixel-sprites";
+import {
+  PixelFootball,
+  PixelLion,
+  type LionExpression,
+} from "./pixel-sprites";
 import {
   isMuted,
   playBonk,
@@ -49,24 +53,24 @@ export function Intro() {
 
     setTimeout(() => {
       setPhase("drop");
-      playWhoosh(0, 0.5);
-    }, 400);
+      playWhoosh(0, 0.55);
+    }, 600);
     setTimeout(() => {
       setPhase("bonked");
       playBonk(0);
-      playBonk(0.08); // second ball, slightly offset
-    }, 900);
+      playBonk(0.08);
+    }, 1200);
     setTimeout(() => {
       setPhase("recover");
-      playCheer(0, 0.7);
-    }, 1700);
+      playCheer(0, 0.8);
+    }, 2100);
     setTimeout(() => {
       setPhase("stamp");
       playDing(0);
-    }, 2500);
+    }, 3100);
     setTimeout(() => {
       finish();
-    }, 4000);
+    }, 4700);
   }, [finish]);
 
   const skip = useCallback(() => {
@@ -97,8 +101,16 @@ export function Intro() {
   if (phase === "done") return null;
 
   const showSprites = phase !== "gate";
-  const lionState: "normal" | "bonked" =
-    phase === "bonked" ? "bonked" : "normal";
+  const lionExpression: LionExpression =
+    phase === "drop"
+      ? "alert"
+      : phase === "bonked"
+        ? "stunned"
+        : phase === "recover"
+          ? "dazed"
+          : phase === "stamp"
+            ? "determined"
+            : "ready"; // warmup + fallback
 
   return (
     <div
@@ -195,11 +207,11 @@ export function Intro() {
             >
               <div className="relative">
                 <FallingBall visible={phase === "drop"} />
-                <PixelLion state={lionState} />
+                <PixelLion state={lionExpression} />
               </div>
               <div className="relative">
                 <FallingBall visible={phase === "drop"} delayMs={120} />
-                <PixelLion state={lionState} />
+                <PixelLion state={lionExpression} />
               </div>
             </div>
 

@@ -11,6 +11,8 @@ import {
   type StandingsRow,
   type WeeklyGame,
 } from "@/lib/api";
+import { CountUp } from "@/components/CountUp";
+import { FadeIn } from "@/components/FadeIn";
 import { Sparkline } from "@/components/Sparkline";
 
 export const revalidate = 3600;
@@ -73,26 +75,42 @@ export default async function Home() {
           worstLoss={worstLoss}
         />
         <Hardhat />
-        <DefiningMoments games={games} />
+        <FadeIn>
+          <DefiningMoments games={games} />
+        </FadeIn>
         <Hardhat />
-        <GoForIt decisions={fourth?.decisions ?? []} />
-        <FromTheData
-          games={games}
-          receivers={receivers?.receivers ?? []}
-          decisions={fourth?.decisions ?? []}
-        />
-        <PullQuote />
-        <StatLeaders
-          season={LATEST_SEASON}
-          receivers={receivers?.receivers ?? []}
-          weeks={weeks?.rows ?? []}
-        />
-        <DivisionStandings
-          season={LATEST_SEASON}
-          standings={standings?.standings ?? []}
-        />
-        <CampbellEra />
-        <ChartsPreview />
+        <FadeIn>
+          <GoForIt decisions={fourth?.decisions ?? []} />
+        </FadeIn>
+        <FadeIn>
+          <FromTheData
+            games={games}
+            receivers={receivers?.receivers ?? []}
+            decisions={fourth?.decisions ?? []}
+          />
+        </FadeIn>
+        <FadeIn>
+          <PullQuote />
+        </FadeIn>
+        <FadeIn>
+          <StatLeaders
+            season={LATEST_SEASON}
+            receivers={receivers?.receivers ?? []}
+            weeks={weeks?.rows ?? []}
+          />
+        </FadeIn>
+        <FadeIn>
+          <DivisionStandings
+            season={LATEST_SEASON}
+            standings={standings?.standings ?? []}
+          />
+        </FadeIn>
+        <FadeIn>
+          <CampbellEra />
+        </FadeIn>
+        <FadeIn>
+          <ChartsPreview />
+        </FadeIn>
       </main>
 
       <Footer
@@ -338,9 +356,27 @@ function Hero({
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <StatBox label="Record" value={`${wins}–${losses}`} />
-          <StatBox label="PPG" value={ppg} />
-          <StatBox label="Grit Index" value={grit} suffix="/100" emphasize />
+          {/* Numeric stats animate up on scroll-in; the qualitative
+              "Kneecap Status" pill stays static text. */}
+          <StatBox
+            label="Record"
+            value={`${wins}–${losses}`}
+            countTo={wins}
+            countSuffix={`–${losses}`}
+          />
+          <StatBox
+            label="PPG"
+            value={ppg}
+            countTo={parseFloat(ppg)}
+            countDecimals={1}
+          />
+          <StatBox
+            label="Grit Index"
+            value={grit}
+            suffix="/100"
+            emphasize
+            countTo={grit}
+          />
           <StatBox
             label="Kneecap Status"
             value={grit >= 60 ? "BITTEN" : grit >= 40 ? "GNAWING" : "EYEING"}
@@ -358,16 +394,25 @@ function StatBox({
   suffix,
   emphasize,
   small,
+  /** When set, animate the number from 0 to this value on first scroll-in. */
+  countTo,
+  /** Decimal places for the animated value. */
+  countDecimals,
+  /** Static text appended inside the count, e.g. "–2" for a record. */
+  countSuffix,
 }: {
   label: string;
   value: string | number;
   suffix?: string;
   emphasize?: boolean;
   small?: boolean;
+  countTo?: number;
+  countDecimals?: number;
+  countSuffix?: string;
 }) {
   return (
     <div
-      className={`flex flex-col justify-between border-l-4 ${
+      className={`card-lift flex flex-col justify-between border-l-4 ${
         emphasize
           ? "border-[var(--lions-silver)] bg-[var(--lions-blue-deep)] text-[var(--lions-ink-inverse)]"
           : "border-[var(--lions-blue)] bg-white"
@@ -385,7 +430,15 @@ function StatBox({
           small ? "text-3xl" : "text-5xl"
         } ${emphasize ? "text-white" : "text-[var(--lions-charcoal)]"}`}
       >
-        {value}
+        {countTo !== undefined ? (
+          <CountUp
+            to={countTo}
+            decimals={countDecimals}
+            suffix={countSuffix}
+          />
+        ) : (
+          value
+        )}
         {suffix && (
           <span className="ml-1 text-xl text-[var(--lions-silver-dark)]">
             {suffix}
@@ -463,7 +516,7 @@ function DefiningMoments({ games }: { games: WeeklyGame[] }) {
             return (
               <article
                 key={`${g.week}-${kind}`}
-                className={`flex flex-col gap-2 border-2 p-4 font-display tabular ${
+                className={`card-lift flex flex-col gap-2 border-2 p-4 font-display tabular ${
                   kind === "W"
                     ? "border-[var(--lions-blue)] bg-[var(--lions-blue)]/[0.04]"
                     : "border-zinc-300 bg-zinc-50"
@@ -675,7 +728,7 @@ function FromTheData({
           {insights.map((it, i) => (
             <div
               key={i}
-              className="flex flex-col gap-2 border-l-4 border-[var(--lions-blue)] bg-white p-6 shadow-sm"
+              className="card-lift flex flex-col gap-2 border-l-4 border-[var(--lions-blue)] bg-white p-6 shadow-sm"
             >
               <div className="font-display text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--lions-silver-dark)]">
                 Insight {String(i + 1).padStart(2, "0")}
@@ -750,8 +803,10 @@ function StatLeaders({
   }
 
   const byPlayer: Record<string, number[]> = {};
+  const weekLabelsByPlayer: Record<string, string[]> = {};
   for (const w of weeks) {
     (byPlayer[w.name] ??= []).push(w.yards);
+    (weekLabelsByPlayer[w.name] ??= []).push(`W${w.week}`);
   }
 
   const leader = receivers[0];
@@ -802,7 +857,11 @@ function StatLeaders({
                   <td className="py-2 text-right font-bold">{r.yards}</td>
                   <td className="py-2 text-right">{r.tds ?? "—"}</td>
                   <td className="py-2 pl-4">
-                    <Sparkline values={byPlayer[r.name] ?? []} />
+                    <Sparkline
+                      values={byPlayer[r.name] ?? []}
+                      labels={weekLabelsByPlayer[r.name] ?? []}
+                      unitSuffix="yds"
+                    />
                   </td>
                 </tr>
               ))}

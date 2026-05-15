@@ -75,7 +75,7 @@ body {
   vertical-align: middle;
 }
 
-/* Tickert marquee — pauses on hover */
+/* Ticker marquee — pauses on hover */
 @keyframes ticker-scroll {
   0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
@@ -85,6 +85,54 @@ body {
 }
 .ticker-track:hover {
   animation-play-state: paused;
+}
+
+/* Honor the OS-level "reduce motion" setting — pause tickers, kill
+   transitions, render FadeIns as immediately visible. */
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track,
+  .ticker-track-slow {
+    animation: none;
+  }
+  .fade-in {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Scroll-fade primitive: starts hidden + nudged down, lands in place.
+   Toggled by the FadeIn client component when the element enters the
+   viewport. */
+.fade-in {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 600ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 600ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  will-change: opacity, transform;
+}
+.fade-in.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Card hover affordance — used on Defining Moments, Insights, Chart
+   preview tiles. Subtle lift + shadow, sells "interactive" without
+   being shouty. */
+.card-lift {
+  transition:
+    transform 220ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    box-shadow 220ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    border-color 220ms ease-out;
+}
+.card-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 22px -8px rgba(0, 42, 71, 0.22);
 }
 
 /* Vertical stripe pattern for hero — abstract field-feel without marks */

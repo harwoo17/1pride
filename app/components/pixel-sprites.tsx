@@ -2,57 +2,27 @@
 
 import { useId } from "react";
 
-// Plush mascot-head lion. Dense layered fur (40+ overlapping locks with
-// rounded plush tips, not spiky flames), big glossy nose, big mascot-
-// cartoon-blue eyes, default open snarl with teeth, hair-strand detail
-// lines on the larger locks. Five expressions. Generic mascot — no
-// real-team marks. Filename kept for back-compat with existing imports.
+// Stylized varsity-logo lion. Bold profile silhouette, two flat colors
+// + clean outline + accent gold mane peaks. Embraces SVG's strength
+// (flat vector, sharp edges) instead of fighting it (photo-real plush).
+//
+// Five expressions vary the EYE only — the silhouette stays consistent
+// like a real team mark.
+//
+// Filename retained for back-compat with existing imports.
 
 const C = {
-  outline: "#0a0604",
-  outlineSoft: "#2a1208",
-
-  // Reddish-auburn mane, with darker variance for natural shading
-  maneDeep: "#26090b",
-  maneDark: "#54170c",
-  mane: "#852d14",
-  maneMid: "#ad441c",
-  maneLight: "#d76b33",
-  maneHi: "#ef9d5e",
-  maneSpec: "#ffd5a3",
-  maneStrand: "#3a1208", // thin hair-strand detail
-
-  // Face — warm tan
-  faceShadow: "#7a3a14",
-  faceDark: "#b16a2c",
-  face: "#df954a",
-  faceLight: "#f1bc76",
-  faceHi: "#ffe6b8",
-
-  // Cream muzzle / chin
-  muzzle: "#fae0b4",
-  muzzleHi: "#fff4d8",
-  muzzleShadow: "#d8a874",
-
-  // Big plush black nose
-  noseDeep: "#000000",
-  nose: "#160a06",
-  noseMid: "#3a1f12",
-  noseSpec: "#ffffff",
-
-  // Bigger brighter mascot-blue eyes
-  eyeWhite: "#ffffff",
-  eyeShade: "#c8d3dc",
-  irisOuter: "#0a3a72",
-  iris: "#1c84d2",
-  irisInner: "#62b4ec",
-  pupil: "#000000",
-  catchlight: "#ffffff",
-
-  tongue: "#e0577e",
-  tongueDark: "#9a2a50",
-  toothWhite: "#fff7e4",
-  toothShadow: "#d6c39c",
+  outline: "#000000",
+  base: "#0076b6",          // Honolulu Blue — body of the lion
+  baseShadow: "#00558a",
+  baseDeep: "#002a47",
+  highlight: "#b3d8ec",
+  silver: "#b0b7bc",
+  silverDark: "#6a7178",
+  gold: "#ffcb05",
+  goldDeep: "#c89500",
+  white: "#ffffff",
+  ink: "#0a1929",
 } as const;
 
 export type LionExpression =
@@ -62,159 +32,7 @@ export type LionExpression =
   | "dazed"
   | "determined";
 
-// ─── FUR LOCK ─────────────────────────────────────────────────────────────
-// A single clump of fur. Rounded plush tip (not pointed flame) so it
-// reads like matted hair rather than a spike.
-
-interface LockDef {
-  angle: number;
-  length: number;
-  width: number;
-  curve: number;
-  tone: "deep" | "dark" | "mid" | "light";
-  hairStrands?: boolean; // whether to draw a few hair-strand detail lines
-}
-
-function lockPath(
-  cx: number,
-  cy: number,
-  baseR: number,
-  def: LockDef,
-): string {
-  const a = def.angle;
-  const baseAng1 = a - def.width;
-  const baseAng2 = a + def.width;
-  const tipAng = a + def.curve;
-
-  const base1x = cx + baseR * Math.cos(baseAng1);
-  const base1y = cy + baseR * Math.sin(baseAng1);
-  const base2x = cx + baseR * Math.cos(baseAng2);
-  const base2y = cy + baseR * Math.sin(baseAng2);
-
-  // The tip is a rounded arc — two points slightly apart, joined by a
-  // small curve. This gives the plush rounded look.
-  const tipWidth = def.width * 0.35;
-  const tipAng1 = tipAng - tipWidth;
-  const tipAng2 = tipAng + tipWidth;
-  const tip1x = cx + def.length * Math.cos(tipAng1);
-  const tip1y = cy + def.length * Math.sin(tipAng1);
-  const tip2x = cx + def.length * Math.cos(tipAng2);
-  const tip2y = cy + def.length * Math.sin(tipAng2);
-
-  // Side control points — gives the flame an "S" curl
-  const ctrl1x = cx + (def.length * 0.75) * Math.cos(baseAng1 + def.curve * 0.4);
-  const ctrl1y = cy + (def.length * 0.75) * Math.sin(baseAng1 + def.curve * 0.4);
-  const ctrl2x = cx + (def.length * 0.75) * Math.cos(baseAng2 + def.curve * 0.4);
-  const ctrl2y = cy + (def.length * 0.75) * Math.sin(baseAng2 + def.curve * 0.4);
-
-  // Tip curve control (the rounded top)
-  const tipCtrlx = cx + (def.length * 1.06) * Math.cos(tipAng);
-  const tipCtrly = cy + (def.length * 1.06) * Math.sin(tipAng);
-
-  return (
-    `M ${base1x.toFixed(1)} ${base1y.toFixed(1)} ` +
-    `Q ${ctrl1x.toFixed(1)} ${ctrl1y.toFixed(1)} ${tip1x.toFixed(1)} ${tip1y.toFixed(1)} ` +
-    `Q ${tipCtrlx.toFixed(1)} ${tipCtrly.toFixed(1)} ${tip2x.toFixed(1)} ${tip2y.toFixed(1)} ` +
-    `Q ${ctrl2x.toFixed(1)} ${ctrl2y.toFixed(1)} ${base2x.toFixed(1)} ${base2y.toFixed(1)} ` +
-    `Z`
-  );
-}
-
-// Quick deterministic jitter — keeps the silhouette stable across renders
-function jitter(seed: number, min: number, max: number): number {
-  const x = Math.sin(seed * 12.9898) * 43758.5453;
-  const r = x - Math.floor(x);
-  return min + (max - min) * r;
-}
-
-// Generate locks programmatically. Major primary locks at deliberate
-// positions, secondary fillers at intermediate angles with smaller size.
-function buildLocks(): { back: LockDef[]; front: LockDef[] } {
-  const back: LockDef[] = [];
-  const front: LockDef[] = [];
-
-  // ─── Primary back locks — top arc + sides ──────────────────────────
-  // 9 prominent locks across the top half of the head (angles -π to 0)
-  const primaryTopAngles = [-Math.PI + 0.05, -2.7, -2.3, -1.95, -1.57, -1.2, -0.85, -0.45, -0.05];
-  primaryTopAngles.forEach((a, i) => {
-    const lengthBase = 110 + jitter(i + 1, -10, 18);
-    const tones: LockDef["tone"][] = ["dark", "mid", "light", "mid", "light", "mid", "light", "dark", "mid"];
-    back.push({
-      angle: a + jitter(i + 7, -0.04, 0.04),
-      length: lengthBase,
-      width: 0.19 + jitter(i + 13, -0.02, 0.04),
-      curve: jitter(i + 19, -0.08, 0.08),
-      tone: tones[i] ?? "mid",
-      hairStrands: i % 2 === 0,
-    });
-  });
-
-  // ─── Secondary back fillers — small locks between the primaries ────
-  for (let i = 0; i < 16; i++) {
-    const a = -Math.PI + 0.18 + i * (Math.PI / 16);
-    const tones: LockDef["tone"][] = ["deep", "dark", "mid", "dark"];
-    back.push({
-      angle: a + jitter(i + 31, -0.07, 0.07),
-      length: 84 + jitter(i + 41, -8, 12),
-      width: 0.11 + jitter(i + 53, -0.02, 0.03),
-      curve: jitter(i + 61, -0.05, 0.05),
-      tone: tones[i % 4],
-    });
-  }
-
-  // ─── Side locks (around 9-o-clock and 3-o-clock) ────────────────────
-  for (let i = 0; i < 5; i++) {
-    const aLeft = Math.PI + 0.1 + i * 0.35;
-    const aRight = -0.15 + i * 0.3;
-    back.push({
-      angle: aLeft,
-      length: 110 + jitter(i + 71, -10, 14),
-      width: 0.18,
-      curve: 0.05 + jitter(i + 79, -0.04, 0.04),
-      tone: i % 2 === 0 ? "dark" : "mid",
-      hairStrands: i === 1,
-    });
-    back.push({
-      angle: aRight,
-      length: 110 + jitter(i + 89, -10, 14),
-      width: 0.18,
-      curve: -0.05 + jitter(i + 97, -0.04, 0.04),
-      tone: i % 2 === 0 ? "mid" : "dark",
-      hairStrands: i === 1,
-    });
-  }
-
-  // ─── Front locks (chin + cheek) — drawn AFTER the face ─────────────
-  // Cheek tufts
-  const cheekAngles = [Math.PI + 0.55, Math.PI + 0.78, -0.55 - 0.0, -0.78];
-  cheekAngles.forEach((a, i) => {
-    front.push({
-      angle: a,
-      length: 118 + jitter(i + 101, -8, 14),
-      width: 0.21,
-      curve: a < 0 ? -0.08 : 0.08,
-      tone: i % 2 === 0 ? "dark" : "deep",
-      hairStrands: true,
-    });
-  });
-  // Chin tufts (across the bottom)
-  for (let i = 0; i < 5; i++) {
-    const a = Math.PI / 2 + (-0.5 + i * 0.25);
-    front.push({
-      angle: a,
-      length: 100 + jitter(i + 113, -6, 12),
-      width: 0.16,
-      curve: jitter(i + 127, -0.04, 0.04),
-      tone: i === 2 ? "deep" : "dark",
-    });
-  }
-
-  return { back, front };
-}
-
-const LOCKS = buildLocks();
-
-// ─── LION HEAD ─────────────────────────────────────────────────────────────
+// ─── LION HEAD (heraldic / varsity profile) ────────────────────────────────
 
 export function PixelLion({
   state,
@@ -225,382 +43,270 @@ export function PixelLion({
 }) {
   const id = useId();
   const size = 16 * scale;
-  const cx = 170;
-  const cy = 178;
-  const baseR = 78;
-
-  const renderLock = (def: LockDef, i: number, layer: string) => {
-    const gradId = `${id}-lock-${layer}-${i}`;
-    const path = lockPath(cx, cy, baseR, def);
-    // Direction the light is "coming from" relative to this lock's tip.
-    // Light source is at upper-left of canvas (~225° / -2.36 rad).
-    const lightDir = Math.cos(def.angle - -2.36);
-    // Pick a tip color based on tone + how directly lit this lock is.
-    const tipColor =
-      lightDir > 0.5
-        ? C.maneSpec
-        : def.tone === "light"
-          ? C.maneHi
-          : def.tone === "mid"
-            ? C.maneLight
-            : def.tone === "dark"
-              ? C.maneMid
-              : C.mane;
-    const midColor =
-      def.tone === "light"
-        ? C.maneMid
-        : def.tone === "mid"
-          ? C.maneDark
-          : def.tone === "dark"
-            ? C.maneDark
-            : C.maneDeep;
-    return (
-      <g key={`${layer}-${i}`}>
-        <defs>
-          <linearGradient
-            id={gradId}
-            x1="50%"
-            y1="100%"
-            x2={`${50 - Math.cos(def.angle) * 14}%`}
-            y2={`${100 - Math.sin(def.angle) * 100}%`}
-          >
-            <stop offset="0%" stopColor={C.maneDeep} />
-            <stop offset="35%" stopColor={midColor} />
-            <stop offset="80%" stopColor={tipColor} />
-            <stop offset="100%" stopColor={tipColor} />
-          </linearGradient>
-        </defs>
-        <path
-          d={path}
-          fill={`url(#${gradId})`}
-          stroke={C.outline}
-          strokeWidth={layer === "back" ? 1.8 : 2.2}
-          strokeLinejoin="round"
-          opacity={layer === "back" && def.tone === "deep" ? 0.92 : 1}
-        />
-        {def.hairStrands && <HairStrands cx={cx} cy={cy} baseR={baseR} def={def} />}
-      </g>
-    );
-  };
 
   return (
     <svg
-      viewBox="0 0 340 340"
+      viewBox="0 0 320 320"
       width={size}
       height={size}
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
     >
       <defs>
-        <radialGradient id={`${id}-face`} cx="36%" cy="32%" r="74%">
-          <stop offset="0%" stopColor={C.faceHi} />
-          <stop offset="22%" stopColor={C.faceLight} />
-          <stop offset="60%" stopColor={C.face} />
-          <stop offset="90%" stopColor={C.faceDark} />
-          <stop offset="100%" stopColor={C.faceShadow} />
-        </radialGradient>
-
-        <radialGradient id={`${id}-muzzle`} cx="42%" cy="22%" r="80%">
-          <stop offset="0%" stopColor={C.muzzleHi} />
-          <stop offset="50%" stopColor={C.muzzle} />
-          <stop offset="100%" stopColor={C.muzzleShadow} />
-        </radialGradient>
-
-        <radialGradient id={`${id}-nose`} cx="33%" cy="20%" r="80%">
-          <stop offset="0%" stopColor={C.noseMid} />
-          <stop offset="22%" stopColor={C.nose} />
-          <stop offset="80%" stopColor={C.noseDeep} />
-          <stop offset="100%" stopColor={C.noseDeep} />
-        </radialGradient>
-
-        <radialGradient id={`${id}-eyeball`} cx="38%" cy="30%" r="80%">
-          <stop offset="0%" stopColor={C.eyeWhite} />
-          <stop offset="65%" stopColor={C.eyeWhite} />
-          <stop offset="100%" stopColor={C.eyeShade} />
-        </radialGradient>
-
-        <radialGradient id={`${id}-iris`} cx="35%" cy="30%" r="75%">
-          <stop offset="0%" stopColor={C.irisInner} />
-          <stop offset="55%" stopColor={C.iris} />
-          <stop offset="100%" stopColor={C.irisOuter} />
-        </radialGradient>
-
-        <filter id={`${id}-blur`} x="-30%" y="-30%" width="160%" height="160%">
+        <linearGradient id={`${id}-body`} x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor={C.highlight} stopOpacity="0.65" />
+          <stop offset="22%" stopColor={C.base} />
+          <stop offset="80%" stopColor={C.base} />
+          <stop offset="100%" stopColor={C.baseShadow} />
+        </linearGradient>
+        <linearGradient id={`${id}-mane`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor={C.gold} />
+          <stop offset="60%" stopColor={C.gold} />
+          <stop offset="100%" stopColor={C.goldDeep} />
+        </linearGradient>
+        <filter id={`${id}-shadow`} x="-30%" y="-30%" width="160%" height="160%">
           <feGaussianBlur stdDeviation="6" />
         </filter>
       </defs>
 
       {/* Ground shadow */}
       <ellipse
-        cx={cx}
-        cy="320"
-        rx="130"
-        ry="11"
-        fill={C.outline}
-        opacity="0.38"
-        filter={`url(#${id}-blur)`}
+        cx="160"
+        cy="298"
+        rx="115"
+        ry="10"
+        fill={C.ink}
+        opacity="0.36"
+        filter={`url(#${id}-shadow)`}
       />
 
-      {/* Back mane locks */}
-      {LOCKS.back.map((def, i) => renderLock(def, i, "back"))}
+      {/* Mane — 9-peak silhouette behind the head */}
+      <path
+        d="
+          M 160 26
+          C 178 32, 196 28, 208 42
+          C 224 46, 240 54, 246 72
+          C 264 80, 274 96, 270 116
+          C 286 124, 290 144, 282 164
+          C 292 180, 286 202, 268 212
+          C 268 232, 248 248, 226 246
+          C 218 264, 196 270, 176 262
+          C 162 274, 138 274, 124 262
+          C 104 270, 82 264, 74 246
+          C 52 248, 32 232, 32 212
+          C 14 202, 8 180, 18 164
+          C 10 144, 14 124, 30 116
+          C 26 96, 36 80, 54 72
+          C 60 54, 76 46, 92 42
+          C 104 28, 122 32, 140 26
+          C 148 32, 152 32, 160 26
+          Z
+        "
+        fill={`url(#${id}-mane)`}
+        stroke={C.outline}
+        strokeWidth="4"
+        strokeLinejoin="round"
+      />
 
-      {/* Face plate */}
+      {/* Mane upper highlight ridges */}
+      <g
+        stroke={C.white}
+        strokeWidth="2.5"
+        fill="none"
+        strokeLinecap="round"
+        opacity="0.55"
+      >
+        <path d="M 96 58 Q 110 50 124 56" />
+        <path d="M 142 36 Q 160 30 178 36" />
+        <path d="M 200 58 Q 214 50 226 58" />
+      </g>
+
+      {/* Mane lower shadow ridges */}
+      <g
+        stroke={C.goldDeep}
+        strokeWidth="2"
+        fill="none"
+        strokeLinecap="round"
+        opacity="0.6"
+      >
+        <path d="M 60 200 Q 70 218 86 226" />
+        <path d="M 234 226 Q 250 218 260 200" />
+        <path d="M 130 264 Q 160 270 190 264" />
+      </g>
+
+      {/* Head — Honolulu Blue, in front of the mane */}
       <ellipse
-        cx={cx}
-        cy={cy + 8}
-        rx="76"
-        ry="68"
-        fill={`url(#${id}-face)`}
+        cx="160"
+        cy="172"
+        rx="78"
+        ry="74"
+        fill={`url(#${id}-body)`}
+        stroke={C.outline}
+        strokeWidth="3.5"
+      />
+
+      <ellipse
+        cx="128"
+        cy="138"
+        rx="34"
+        ry="32"
+        fill={C.highlight}
+        opacity="0.6"
+      />
+
+      <ellipse
+        cx="190"
+        cy="208"
+        rx="44"
+        ry="22"
+        fill={C.baseShadow}
+        opacity="0.55"
+      />
+
+      <path
+        d="M 92 188 Q 110 220 144 218"
         stroke={C.outline}
         strokeWidth="3"
+        fill="none"
+        strokeLinecap="round"
+        opacity="0.85"
       />
-      {/* Face highlights & shadows */}
-      <ellipse cx={cx - 30} cy={cy - 18} rx="32" ry="34" fill={C.faceHi} opacity="0.4" />
-      <ellipse cx={cx + 32} cy={cy + 40} rx="40" ry="24" fill={C.faceShadow} opacity="0.32" />
 
-      {/* Brow ridges */}
-      <g>
-        <path
-          d={`M ${cx - 56} ${cy - 12} q -8 -20 18 -24 q 24 -2 32 14 q -10 8 -26 8 q -14 4 -24 2 z`}
-          fill={C.maneDark}
-          stroke={C.outline}
-          strokeWidth="2.2"
-          strokeLinejoin="round"
-        />
-        <path d={`M ${cx - 48} ${cy - 22} q 8 -3 18 -3`} stroke={C.maneHi} strokeWidth="1.5" fill="none" opacity="0.7" />
-        <path
-          d={`M ${cx + 56} ${cy - 12} q 8 -20 -18 -24 q -24 -2 -32 14 q 10 8 26 8 q 14 4 24 2 z`}
-          fill={C.maneDark}
-          stroke={C.outline}
-          strokeWidth="2.2"
-          strokeLinejoin="round"
-        />
-        <path d={`M ${cx + 48} ${cy - 22} q -8 -3 -18 -3`} stroke={C.maneHi} strokeWidth="1.5" fill="none" opacity="0.7" />
-      </g>
-
-      {/* Cream muzzle plate */}
-      <ellipse
-        cx={cx}
-        cy={cy + 42}
-        rx="62"
-        ry="46"
-        fill={`url(#${id}-muzzle)`}
-        stroke={C.outline}
-        strokeWidth="2.5"
-      />
-      <ellipse cx={cx - 22} cy={cy + 22} rx="24" ry="14" fill={C.muzzleHi} opacity="0.55" />
-
-      {/* Eyes */}
-      <Eyes expr={state} id={id} cx={cx} cy={cy} />
-
-      {/* HUGE glossy black nose */}
-      <g>
-        <path
-          d={`M ${cx} ${cy + 44}
-              Q ${cx - 38} ${cy + 14} ${cx - 26} ${cy - 6}
-              Q ${cx - 12} ${cy - 16} ${cx} ${cy - 12}
-              Q ${cx + 12} ${cy - 16} ${cx + 26} ${cy - 6}
-              Q ${cx + 38} ${cy + 14} ${cx} ${cy + 44} Z`}
-          fill={`url(#${id}-nose)`}
-          stroke={C.outline}
-          strokeWidth="3"
-          strokeLinejoin="round"
-        />
-        {/* Primary specular highlight (top-left) — bigger and brighter */}
-        <ellipse cx={cx - 12} cy={cy - 4} rx="11" ry="6" fill={C.noseSpec} opacity="0.9" />
-        {/* Secondary highlight */}
-        <ellipse cx={cx - 4} cy={cy + 8} rx="4" ry="2.5" fill={C.noseSpec} opacity="0.6" />
-        {/* Bottom-left small light wrap */}
-        <ellipse cx={cx - 18} cy={cy + 22} rx="3" ry="2" fill={C.noseSpec} opacity="0.35" />
-        {/* Nostrils */}
-        <ellipse cx={cx - 9} cy={cy + 24} rx="3" ry="4" fill={C.noseDeep} opacity="0.85" />
-        <ellipse cx={cx + 9} cy={cy + 24} rx="3" ry="4" fill={C.noseDeep} opacity="0.85" />
-      </g>
-
-      {/* Philtrum */}
       <path
-        d={`M ${cx} ${cy + 44} L ${cx} ${cy + 58}`}
+        d="M 100 148 Q 160 132 220 148"
         stroke={C.outline}
-        strokeWidth="2.5"
-        opacity="0.75"
+        strokeWidth="4"
+        fill="none"
+        strokeLinecap="round"
       />
 
-      {/* Mouth */}
-      <Mouth expr={state} cx={cx} cy={cy} />
+      <Eyes expr={state} id={id} />
 
-      {/* Whiskers */}
-      <g stroke={C.outline} strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.7">
-        <path d={`M ${cx - 32} ${cy + 42} q -16 -2 -30 4`} />
-        <path d={`M ${cx - 32} ${cy + 52} q -20 2 -34 14`} />
-        <path d={`M ${cx - 28} ${cy + 60} q -16 6 -24 18`} />
-        <path d={`M ${cx + 32} ${cy + 42} q 16 -2 30 4`} />
-        <path d={`M ${cx + 32} ${cy + 52} q 20 2 34 14`} />
-        <path d={`M ${cx + 28} ${cy + 60} q 16 6 24 18`} />
+      {/* Snout */}
+      <path
+        d="M 160 198
+           Q 134 196 122 214
+           Q 130 234 160 238
+           Q 190 234 198 214
+           Q 186 196 160 198 Z"
+        fill={C.silver}
+        stroke={C.outline}
+        strokeWidth="3"
+        strokeLinejoin="round"
+      />
+      <ellipse cx="144" cy="208" rx="14" ry="6" fill={C.white} opacity="0.55" />
+
+      {/* Nose */}
+      <path
+        d="M 160 198 L 148 184 L 172 184 Z"
+        fill={C.ink}
+        stroke={C.outline}
+        strokeWidth="2.5"
+        strokeLinejoin="round"
+      />
+      <ellipse cx="156" cy="188" rx="3" ry="2" fill={C.white} opacity="0.75" />
+
+      <Mouth expr={state} />
+
+      <g
+        stroke={C.outline}
+        strokeWidth="2"
+        fill="none"
+        strokeLinecap="round"
+        opacity="0.75"
+      >
+        <path d="M 122 218 Q 108 218 96 224" />
+        <path d="M 124 226 Q 110 230 98 238" />
+        <path d="M 198 218 Q 212 218 224 224" />
+        <path d="M 196 226 Q 210 230 222 238" />
       </g>
-
-      {/* Front mane locks (cheek + chin) — overlap face */}
-      {LOCKS.front.map((def, i) => renderLock(def, i, "front"))}
     </svg>
   );
 }
 
-// ─── HAIR STRAND DETAIL ────────────────────────────────────────────────────
-// Two or three thin lines on the larger locks suggesting individual hair
-// strands within the clump. Pure decoration but adds the "lived-in" feel.
-function HairStrands({
-  cx,
-  cy,
-  baseR,
-  def,
-}: {
-  cx: number;
-  cy: number;
-  baseR: number;
-  def: LockDef;
-}) {
-  const a = def.angle;
-  const tipAng = a + def.curve;
-  // Three strand lines: one center, two slightly off
-  const strands: { from: [number, number]; to: [number, number] }[] = [];
-  for (let i = -1; i <= 1; i++) {
-    const aOff = a + i * (def.width * 0.3);
-    const tipAOff = tipAng + i * (def.width * 0.2);
-    strands.push({
-      from: [
-        cx + (baseR + 4) * Math.cos(aOff),
-        cy + (baseR + 4) * Math.sin(aOff),
-      ],
-      to: [
-        cx + (def.length - 6) * Math.cos(tipAOff),
-        cy + (def.length - 6) * Math.sin(tipAOff),
-      ],
-    });
-  }
-  return (
-    <g
-      stroke={C.maneStrand}
-      strokeWidth="0.8"
-      fill="none"
-      strokeLinecap="round"
-      opacity="0.45"
-    >
-      {strands.map((s, i) => (
-        <line key={i} x1={s.from[0]} y1={s.from[1]} x2={s.to[0]} y2={s.to[1]} />
-      ))}
-    </g>
-  );
-}
-
-// ─── EYES ──────────────────────────────────────────────────────────────────
+// ─── EXPRESSIONS — EYES ────────────────────────────────────────────────────
 
 interface EyePos { cx: number; cy: number; }
 
-function Eyes({
-  expr,
-  id,
-  cx,
-  cy,
-}: {
-  expr: LionExpression;
-  id: string;
-  cx: number;
-  cy: number;
-}) {
-  const left: EyePos = { cx: cx - 30, cy: cy + 2 };
-  const right: EyePos = { cx: cx + 30, cy: cy + 2 };
+function Eyes({ expr, id }: { expr: LionExpression; id: string }) {
+  const left: EyePos = { cx: 124, cy: 166 };
+  const right: EyePos = { cx: 196, cy: 166 };
 
   switch (expr) {
     case "ready":
       return (
         <>
-          <Eye id={id} {...left} size="default" />
-          <Eye id={id} {...right} size="default" />
+          <GoldEye id={id} {...left} />
+          <GoldEye id={id} {...right} />
         </>
       );
     case "alert":
       return (
         <>
-          <Eye id={id} {...left} size="wide" />
-          <Eye id={id} {...right} size="wide" />
+          <GoldEye id={id} {...left} wide />
+          <GoldEye id={id} {...right} wide />
         </>
       );
     case "stunned":
       return (
         <>
-          <XEyes {...left} />
-          <XEyes {...right} />
+          <XEye {...left} />
+          <XEye {...right} />
         </>
       );
     case "dazed":
       return (
         <>
           <SlitClosed {...left} />
-          <Spiral {...right} />
+          <Swirl {...right} />
         </>
       );
     case "determined":
       return (
         <>
-          <NarrowEye id={id} {...left} />
-          <NarrowEye id={id} {...right} />
+          <AngryEye id={id} {...left} flip />
+          <AngryEye id={id} {...right} />
         </>
       );
   }
 }
 
-function Eye({
-  id,
+function GoldEye({
+  id: _id,
   cx,
   cy,
-  size,
-}: EyePos & { id: string; size: "default" | "wide" }) {
-  const rx = size === "wide" ? 24 : 21;
-  const ry = size === "wide" ? 22 : 20;
-  const irisR = size === "wide" ? 15 : 13;
-  const pupilR = size === "wide" ? 9 : 8;
+  wide,
+}: EyePos & { id: string; wide?: boolean }) {
+  const rx = wide ? 16 : 13;
+  const ry = wide ? 14 : 12;
   return (
     <g>
-      <ellipse cx={cx + 1} cy={cy + 2} rx={rx + 2} ry={ry + 2} fill={C.faceShadow} opacity="0.35" />
-      <ellipse cx={cx} cy={cy} rx={rx} ry={ry} fill={`url(#${id}-eyeball)`} stroke={C.outline} strokeWidth="2.8" />
-      <circle cx={cx} cy={cy + 1} r={irisR} fill={`url(#${id}-iris)`} />
-      <circle cx={cx} cy={cy + 1} r={irisR} fill="none" stroke={C.irisOuter} strokeWidth="1.8" />
-      <circle cx={cx} cy={cy + 1} r={pupilR} fill={C.pupil} />
-      {/* Big primary catchlight */}
-      <ellipse cx={cx - 5} cy={cy - 5} rx="4.5" ry="3" fill={C.catchlight} />
-      {/* Secondary smaller catchlight */}
-      <circle cx={cx + 4} cy={cy + 6} r="2" fill={C.catchlight} opacity="0.8" />
-      {/* Tiny third gleam */}
-      <circle cx={cx - 8} cy={cy + 2} r="1" fill={C.catchlight} opacity="0.5" />
+      <ellipse
+        cx={cx}
+        cy={cy}
+        rx={rx}
+        ry={ry}
+        fill={C.gold}
+        stroke={C.outline}
+        strokeWidth="3"
+      />
+      {/* Vertical slit pupil — predatory varsity-logo look */}
+      <ellipse
+        cx={cx}
+        cy={cy}
+        rx={wide ? 4 : 3}
+        ry={wide ? 10 : 9}
+        fill={C.ink}
+      />
+      <ellipse cx={cx - 3} cy={cy - 3} rx="2.5" ry="1.6" fill={C.white} />
     </g>
   );
 }
 
-function NarrowEye({ id, cx, cy }: EyePos & { id: string }) {
+function XEye({ cx, cy }: EyePos) {
+  const s = 11;
   return (
-    <g>
-      <path
-        d={`M ${cx - 22} ${cy + 4} q 22 -16 44 0 q -22 16 -44 0 z`}
-        fill={`url(#${id}-iris)`}
-        stroke={C.outline}
-        strokeWidth="2.5"
-        strokeLinejoin="round"
-      />
-      <ellipse cx={cx - 4} cy={cy + 1} rx="3" ry="2" fill={C.catchlight} />
-      <path
-        d={`M ${cx - 24} ${cy - 10} q 22 -10 46 0 l -4 7 q -20 -8 -36 0 z`}
-        fill={C.outline}
-        stroke={C.outline}
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-    </g>
-  );
-}
-
-function XEyes({ cx, cy }: EyePos) {
-  const s = 16;
-  return (
-    <g stroke={C.outline} strokeWidth="5" strokeLinecap="round">
+    <g stroke={C.outline} strokeWidth="4" strokeLinecap="round">
       <line x1={cx - s} y1={cy - s} x2={cx + s} y2={cy + s} />
       <line x1={cx - s} y1={cy + s} x2={cx + s} y2={cy - s} />
     </g>
@@ -610,141 +316,115 @@ function XEyes({ cx, cy }: EyePos) {
 function SlitClosed({ cx, cy }: EyePos) {
   return (
     <path
-      d={`M ${cx - 22} ${cy} q 22 -8 44 0`}
+      d={`M ${cx - 14} ${cy} q 14 -6 28 0`}
       stroke={C.outline}
-      strokeWidth="4.5"
+      strokeWidth="4"
       fill="none"
       strokeLinecap="round"
     />
   );
 }
 
-function Spiral({ cx, cy }: EyePos) {
+function Swirl({ cx, cy }: EyePos) {
   return (
-    <g stroke={C.outline} strokeWidth="3.5" fill="none" strokeLinecap="round">
-      <circle cx={cx} cy={cy} r="19" />
-      <circle cx={cx} cy={cy} r="12" />
-      <circle cx={cx} cy={cy} r="6" />
+    <g stroke={C.outline} strokeWidth="3" fill="none" strokeLinecap="round">
+      <circle cx={cx} cy={cy} r="13" />
+      <circle cx={cx} cy={cy} r="7" />
+    </g>
+  );
+}
+
+function AngryEye({
+  id: _id,
+  cx,
+  cy,
+  flip,
+}: EyePos & { id: string; flip?: boolean }) {
+  const browTilt = flip ? -8 : 8;
+  return (
+    <g>
+      <path
+        d={`M ${cx - 16} ${cy - 14} l 32 ${browTilt} l -2 6 l -28 ${
+          flip ? 10 : -6
+        } z`}
+        fill={C.outline}
+        stroke={C.outline}
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      <ellipse cx={cx} cy={cy + 2} rx="13" ry="6" fill={C.gold} stroke={C.outline} strokeWidth="2.5" />
+      <ellipse cx={cx} cy={cy + 2} rx="3" ry="5" fill={C.ink} />
+      <ellipse cx={cx - 3} cy={cy} rx="1.5" ry="1" fill={C.white} />
     </g>
   );
 }
 
 // ─── MOUTH ─────────────────────────────────────────────────────────────────
 
-function Mouth({
-  expr,
-  cx,
-  cy,
-}: {
-  expr: LionExpression;
-  cx: number;
-  cy: number;
-}) {
-  const mouthY = cy + 70;
+function Mouth({ expr }: { expr: LionExpression }) {
+  const cy = 250;
 
   switch (expr) {
     case "ready":
-      // OPEN mascot smile with teeth + tongue
       return (
-        <g>
-          <path
-            d={`M ${cx - 30} ${mouthY - 2}
-                Q ${cx} ${mouthY + 22} ${cx + 30} ${mouthY - 2}
-                Q ${cx + 14} ${mouthY - 5} ${cx} ${mouthY - 5}
-                Q ${cx - 14} ${mouthY - 5} ${cx - 30} ${mouthY - 2} Z`}
-            fill={C.outline}
-            stroke={C.outline}
-            strokeWidth="2.8"
-            strokeLinejoin="round"
-          />
-          {/* Upper teeth row */}
-          <g fill={C.toothWhite} stroke={C.toothShadow} strokeWidth="0.8">
-            <path d={`M ${cx - 20} ${mouthY - 4} l 2 7 l 5 0 l 2 -7 z`} />
-            <path d={`M ${cx - 8} ${mouthY - 4} l 2 6 l 5 0 l 2 -6 z`} />
-            <path d={`M ${cx + 5} ${mouthY - 4} l 2 6 l 5 0 l 2 -6 z`} />
-            <path d={`M ${cx + 17} ${mouthY - 4} l 2 7 l 5 0 l 2 -7 z`} />
-          </g>
-          {/* Corner fangs */}
-          <path d={`M ${cx - 26} ${mouthY} l 3 10 l 4 -9 z`} fill={C.toothWhite} stroke={C.outline} strokeWidth="1.2" />
-          <path d={`M ${cx + 21} ${mouthY} l 3 9 l 4 -10 z`} fill={C.toothWhite} stroke={C.outline} strokeWidth="1.2" />
-          {/* Tongue */}
-          <ellipse cx={cx} cy={mouthY + 12} rx="16" ry="6" fill={C.tongueDark} />
-          <ellipse cx={cx + 2} cy={mouthY + 11} rx="11" ry="3.5" fill={C.tongue} opacity="0.9" />
-          {/* Tongue tip highlight */}
-          <ellipse cx={cx - 2} cy={mouthY + 10} rx="4" ry="1.5" fill={C.tongue} opacity="0.6" />
+        <g stroke={C.outline} strokeWidth="3" fill="none" strokeLinecap="round">
+          <path d="M 144 254 Q 160 264 176 254" />
         </g>
       );
     case "alert":
       return (
         <g>
-          <ellipse cx={cx} cy={mouthY + 6} rx="16" ry="12" fill={C.outline} stroke={C.outline} strokeWidth="2.8" />
-          <ellipse cx={cx} cy={mouthY + 8} rx="10" ry="7" fill={C.tongueDark} />
-          <ellipse cx={cx + 2} cy={mouthY + 5} rx="5" ry="3" fill={C.tongue} opacity="0.75" />
-          <path d={`M ${cx - 10} ${mouthY - 4} l 1.5 6 l 3 -6 z`} fill={C.toothWhite} stroke={C.outline} strokeWidth="0.8" />
-          <path d={`M ${cx + 7} ${mouthY - 4} l 1.5 6 l 3 -6 z`} fill={C.toothWhite} stroke={C.outline} strokeWidth="0.8" />
+          <ellipse cx="160" cy={cy + 4} rx="14" ry="10" fill={C.ink} stroke={C.outline} strokeWidth="2.5" />
+          <ellipse cx="160" cy={cy + 6} rx="9" ry="5" fill="#9a2a50" />
         </g>
       );
     case "stunned":
       return (
         <g>
-          <ellipse cx={cx} cy={mouthY + 10} rx="26" ry="18" fill={C.outline} stroke={C.outline} strokeWidth="3" />
-          <ellipse cx={cx} cy={mouthY + 12} rx="16" ry="11" fill={C.tongueDark} />
-          <ellipse cx={cx + 3} cy={mouthY + 8} rx="6" ry="3.5" fill={C.tongue} opacity="0.75" />
+          <ellipse cx="160" cy={cy + 8} rx="20" ry="14" fill={C.ink} stroke={C.outline} strokeWidth="3" />
+          <ellipse cx="160" cy={cy + 10} rx="13" ry="8" fill="#9a2a50" />
         </g>
       );
     case "dazed":
       return (
         <g>
           <path
-            d={`M ${cx - 24} ${mouthY} q 14 14 42 4`}
-            fill={C.outline}
+            d="M 138 256 q 14 14 42 4"
+            fill={C.ink}
             stroke={C.outline}
-            strokeWidth="2.8"
+            strokeWidth="2.5"
             strokeLinejoin="round"
           />
           <path
-            d={`M ${cx + 10} ${mouthY + 2} q 10 12 16 20 q -6 5 -16 -2 Z`}
-            fill={C.tongue}
-            stroke={C.tongueDark}
+            d="M 178 256 q 8 12 12 22 q -6 4 -14 -2 Z"
+            fill="#e0577e"
+            stroke="#9a2a50"
             strokeWidth="1.5"
             strokeLinejoin="round"
           />
-          <path d={`M ${cx + 14} ${mouthY + 10} q 2 5 4 8`} stroke={C.eyeWhite} strokeWidth="1" fill="none" opacity="0.5" />
         </g>
       );
     case "determined":
       return (
         <g>
-          {/* Snarl crease */}
           <path
-            d={`M ${cx - 30} ${mouthY - 14} q 30 -10 60 0`}
+            d="M 132 252 q 28 16 56 0 v 14 q -28 12 -56 0 z"
+            fill={C.ink}
             stroke={C.outline}
-            strokeWidth="2.5"
-            fill="none"
-            strokeLinecap="round"
-            opacity="0.65"
-          />
-          {/* Gritted teeth band */}
-          <path
-            d={`M ${cx - 34} ${mouthY - 2} q 34 10 68 0 v 16 q -34 10 -68 0 z`}
-            fill={C.outline}
-            stroke={C.outline}
-            strokeWidth="2.5"
+            strokeWidth="3"
             strokeLinejoin="round"
           />
           <path
-            d={`M ${cx - 30} ${mouthY + 1} q 30 8 60 0 v 9 q -30 8 -60 0 z`}
-            fill={C.toothWhite}
+            d="M 136 256 q 24 12 48 0 v 6 q -24 10 -48 0 z"
+            fill={C.white}
           />
           <g stroke={C.outline} strokeWidth="1.4">
-            <line x1={cx - 18} y1={mouthY + 1} x2={cx - 18} y2={mouthY + 10} />
-            <line x1={cx - 6} y1={mouthY + 1} x2={cx - 6} y2={mouthY + 10} />
-            <line x1={cx + 6} y1={mouthY + 1} x2={cx + 6} y2={mouthY + 10} />
-            <line x1={cx + 18} y1={mouthY + 1} x2={cx + 18} y2={mouthY + 10} />
+            <line x1="148" y1="256" x2="148" y2="264" />
+            <line x1="160" y1="256" x2="160" y2="264" />
+            <line x1="172" y1="256" x2="172" y2="264" />
           </g>
-          {/* Corner fangs */}
-          <path d={`M ${cx - 28} ${mouthY + 6} l 3 9 l 4 -9 z`} fill={C.toothWhite} stroke={C.outline} strokeWidth="1" />
-          <path d={`M ${cx + 21} ${mouthY + 6} l 3 9 l 4 -9 z`} fill={C.toothWhite} stroke={C.outline} strokeWidth="1" />
+          <path d="M 138 256 l 3 8 l 3 -8 z" fill={C.white} stroke={C.outline} strokeWidth="1" />
+          <path d="M 176 256 l 3 8 l 3 -8 z" fill={C.white} stroke={C.outline} strokeWidth="1" />
         </g>
       );
   }

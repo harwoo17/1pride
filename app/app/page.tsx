@@ -173,7 +173,7 @@ function Ticker({
   const updTag = lastUpdated.split(" ").slice(1, 4).join(" ");
 
   return (
-    <div className="relative border-b-2 border-[var(--lions-silver)] bg-[var(--lions-blue-deep)]">
+    <div className="relative border-b-2 border-[var(--lions-gold)] bg-[var(--lions-blue-deep)]">
       <div className="overflow-hidden">
         <div className="ticker-track flex w-max gap-10 py-2 whitespace-nowrap font-display text-base font-semibold tracking-wider text-[var(--lions-ink-inverse)] uppercase">
           {entries.map((g, i) => {
@@ -207,7 +207,7 @@ function Ticker({
         </div>
       </div>
       <div className="absolute right-3 top-1/2 hidden -translate-y-1/2 items-center gap-2 bg-[var(--lions-blue-deep)] pl-3 font-mono text-[9px] tracking-[0.2em] text-[var(--lions-silver-dark)] md:flex">
-        <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--lions-silver)]" />
+        <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--lions-gold)]" />
         LIVE · UPD {updTag}
       </div>
     </div>
@@ -415,13 +415,13 @@ function StatBox({
     <div
       className={`card-lift flex flex-col justify-between border-l-4 ${
         emphasize
-          ? "border-[var(--lions-silver)] bg-[var(--lions-blue-deep)] text-[var(--lions-ink-inverse)]"
+          ? "border-[var(--lions-gold)] bg-[var(--lions-blue-deep)] text-[var(--lions-ink-inverse)]"
           : "border-[var(--lions-blue)] bg-white"
       } p-4 shadow-sm`}
     >
       <div
         className={`font-display text-xs font-bold uppercase tracking-[0.18em] ${
-          emphasize ? "text-[var(--lions-silver-light)]" : "text-[var(--lions-silver-dark)]"
+          emphasize ? "text-[var(--lions-gold)]" : "text-[var(--lions-silver-dark)]"
         }`}
       >
         {label}
@@ -590,14 +590,14 @@ function GoForIt({ decisions }: { decisions: FourthDownDecision[] }) {
     <section className="bg-[var(--lions-blue-deep)] py-14 text-[var(--lions-ink-inverse)]">
       <div className="mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-[1fr_1.2fr] lg:items-end">
         <div>
-          <div className="mb-3 flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.25em] text-[var(--lions-silver-light)]">
-            <span className="inline-block h-1.5 w-6 bg-[var(--lions-silver)]" />
+          <div className="mb-3 flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.25em] text-[var(--lions-gold)]">
+            <span className="inline-block h-1.5 w-6 bg-[var(--lions-gold)]" />
             Identity · 4th Down
           </div>
           <h2 className="font-display text-4xl font-black uppercase leading-none tracking-tight sm:text-5xl md:text-6xl">
             Go.
             <br />
-            <span className="text-[var(--lions-silver-light)]">For.</span>
+            <span className="text-[var(--lions-gold)]">For.</span>
             <br />
             It.
           </h2>
@@ -636,13 +636,13 @@ function DarkStat({
   highlight?: boolean;
 }) {
   return (
-    <div className="border-l-4 border-[var(--lions-silver)]/60 bg-white/[0.04] p-4">
-      <div className="font-display text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--lions-silver-light)]/80">
+    <div className="border-l-4 border-[var(--lions-gold)]/60 bg-white/[0.04] p-4">
+      <div className="font-display text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--lions-gold)]/85">
         {label}
       </div>
       <div
         className={`mt-1 font-display text-4xl font-black tabular ${
-          highlight ? "text-[var(--lions-silver-light)]" : "text-white"
+          highlight ? "text-[var(--lions-gold)]" : "text-white"
         }`}
       >
         {value}
@@ -1000,8 +1000,8 @@ function CampbellEra() {
   return (
     <section className="bg-[var(--lions-blue-deep)] py-14 text-[var(--lions-ink-inverse)]">
       <div className="mx-auto max-w-6xl px-6">
-        <div className="mb-3 flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.25em] text-[var(--lions-silver-light)]">
-          <span className="inline-block h-1.5 w-6 bg-[var(--lions-silver)]" />
+        <div className="mb-3 flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.25em] text-[var(--lions-gold)]">
+          <span className="inline-block h-1.5 w-6 bg-[var(--lions-gold)]" />
           {ERA_START}–Present
         </div>
         <h2 className="font-display text-4xl font-black uppercase tracking-tight sm:text-5xl">
@@ -1018,7 +1018,7 @@ function CampbellEra() {
           {years.map((y) => (
             <div
               key={y.y}
-              className="border-l-4 border-[var(--lions-silver)] bg-[var(--lions-blue-deep)]/40 p-4 ring-1 ring-white/10"
+              className="border-l-4 border-[var(--lions-gold)] bg-[var(--lions-blue-deep)]/40 p-4 ring-1 ring-white/10"
             >
               <div className="font-display text-3xl font-black tabular">
                 {y.y}
@@ -1140,11 +1140,11 @@ function Footer({
   lastUpdated: string;
 }) {
   return (
-    <footer className="border-t-2 border-[var(--lions-silver)] bg-[var(--lions-blue-deep)] text-[var(--lions-silver-light)]/85">
+    <footer className="border-t-2 border-[var(--lions-gold)] bg-[var(--lions-blue-deep)] text-[var(--lions-silver-light)]/85">
       <div className="mx-auto max-w-6xl px-6 py-12">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <div className="mb-3 font-display text-xs font-bold uppercase tracking-[0.25em] text-[var(--lions-silver-light)]">
+            <div className="mb-3 font-display text-xs font-bold uppercase tracking-[0.25em] text-[var(--lions-gold)]">
               About
             </div>
             <p className="text-sm text-[var(--lions-silver-light)]/85">
@@ -1161,7 +1161,7 @@ function Footer({
           </div>
 
           <div>
-            <div className="mb-3 font-display text-xs font-bold uppercase tracking-[0.25em] text-[var(--lions-silver-light)]">
+            <div className="mb-3 font-display text-xs font-bold uppercase tracking-[0.25em] text-[var(--lions-gold)]">
               Data
             </div>
             <ul className="space-y-1 text-sm">
@@ -1182,7 +1182,7 @@ function Footer({
           </div>
 
           <div>
-            <div className="mb-3 font-display text-xs font-bold uppercase tracking-[0.25em] text-[var(--lions-silver-light)]">
+            <div className="mb-3 font-display text-xs font-bold uppercase tracking-[0.25em] text-[var(--lions-gold)]">
               Stack
             </div>
             <ul className="space-y-1 text-sm">
@@ -1194,7 +1194,7 @@ function Footer({
           </div>
 
           <div>
-            <div className="mb-3 font-display text-xs font-bold uppercase tracking-[0.25em] text-[var(--lions-silver-light)]">
+            <div className="mb-3 font-display text-xs font-bold uppercase tracking-[0.25em] text-[var(--lions-gold)]">
               Links
             </div>
             <ul className="space-y-1 text-sm">

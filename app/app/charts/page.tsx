@@ -92,7 +92,7 @@ export default async function ChartsPage() {
         </FadeIn>
       </main>
 
-      <footer className="border-t-2 border-[var(--lions-blue-deep)] bg-[var(--lions-blue-deep)] text-[var(--lions-silver-light)]/85">
+      <footer className="border-t-2 border-[var(--lions-gold)] bg-[var(--lions-blue-deep)] text-[var(--lions-silver-light)]/85">
         <div className="mx-auto flex max-w-6xl flex-col gap-2 px-6 py-6 text-xs sm:flex-row sm:items-center sm:justify-between">
           <div>
             <span className="font-display font-bold text-white">1PRIDE</span> ·

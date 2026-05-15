@@ -11,6 +11,12 @@
   --lions-silver: #b0b7bc;
   --lions-silver-dark: #6a7178;
   --lions-silver-light: #d8dde0;   /* hairlines / muted accents */
+  /* High-vis gold — used SPARINGLY as a call-out accent (ROUT badge,
+     stat highlight, construction-stripe divider, ticker dot, footer
+     top border). Never as a section background — that's eye strain.
+     Think NFL broadcast lower-third yellow, not stadium-warning. */
+  --lions-gold: #ffcb05;
+  --lions-gold-soft: #f5b62a;
   /* Slightly navy-tinted near-black for body text. Reads softer than
      pure #0f0f0f without losing contrast on light surfaces. */
   --lions-charcoal: #0a1929;
@@ -37,6 +43,8 @@
   --color-lions-silver: var(--lions-silver);
   --color-lions-silver-dark: var(--lions-silver-dark);
   --color-lions-silver-light: var(--lions-silver-light);
+  --color-lions-gold: var(--lions-gold);
+  --color-lions-gold-soft: var(--lions-gold-soft);
   --color-lions-charcoal: var(--lions-charcoal);
   --color-lions-paper: var(--lions-paper);
   --color-lions-paper-warm: var(--lions-paper-warm);
@@ -172,17 +180,18 @@ body {
     linear-gradient(180deg, transparent 0px, rgba(15,19,24,0.02) 1px, transparent 1px) 0 0 / 100% 200px;
 }
 
-/* Lions-stripe section divider — deep blue + silver diagonal pattern.
-   Replaces the old hard-hat (black + yellow) which fought the team
-   palette. Same class name kept for backward compatibility. */
+/* Construction-stripe section divider — Lions deep navy alternating
+   with a high-vis gold accent. Reads as "section break" with bite.
+   (Earlier all-silver variant was too quiet against the rest of the
+   blue-heavy palette.) */
 .hardhat-rule {
-  height: 6px;
+  height: 7px;
   background-image: repeating-linear-gradient(
     45deg,
     var(--lions-blue-deep) 0,
     var(--lions-blue-deep) 12px,
-    var(--lions-silver) 12px,
-    var(--lions-silver) 24px
+    var(--lions-gold) 12px,
+    var(--lions-gold) 24px
   );
 }
 
@@ -198,12 +207,14 @@ body {
   animation-play-state: paused;
 }
 
-/* DUB / ROUT badge — solid silver pill in Lions deep navy text */
+/* DUB / ROUT badge — high-vis gold pill in Lions deep navy text +
+   navy outline. The yellow gives blowout wins their own visual
+   register, separate from the silver default tier. */
 .dub-badge {
   display: inline-flex;
   align-items: center;
   padding: 0.05em 0.5em;
-  background: var(--lions-silver);
+  background: var(--lions-gold);
   color: var(--lions-blue-deep);
   font-weight: 900;
   letter-spacing: 0.06em;

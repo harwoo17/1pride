@@ -140,93 +140,102 @@ export function playClick(delaySec = 0): void {
 }
 
 // ─── ROAR ──────────────────────────────────────────────────────────────────
-// Three-layer synthesized lion roar:
-//   1. Snarl transient — short bandpassed noise burst at the front.
-//   2. Body — brown noise (more realistic than white) through a low-pass
-//      filter that opens up briefly then closes back down.
-//   3. Sub-bass growl — sawtooth around 70 Hz with an LFO vibrating the
-//      frequency at ~6 Hz to give the throat-tremble feel.
+// Synthesized lion roar built like an open-mouthed vocalization:
+//   1. Onset bite — sharp bandpassed noise burst (the "RR-").
+//   2. Body — brown noise split into three PARALLEL bandpass filters
+//      tuned to vowel-like formant frequencies (F1 ~500 Hz, F2 ~1300 Hz,
+//      F3 ~2600 Hz). Sums to a "AAAAH" timbre that reads as throat
+//      vocalization, not as low-frequency rumble.
+//   3. Low-pass rumble layer — same brown noise routed through a
+//      low-pass for the chest resonance, but at modest level so it
+//      grounds the sound without dominating.
+//   4. Shudder — a 28 Hz LFO amplitude-modulates the master, mimicking
+//      the rapid amplitude flutter of vocal folds vibrating during a
+//      sustained roar.
+// No oscillator sub-bass — that was the buzzy "fart" component.
 export function playRoar(delaySec = 0): void {
   const ctx = getCtx();
   if (!ctx || _muted) return;
   const t = ctx.currentTime + delaySec;
-  const dur = 1.6;
+  const dur = 1.5;
 
-  // Master bus — shapes the overall amplitude envelope of the roar
+  // Master bus — sharp attack, decisive decay
   const master = ctx.createGain();
   master.connect(ctx.destination);
   master.gain.setValueAtTime(0.0001, t);
-  master.gain.exponentialRampToValueAtTime(0.7, t + 0.18);
-  master.gain.setValueAtTime(0.7, t + 1.0);
+  master.gain.exponentialRampToValueAtTime(0.85, t + 0.08); // fast attack
+  master.gain.setValueAtTime(0.85, t + 0.9);
   master.gain.exponentialRampToValueAtTime(0.0001, t + dur);
 
-  // ─── Snarl transient (the bite at the start) ───────────────────────────
-  const snarlBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.12), ctx.sampleRate);
-  const snarlData = snarlBuf.getChannelData(0);
-  for (let i = 0; i < snarlData.length; i++) {
-    snarlData[i] = (Math.random() * 2 - 1) * (1 - i / snarlData.length);
+  // ─── Onset bite (the consonant front of the roar) ──────────────────────
+  const biteBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.09), ctx.sampleRate);
+  const biteData = biteBuf.getChannelData(0);
+  for (let i = 0; i < biteData.length; i++) {
+    biteData[i] = (Math.random() * 2 - 1) * (1 - i / biteData.length);
   }
-  const snarl = ctx.createBufferSource();
-  snarl.buffer = snarlBuf;
-  const snarlFilter = ctx.createBiquadFilter();
-  snarlFilter.type = "bandpass";
-  snarlFilter.frequency.value = 1600;
-  snarlFilter.Q.value = 2.5;
-  const snarlGain = ctx.createGain();
-  snarlGain.gain.setValueAtTime(0.35, t);
-  snarlGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
-  snarl.connect(snarlFilter).connect(snarlGain).connect(master);
+  const bite = ctx.createBufferSource();
+  bite.buffer = biteBuf;
+  const biteFilter = ctx.createBiquadFilter();
+  biteFilter.type = "bandpass";
+  biteFilter.frequency.value = 1800;
+  biteFilter.Q.value = 2.5;
+  const biteGain = ctx.createGain();
+  biteGain.gain.value = 0.35;
+  bite.connect(biteFilter).connect(biteGain).connect(ctx.destination); // direct so it punches through master attack
 
-  // ─── Body — brown noise through swept low-pass ─────────────────────────
+  // ─── Brown-noise body (shared source feeding multiple filters) ─────────
   const bodyBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
   const bodyData = bodyBuf.getChannelData(0);
-  // Brown noise via running integration of white noise (Leaky integrator).
-  let lastOut = 0;
+  let prev = 0;
   for (let i = 0; i < bodyData.length; i++) {
     const white = Math.random() * 2 - 1;
-    lastOut = (lastOut + 0.02 * white) / 1.02;
-    bodyData[i] = lastOut * 3.5; // amplify post-filter
+    prev = (prev + 0.025 * white) / 1.025; // brown noise (leaky integrator)
+    bodyData[i] = prev * 4;
   }
   const body = ctx.createBufferSource();
   body.buffer = bodyBuf;
-  const bodyLP = ctx.createBiquadFilter();
-  bodyLP.type = "lowpass";
-  bodyLP.frequency.setValueAtTime(380, t);
-  bodyLP.frequency.exponentialRampToValueAtTime(950, t + 0.35);
-  bodyLP.frequency.exponentialRampToValueAtTime(550, t + 1.5);
-  bodyLP.Q.value = 4;
-  const bodyGain = ctx.createGain();
-  bodyGain.gain.value = 0.65;
-  body.connect(bodyLP).connect(bodyGain).connect(master);
 
-  // ─── Sub-bass growl with frequency vibrato ─────────────────────────────
-  const sub = ctx.createOscillator();
-  sub.type = "sawtooth";
-  sub.frequency.setValueAtTime(80, t);
-  sub.frequency.exponentialRampToValueAtTime(60, t + 1.4);
+  // Three parallel vowel formants — gives the "AAAH" vocal-tract quality
+  const formants: { freq: number; Q: number; gain: number }[] = [
+    { freq: 520, Q: 7, gain: 0.6 },   // F1 — open vowel "ah"
+    { freq: 1300, Q: 6, gain: 0.45 }, // F2 — mid vowel
+    { freq: 2700, Q: 5, gain: 0.22 }, // F3 — brightness / consonant edge
+  ];
+  for (const f of formants) {
+    const bp = ctx.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.value = f.freq;
+    bp.Q.value = f.Q;
+    const g = ctx.createGain();
+    g.gain.value = f.gain;
+    body.connect(bp).connect(g).connect(master);
+  }
 
-  const lfo = ctx.createOscillator();
-  lfo.type = "sine";
-  lfo.frequency.value = 5.5;
-  const lfoDepth = ctx.createGain();
-  lfoDepth.gain.value = 6; // ±6 Hz vibrato
-  lfo.connect(lfoDepth).connect(sub.frequency);
+  // Subtle low-pass rumble — chest resonance, never the dominant element
+  const rumble = ctx.createBiquadFilter();
+  rumble.type = "lowpass";
+  rumble.frequency.setValueAtTime(220, t);
+  rumble.frequency.exponentialRampToValueAtTime(140, t + dur);
+  rumble.Q.value = 1.2;
+  const rumbleGain = ctx.createGain();
+  rumbleGain.gain.value = 0.4;
+  body.connect(rumble).connect(rumbleGain).connect(master);
 
-  const subGain = ctx.createGain();
-  subGain.gain.setValueAtTime(0.0001, t);
-  subGain.gain.exponentialRampToValueAtTime(0.5, t + 0.25);
-  subGain.gain.exponentialRampToValueAtTime(0.0001, t + 1.5);
-  sub.connect(subGain).connect(master);
+  // ─── Shudder — 28 Hz AM on the master, vocal-fold flutter ──────────────
+  const shudder = ctx.createOscillator();
+  shudder.type = "sine";
+  shudder.frequency.value = 28;
+  const shudderDepth = ctx.createGain();
+  shudderDepth.gain.value = 0.18; // ±0.18 added to master gain (~±25% modulation)
+  shudder.connect(shudderDepth).connect(master.gain);
 
-  // ─── Start / stop everything together ──────────────────────────────────
-  snarl.start(t);
-  snarl.stop(t + 0.13);
+  // ─── Start / stop ──────────────────────────────────────────────────────
+  bite.start(t);
+  bite.stop(t + 0.1);
   body.start(t);
   body.stop(t + dur);
-  sub.start(t);
-  sub.stop(t + dur);
-  lfo.start(t);
-  lfo.stop(t + dur);
+  shudder.start(t);
+  shudder.stop(t + dur);
 }
 
 // ─── CROWD CHEER ───────────────────────────────────────────────────────────

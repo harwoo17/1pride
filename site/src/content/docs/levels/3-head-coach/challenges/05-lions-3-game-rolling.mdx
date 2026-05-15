@@ -1,0 +1,67 @@
+---
+title: Lions 3-game rolling points
+description: Frame-clause window — average of this week plus the two before.
+sidebar:
+  order: 5
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 3 · Challenge 5</span>
+
+<Challenge difficulty="starter">
+
+<Fragment slot="prompt">
+Compute the **3-game rolling average** of Lions points scored across the 2024
+regular season. Return week, points scored, and the rolling average (rounded
+to 1 decimal). The first two weeks should still have a value — just averaged
+over fewer games.
+</Fragment>
+
+<Fragment slot="output">
+
+| week | scored | rolling_3 |
+|---|---|---|
+
+</Fragment>
+
+<Fragment slot="hint">
+
+`AVG(scored) OVER (ORDER BY week ROWS BETWEEN 2 PRECEDING AND CURRENT ROW)`.
+The default frame doesn't give you what you want here — you must specify
+`ROWS BETWEEN ...`.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```sql
+WITH lions AS (
+    SELECT
+        week,
+        CASE WHEN home_team = 'DET' THEN home_score ELSE away_score END AS scored
+    FROM schedules
+    WHERE season = 2024
+      AND game_type = 'REG'
+      AND (home_team = 'DET' OR away_team = 'DET')
+)
+SELECT
+    week,
+    scored,
+    ROUND(
+        AVG(scored) OVER (
+            ORDER BY week
+            ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+        )::numeric,
+        1
+    ) AS rolling_3
+FROM lions
+ORDER BY week;
+```
+
+In Week 1, the average is over 1 row. In Week 2, over 2. Starting in Week 3
+it's the proper 3-game average.
+
+</Fragment>
+
+</Challenge>

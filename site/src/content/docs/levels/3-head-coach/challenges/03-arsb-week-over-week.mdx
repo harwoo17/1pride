@@ -1,0 +1,55 @@
+---
+title: ARSB week-over-week receiving yards
+description: LAG-driven delta. Compare each week's receiving yards to the previous week.
+sidebar:
+  order: 3
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 3 · Challenge 3</span>
+
+<Challenge difficulty="starter">
+
+<Fragment slot="prompt">
+For Amon-Ra St. Brown in the 2024 regular season, return week, receiving
+yards, previous week's receiving yards, and the week-over-week delta. Sort
+by week. Week 1's previous-yards column should be NULL, not 0.
+</Fragment>
+
+<Fragment slot="output">
+
+| week | yards | prev_yards | delta |
+|---|---|---|---|
+
+</Fragment>
+
+<Fragment slot="hint">
+
+`LAG(receiving_yards) OVER (ORDER BY week)` for prev. Subtract for delta. No
+`PARTITION BY` needed — you're already filtering to one player.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```sql
+SELECT
+    week,
+    receiving_yards AS yards,
+    LAG(receiving_yards) OVER (ORDER BY week) AS prev_yards,
+    receiving_yards - LAG(receiving_yards) OVER (ORDER BY week) AS delta
+FROM weekly_stats
+WHERE player_display_name = 'Amon-Ra St. Brown'
+  AND season = 2024
+  AND season_type = 'REG'
+ORDER BY week;
+```
+
+Week 1 has `NULL` for both `prev_yards` and `delta` because there's no
+previous week. That's correct — passing a default of `0` would make Week 1
+look like a big positive delta, which is a lie.
+
+</Fragment>
+
+</Challenge>

@@ -1,0 +1,133 @@
+---
+title: CTEs — readable multi-step queries
+description: WITH clauses break a hard query into named steps you can read top to bottom.
+sidebar:
+  order: 4
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 3 · Lesson 4</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+Nested subqueries get unreadable fast. A Common Table Expression (CTE) lets
+you name intermediate steps, then reference them by name like a regular table.
+A 4-CTE query reads like a 4-step recipe.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+```sql
+WITH step_one AS (
+    SELECT ...
+    FROM ...
+    WHERE ...
+),
+step_two AS (
+    SELECT ...
+    FROM step_one
+    WHERE ...
+),
+step_three AS (
+    SELECT ...
+    FROM step_one
+    JOIN step_two USING (key)
+)
+SELECT *
+FROM step_three
+WHERE ...;
+```
+
+Rules:
+
+- Comma-separate multiple CTEs after a single `WITH`.
+- Each CTE can reference earlier CTEs (but not later ones — they're evaluated
+  top to bottom).
+- The final `SELECT` runs after all CTEs.
+
+CTEs vs subqueries: CTEs cost nothing extra in Postgres 12+, and they're
+dramatically more readable. Default to CTEs; use subqueries only for tiny
+one-liners.
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+A query that wants three things — Lions weekly results, Lions WR1 weekly yards,
+and the combination — collapses cleanly into three CTEs:
+
+```sql
+WITH results AS (
+    SELECT season, week,
+        CASE WHEN home_team = 'DET' THEN home_score ELSE away_score END AS det_pts,
+        CASE WHEN home_team = 'DET' THEN away_score ELSE home_score END AS opp_pts
+    FROM schedules
+    WHERE season = 2024
+      AND game_type = 'REG'
+      AND (home_team = 'DET' OR away_team = 'DET')
+),
+arsb AS (
+    SELECT season, week, receiving_yards
+    FROM weekly_stats
+    WHERE player_display_name = 'Amon-Ra St. Brown'
+      AND season = 2024
+      AND season_type = 'REG'
+),
+combined AS (
+    SELECT r.week, r.det_pts, r.opp_pts, a.receiving_yards AS arsb_yards
+    FROM results r
+    LEFT JOIN arsb a USING (season, week)
+)
+SELECT
+    week,
+    arsb_yards,
+    det_pts,
+    det_pts - opp_pts AS margin
+FROM combined
+ORDER BY week;
+```
+
+The intent is obvious from the CTE names.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Write a 3-CTE query that returns each Lions running back's **best game by
+yards**, alongside the opponent and the game result. CTE 1: every Lions RB
+week. CTE 2: per-player max yards (using a window function). CTE 3: filter
+CTE 1 to only the rows where yards equal that max, then join to schedules for
+the opponent and result.
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **Defining CTEs in the wrong order.** Postgres evaluates them top to bottom.
+  CTE `b` can reference CTE `a`, but not vice versa.
+- **Treating CTEs like cached views.** In older Postgres they were an
+  optimization fence; since Postgres 12 they're inlined like subqueries. Use
+  them for readability, not for performance.
+- **Forgetting the comma between CTEs.** `WITH a AS (...) b AS (...)` errors.
+  It's `WITH a AS (...), b AS (...)`.
+- **CTE with `INSERT/UPDATE/DELETE`.** Yes, those work (`WITH ins AS (INSERT
+  ... RETURNING *) SELECT * FROM ins`), but stay in `SELECT` land for L3.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. Can CTE `b` reference CTE `a` that comes before it? What about the other
+   direction?
+2. Why prefer a CTE over a subquery when the logic gets complex?
+3. What's the smallest case where a CTE is *worse* than just inlining the
+   query? (Hint: 4-line queries.)
+
+</LessonSection>
+
+</Lesson>

@@ -1,0 +1,124 @@
+---
+title: CASE expressions
+description: The SQL ternary. Build derived columns, bucket continuous values, recode categories.
+sidebar:
+  order: 5
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 3 · Lesson 5</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+You've used `CASE` in Level 2 to figure out whether the Lions were home or
+away. It does a lot more. `CASE` is how you bucket continuous values into
+labels, recode categories, or compute conditional aggregates — all without a
+join.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+Two forms:
+
+```sql
+-- Searched form (most flexible)
+CASE
+    WHEN condition_1 THEN result_1
+    WHEN condition_2 THEN result_2
+    ELSE fallback
+END
+
+-- Simple form (when comparing one column to many values)
+CASE column
+    WHEN 'A' THEN 'Apple'
+    WHEN 'B' THEN 'Banana'
+    ELSE 'Other'
+END
+```
+
+The killer combo: `CASE` inside `SUM` or `COUNT` for conditional aggregates.
+
+```sql
+SELECT
+    player_display_name,
+    SUM(CASE WHEN receiving_yards >= 100 THEN 1 ELSE 0 END) AS century_games,
+    SUM(CASE WHEN receiving_tds > 0 THEN 1 ELSE 0 END) AS td_games
+FROM weekly_stats
+WHERE recent_team = 'DET' AND season = 2024
+GROUP BY player_display_name;
+```
+
+That's two metrics from one scan of the table. Much faster than two queries.
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+Classify every Lions 2024 regular-season game by margin: blowout (15+ point
+win), close W (1-14 pt win), close L (1-14 pt loss), blowout L (15+ pt loss):
+
+```sql
+SELECT
+    week,
+    CASE WHEN home_team = 'DET' THEN away_team ELSE home_team END AS opp,
+    CASE WHEN home_team = 'DET' THEN home_score ELSE away_score END AS det,
+    CASE WHEN home_team = 'DET' THEN away_score ELSE home_score END AS opp_pts,
+    CASE
+        WHEN (CASE WHEN home_team = 'DET' THEN home_score ELSE away_score END)
+           - (CASE WHEN home_team = 'DET' THEN away_score ELSE home_score END) >= 15 THEN 'blowout W'
+        WHEN (CASE WHEN home_team = 'DET' THEN home_score ELSE away_score END)
+           > (CASE WHEN home_team = 'DET' THEN away_score ELSE home_score END) THEN 'close W'
+        WHEN (CASE WHEN home_team = 'DET' THEN away_score ELSE home_score END)
+           - (CASE WHEN home_team = 'DET' THEN home_score ELSE away_score END) >= 15 THEN 'blowout L'
+        ELSE 'close L'
+    END AS bucket
+FROM schedules
+WHERE season = 2024
+  AND game_type = 'REG'
+  AND (home_team = 'DET' OR away_team = 'DET')
+ORDER BY week;
+```
+
+That's verbose because the home/away logic is everywhere — a perfect use case
+for putting the score logic into a CTE first, then doing the `CASE` bucket
+once. Combining CTEs with `CASE` is how mature SQL gets readable.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Refactor the example above using a CTE that computes `det_score` and
+`opp_score` once, then a `SELECT` that uses a single `CASE` to bucket margin.
+The output should be the same, but the query should be half as long.
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **Forgetting `ELSE`.** Without it, a row that matches no `WHEN` returns
+  `NULL`. Sometimes that's correct; sometimes it silently breaks downstream
+  aggregations.
+- **Order matters.** `CASE` evaluates `WHEN` clauses in order and stops at the
+  first match. Put more specific conditions before more general ones.
+- **`CASE` for things you should split out.** If a single `CASE` has eight
+  branches and four different output types, you probably want a CTE or a
+  helper table, not a longer `CASE`.
+- **`CASE` inside `WHERE` instead of separate conditions.** `WHERE CASE WHEN x THEN y END = z` is usually less readable than `WHERE (x AND y = z) OR (NOT x AND ...)`.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. What's the difference between the simple form and the searched form?
+2. What does a `CASE` return when no `WHEN` matches and there's no `ELSE`?
+3. Why is `SUM(CASE WHEN x THEN 1 ELSE 0 END)` faster than running a separate
+   `COUNT(*)` query with `WHERE x`?
+
+</LessonSection>
+
+</Lesson>

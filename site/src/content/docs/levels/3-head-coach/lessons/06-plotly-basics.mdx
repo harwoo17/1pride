@@ -1,0 +1,136 @@
+---
+title: plotly for interactive charts
+description: Same chart shapes as matplotlib, plus hover tooltips and zoom. Use when readers will explore.
+sidebar:
+  order: 6
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 3 · Lesson 6</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+matplotlib makes a chart. plotly makes a chart you can hover, zoom, and
+filter. For exploratory analysis and embedded dashboards, the interactivity
+pays for itself. For static reports, stick with matplotlib.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+plotly has two APIs: **plotly.express** for one-liner charts (great for
+exploration) and **plotly.graph_objects** for fine control (great for final
+charts).
+
+```python
+import plotly.express as px
+
+fig = px.line(
+    df,
+    x='week',
+    y='passing_yards',
+    color='player_display_name',
+    markers=True,
+    title='Goff weekly passing yards, 2024',
+    labels={'passing_yards': 'Passing yards', 'week': 'Week'},
+)
+fig.update_layout(
+    plot_bgcolor='white',
+    showlegend=False,
+)
+fig.show()                          # in Jupyter
+fig.write_html('goff-passing.html') # embeddable in the L5 app
+```
+
+The four moves to make a plotly chart presentation-ready:
+
+1. **Pass labels.** `labels={...}` controls axis titles without renaming the
+   DataFrame.
+2. **Clean the background.** `plot_bgcolor='white'`, `showlegend=False` if a
+   legend isn't earning its space.
+3. **Color intentionally.** `color_discrete_sequence=['#0076B6', '#999']` or
+   pass a dict mapping categories to colors.
+4. **Write to HTML.** `fig.write_html('out.html')` produces a single-file
+   chart you can embed in the L5 Next.js app.
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+Lions weekly points scored, interactive:
+
+```python
+import pandas as pd
+import plotly.express as px
+from sqlalchemy import create_engine
+
+eng = create_engine("postgresql+psycopg://onepride:lions@localhost:5432/onepride")
+
+df = pd.read_sql(
+    """
+    SELECT week,
+           CASE WHEN home_team = 'DET' THEN home_score ELSE away_score END AS pts,
+           CASE WHEN home_team = 'DET' THEN away_team ELSE home_team END AS opp
+    FROM schedules
+    WHERE season = 2024
+      AND game_type = 'REG'
+      AND (home_team = 'DET' OR away_team = 'DET')
+    ORDER BY week
+    """,
+    eng,
+)
+
+fig = px.bar(
+    df,
+    x='week',
+    y='pts',
+    hover_data=['opp'],
+    title='Lions points scored by week, 2024 regular season',
+    labels={'pts': 'Points', 'week': 'Week'},
+    color_discrete_sequence=['#0076B6'],
+)
+fig.update_layout(plot_bgcolor='white', xaxis=dict(tickmode='linear'))
+fig.write_html('lions-weekly-points-2024.html')
+```
+
+Hover over a bar and you see the opponent. Drag-zoom in. Save as HTML and you
+have an embeddable chart for the L5 app.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Make a plotly line chart of **Goff's weekly passing yards** in 2024 with
+**markers at each week**, hover showing completions and attempts. Save it as
+`goff-2024.html`.
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **Default plotly theme.** It's busy. Set `plot_bgcolor='white'`, drop the
+  legend if there's one series, and remove gridlines that aren't earning a
+  read.
+- **Tooltips with no value.** The default tooltip can be noisy or
+  uninformative — explicitly set `hover_data=[...]` to the columns that
+  matter.
+- **Too many series.** Same as matplotlib — five lines is the practical
+  ceiling. Use faceting (`facet_col=`) for small multiples.
+- **Forgetting to write HTML.** `fig.show()` is great in Jupyter; for the L5
+  app you want `fig.write_html(...)`.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. When is plotly the right call vs matplotlib?
+2. What's the difference between `plotly.express` and `plotly.graph_objects`?
+3. How do you embed a plotly chart in the L5 Next.js app?
+
+</LessonSection>
+
+</Lesson>

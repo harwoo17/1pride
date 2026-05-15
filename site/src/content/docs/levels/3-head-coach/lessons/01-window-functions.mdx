@@ -1,0 +1,107 @@
+---
+title: Window functions — RANK and ROW_NUMBER
+description: Rank rows without collapsing them. The aggregate that doesn't aggregate.
+sidebar:
+  order: 1
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 3 · Lesson 1</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+`GROUP BY` collapses rows. Window functions compute across a set of rows
+*without* collapsing them — you keep every row, plus a new column with the
+ranking, the running total, the row-above's value, whatever you need.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+Anatomy of a window function:
+
+```sql
+function() OVER (
+    PARTITION BY group_col      -- optional: separate windows per group
+    ORDER BY sort_col            -- required for ranking / running totals
+)
+```
+
+The four ranking flavors:
+
+| Function | Behavior |
+|---|---|
+| `ROW_NUMBER()` | 1, 2, 3, 4 — unique even on ties |
+| `RANK()` | 1, 2, 2, 4 — ties share a rank, then skip |
+| `DENSE_RANK()` | 1, 2, 2, 3 — ties share a rank, no skip |
+| `NTILE(n)` | bucket rows into n roughly-equal groups (quartiles, deciles) |
+
+The window itself is `OVER (...)`. With no `PARTITION BY`, the window spans the
+whole result set. Add `PARTITION BY team` and you get separate rankings per
+team.
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+Rank every Lions 2024 weekly receiving game across all players:
+
+```sql
+SELECT
+    player_display_name,
+    week,
+    receiving_yards,
+    ROW_NUMBER() OVER (ORDER BY receiving_yards DESC) AS overall_rank,
+    DENSE_RANK() OVER (ORDER BY receiving_yards DESC) AS dense_rank
+FROM weekly_stats
+WHERE recent_team = 'DET'
+  AND season = 2024
+  AND season_type = 'REG'
+  AND targets > 0
+ORDER BY overall_rank
+LIMIT 10;
+```
+
+`ROW_NUMBER` gives you a strict ordering — useful for "top N." `DENSE_RANK`
+preserves ties — useful when "ranked second" should be a shared honor.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Rank every 2024 NFL **quarterback game** by passing yards. Return the player,
+team, week, passing yards, and rank. Filter to attempts &gt;= 15 (so a QB
+benched after a few snaps doesn't pollute the top of the list).
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **Window function in `WHERE`.** Not allowed — `WHERE` runs before the window.
+  Wrap your window query in a CTE (Lesson 4) and filter the CTE.
+- **No `ORDER BY` inside `OVER`.** Ranking functions need an order or the
+  result is meaningless (you'll get an error in Postgres).
+- **`RANK` vs `DENSE_RANK` mix-up.** `RANK` skips numbers after ties; `DENSE_RANK`
+  doesn't. When stakeholders ask "what's our rank?" they almost always want
+  `DENSE_RANK`.
+- **Forgetting `PARTITION BY` for per-group ranks.** Without it, you rank
+  across the whole set. With `PARTITION BY recent_team`, every team gets its
+  own #1.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. Why does a window function keep every row, while `GROUP BY` collapses them?
+2. Two players are tied for 50 yards in second place. Under `RANK`, who's
+   ranked third? Under `DENSE_RANK`?
+3. How do you rank players *within each team* instead of across the whole
+   league?
+
+</LessonSection>
+
+</Lesson>

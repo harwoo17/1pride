@@ -1,0 +1,76 @@
+---
+title: Bucket Lions 2024 games by margin
+description: CASE-driven categorization. Conditional COUNT for the summary.
+sidebar:
+  order: 6
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 3 · Challenge 6</span>
+
+<Challenge difficulty="starter">
+
+<Fragment slot="prompt">
+Bucket every Lions 2024 regular-season game into one of four categories
+based on point margin:
+
+- **blowout W** (15+ point win)
+- **close W** (1-14 point win)
+- **close L** (1-14 point loss)
+- **blowout L** (15+ point loss)
+
+Return one row per bucket with the count and the average margin in that bucket
+(margin is `scored - allowed`).
+</Fragment>
+
+<Fragment slot="output">
+
+| bucket | n_games | avg_margin |
+|---|---|---|
+
+</Fragment>
+
+<Fragment slot="hint">
+
+CTE that adds `det_pts`, `opp_pts`, `margin`. Outer query uses a `CASE` to
+label the bucket, then `GROUP BY bucket`.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```sql
+WITH lions AS (
+    SELECT
+        week,
+        CASE WHEN home_team = 'DET' THEN home_score ELSE away_score END AS det_pts,
+        CASE WHEN home_team = 'DET' THEN away_score ELSE home_score END AS opp_pts
+    FROM schedules
+    WHERE season = 2024 AND game_type = 'REG'
+      AND (home_team = 'DET' OR away_team = 'DET')
+),
+labeled AS (
+    SELECT
+        week,
+        det_pts - opp_pts AS margin,
+        CASE
+            WHEN det_pts - opp_pts >= 15  THEN 'blowout W'
+            WHEN det_pts - opp_pts >= 1   THEN 'close W'
+            WHEN det_pts - opp_pts >= -14 THEN 'close L'
+            ELSE                                'blowout L'
+        END AS bucket
+    FROM lions
+)
+SELECT
+    bucket,
+    COUNT(*)                          AS n_games,
+    ROUND(AVG(margin)::numeric, 1)    AS avg_margin
+FROM labeled
+GROUP BY bucket
+ORDER BY avg_margin DESC;
+```
+
+</Fragment>
+
+</Challenge>

@@ -29,6 +29,29 @@ Lions 4th down 2022-2025.
 Working calculator + a writeup of one Lions game where your model disagreed with
 Dan Campbell's call. Defend or concede the disagreement.
 
+## Lesson plan
+
+1. [Window functions — RANK and ROW_NUMBER](/levels/3-head-coach/lessons/01-window-functions/)
+2. [PARTITION BY and running totals](/levels/3-head-coach/lessons/02-partition-by/)
+3. [LAG and LEAD](/levels/3-head-coach/lessons/03-lag-and-lead/)
+4. [CTEs — readable multi-step queries](/levels/3-head-coach/lessons/04-ctes/)
+5. [CASE expressions](/levels/3-head-coach/lessons/05-case-expressions/)
+6. [plotly for interactive charts](/levels/3-head-coach/lessons/06-plotly-basics/)
+7. [scipy.stats — significance and intervals](/levels/3-head-coach/lessons/07-scipy-stats/)
+8. [Play-by-play with nfl_data_py](/levels/3-head-coach/lessons/08-play-by-play/)
+
+## Prerequisite: load play-by-play data
+
+Lessons 8 and the capstone need the `pbp` table loaded — it's not part of the
+default L1/L2 setup. From `data/`:
+
+```bash
+uv run python -m onepride_data.load --years 2022-2024 --tables pbp
+```
+
+That pulls a few hundred MB. One-time cost.
+
 :::note
-Level 3 content unlocks after you ship the Level 2 capstone.
+Drafting order: ship the Level 2 capstone before doing L3 in earnest. Content
+is here so you can preview the arc.
 :::

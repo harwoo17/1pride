@@ -1,0 +1,66 @@
+---
+title: Lions running scoring margin
+description: Window-function SUM building a running point differential through the season.
+sidebar:
+  order: 2
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 3 · Challenge 2</span>
+
+<Challenge difficulty="rookie">
+
+<Fragment slot="prompt">
+For each Lions 2024 regular-season game, return week, opponent, points scored,
+points allowed, this-game margin, and the cumulative season margin through
+that week. Order by week.
+</Fragment>
+
+<Fragment slot="output">
+
+18 rows:
+
+| week | opp | scored | allowed | margin | cum_margin |
+|---|---|---|---|---|---|
+
+</Fragment>
+
+<Fragment slot="hint">
+
+CTE that captures per-game scored/allowed/opp. Outer query adds `margin =
+scored - allowed` and `cum_margin = SUM(scored - allowed) OVER (ORDER BY week)`.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```sql
+WITH lions AS (
+    SELECT
+        week,
+        CASE WHEN home_team = 'DET' THEN away_team ELSE home_team END AS opp,
+        CASE WHEN home_team = 'DET' THEN home_score ELSE away_score END AS scored,
+        CASE WHEN home_team = 'DET' THEN away_score ELSE home_score END AS allowed
+    FROM schedules
+    WHERE season = 2024
+      AND game_type = 'REG'
+      AND (home_team = 'DET' OR away_team = 'DET')
+)
+SELECT
+    week,
+    opp,
+    scored,
+    allowed,
+    scored - allowed AS margin,
+    SUM(scored - allowed) OVER (ORDER BY week) AS cum_margin
+FROM lions
+ORDER BY week;
+```
+
+The `cum_margin` column is the season's point-differential story in a single
+column. Plot it and you see exactly when the team peaked.
+
+</Fragment>
+
+</Challenge>

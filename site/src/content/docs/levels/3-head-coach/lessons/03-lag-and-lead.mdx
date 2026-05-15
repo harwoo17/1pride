@@ -1,0 +1,106 @@
+---
+title: LAG and LEAD
+description: Compare each row to the row before or after. Week-over-week deltas without self-joins.
+sidebar:
+  order: 3
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 3 · Lesson 3</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+"Did receptions go up from last week?" is a comparison across rows. Before
+window functions, you'd self-join the table to itself. `LAG` (and its sibling
+`LEAD`) does the same thing in one expression.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+```sql
+LAG(col, offset, default)  OVER (PARTITION BY ... ORDER BY ...)
+LEAD(col, offset, default) OVER (PARTITION BY ... ORDER BY ...)
+```
+
+- `LAG` looks **backward** in the ordered partition.
+- `LEAD` looks **forward**.
+- `offset` defaults to 1 (previous / next row).
+- `default` is the value returned for the first / last row, where no neighbor
+  exists.
+
+Week-over-week delta:
+
+```sql
+SELECT
+    player_display_name,
+    week,
+    receiving_yards,
+    receiving_yards - LAG(receiving_yards, 1, 0) OVER (
+        PARTITION BY player_display_name
+        ORDER BY week
+    ) AS week_over_week_delta
+FROM weekly_stats
+WHERE recent_team = 'DET' AND season = 2024;
+```
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+Goff's week-over-week passing-yards change, with the previous week alongside:
+
+```sql
+SELECT
+    week,
+    passing_yards,
+    LAG(passing_yards) OVER (ORDER BY week) AS prev_week_yards,
+    passing_yards - LAG(passing_yards, 1, 0) OVER (ORDER BY week) AS delta
+FROM weekly_stats
+WHERE player_display_name = 'Jared Goff'
+  AND season = 2024
+  AND season_type = 'REG'
+ORDER BY week;
+```
+
+Week 1's delta is `passing_yards - 0` because we passed `0` as the default —
+you might prefer `NULL` (the bare default) so Week 1 just shows blank.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+For every Lions running back (any player with `position_group = 'RB'`),
+compute carries this week minus carries last week. Order by player, then week.
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **No `PARTITION BY` when you have multiple groups.** `LAG` will pull last
+  week's value from a *different player* if you forget to partition by
+  `player_display_name`.
+- **`ORDER BY` direction matters for `LEAD`.** `LEAD` looks forward in the
+  partition's sort order. If you sort by `week DESC`, `LEAD(week)` returns
+  the *previous* week.
+- **Confusing offset.** `LAG(col, 2)` is *two rows back*, not "two-week
+  average."
+- **First-row NULL.** Always think about what happens at the boundary. Pass an
+  explicit default (`LAG(col, 1, 0)`) if you need zero, leave it blank if you
+  want NULL.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. What does `LAG(receiving_yards)` return for the first row of a partition?
+2. How do you get last week's value if the table has gaps (e.g., bye weeks)?
+3. When would `LEAD` be more useful than `LAG`?
+
+</LessonSection>
+
+</Lesson>

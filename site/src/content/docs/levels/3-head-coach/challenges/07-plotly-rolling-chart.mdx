@@ -1,0 +1,106 @@
+---
+title: Plot Lions rolling points with plotly
+description: Take Challenge 5's data and render it as an interactive chart with markers and hover.
+sidebar:
+  order: 7
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 3 · Challenge 7</span>
+
+<Challenge difficulty="allpro">
+
+<Fragment slot="prompt">
+Using Python + plotly, plot Lions 2024 weekly points scored as bars and the
+3-game rolling average from Challenge 5 as a line on top. Hover should show
+opponent and exact rolling value. Save as `lions-points-2024.html`.
+
+Lions blue for both series; bars at 0.7 opacity so the line stays readable.
+</Fragment>
+
+<Fragment slot="output">
+
+A standalone HTML file with the chart. The Lions blue (`#0076B6`) bars are
+weekly scoring; the line is the 3-game rolling average. Hover over a bar to
+see the opponent.
+</Fragment>
+
+<Fragment slot="hint">
+
+Use `plotly.graph_objects` (not `express`) so you can layer a bar and a line
+on one figure:
+
+```python
+import plotly.graph_objects as go
+fig = go.Figure()
+fig.add_bar(...)
+fig.add_scatter(mode='lines+markers', ...)
+```
+
+For hover info, pass `customdata` (the opponent column) and a
+`hovertemplate` string.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```python
+import pandas as pd
+import plotly.graph_objects as go
+from sqlalchemy import create_engine
+
+eng = create_engine("postgresql+psycopg://onepride:lions@localhost:5432/onepride")
+
+df = pd.read_sql(
+    """
+    WITH lions AS (
+        SELECT
+            week,
+            CASE WHEN home_team = 'DET' THEN home_score ELSE away_score END AS scored,
+            CASE WHEN home_team = 'DET' THEN away_team ELSE home_team END AS opp
+        FROM schedules
+        WHERE season = 2024 AND game_type = 'REG'
+          AND (home_team = 'DET' OR away_team = 'DET')
+    )
+    SELECT
+        week,
+        scored,
+        opp,
+        AVG(scored) OVER (ORDER BY week ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS rolling_3
+    FROM lions
+    ORDER BY week
+    """,
+    eng,
+)
+
+fig = go.Figure()
+fig.add_bar(
+    x=df['week'], y=df['scored'],
+    name='Points scored',
+    marker_color='#0076B6',
+    opacity=0.7,
+    customdata=df[['opp']].to_numpy(),
+    hovertemplate='Week %{x}<br>vs %{customdata[0]}<br>%{y} pts<extra></extra>',
+)
+fig.add_scatter(
+    x=df['week'], y=df['rolling_3'],
+    name='3-game rolling avg',
+    mode='lines+markers',
+    line=dict(color='#0076B6', width=3),
+    marker=dict(size=8),
+    hovertemplate='Week %{x}<br>3-game avg: %{y:.1f}<extra></extra>',
+)
+fig.update_layout(
+    title='Lions 2024 points scored — bars + 3-game rolling average',
+    xaxis_title='Week',
+    yaxis_title='Points',
+    plot_bgcolor='white',
+    legend=dict(orientation='h', y=1.05),
+)
+fig.write_html('lions-points-2024.html')
+```
+
+</Fragment>
+
+</Challenge>

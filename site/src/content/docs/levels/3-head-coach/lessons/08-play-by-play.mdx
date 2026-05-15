@@ -1,0 +1,116 @@
+---
+title: Play-by-play with nfl_data_py
+description: Where the situational gold lives. Down, distance, score, clock — one row per play.
+sidebar:
+  order: 8
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 3 · Lesson 8</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+`weekly_stats` is one row per player per game. Play-by-play (PBP) is one row
+per *play* — every down, every snap, every score state. The 4th-down analyzer
+capstone, win probability, EPA — all of it lives in PBP.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+The PBP table has ~50,000 rows per season and 300+ columns. The fields you'll
+reach for most:
+
+| Column | What it is |
+|---|---|
+| `game_id` | unique per game |
+| `posteam` | the team on offense |
+| `defteam` | the team on defense |
+| `down` | 1-4, or NULL on kickoffs / extras |
+| `ydstogo` | yards to go for first down |
+| `yardline_100` | distance to the opponent's end zone (0-100) |
+| `qtr` | quarter, 1-5 (OT = 5) |
+| `game_seconds_remaining` | clock, in seconds |
+| `score_differential` | offense's lead, negative if trailing |
+| `play_type` | `pass`, `run`, `field_goal`, `punt`, `kickoff`, `extra_point`, `qb_kneel` |
+| `epa` | expected points added by this play |
+| `wp` / `wpa` | win probability / win probability added |
+
+```python
+import nfl_data_py as nfl
+
+pbp = nfl.import_pbp_data([2024], columns=[
+    'game_id', 'season', 'week', 'posteam', 'defteam',
+    'down', 'ydstogo', 'yardline_100', 'qtr',
+    'game_seconds_remaining', 'score_differential',
+    'play_type', 'epa', 'wpa',
+])
+```
+
+The `columns=` filter cuts the download dramatically. The full PBP is 300+
+columns; pulling 13 is plenty for most analyses and 10x faster.
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+Every Lions 4th-down play in 2024 with the situation captured:
+
+```python
+import nfl_data_py as nfl
+
+pbp = nfl.import_pbp_data([2024])
+
+lions_4th = pbp.loc[
+    (pbp['posteam'] == 'DET') &
+    (pbp['down'] == 4) &
+    pbp['play_type'].isin(['pass', 'run', 'field_goal', 'punt']),
+    ['week', 'qtr', 'ydstogo', 'yardline_100',
+     'score_differential', 'game_seconds_remaining',
+     'play_type', 'desc', 'epa']
+].sort_values(['week', 'qtr', 'game_seconds_remaining'], ascending=[True, True, False])
+
+print(f"Lions 4th-down plays: {len(lions_4th)}")
+print(lions_4th.head(10).to_string(index=False))
+```
+
+That's the raw material for the L3 capstone. You add an expected-value model
+on top, and you've got the analyzer.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Pull 2024 PBP. Count Lions 4th-down attempts by decision type — *went for it*
+(pass or run), *field goal*, or *punt*. Group by `play_type`. Add a column for
+the average `ydstogo` per decision type.
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **Loading PBP without the `columns=` filter.** The full table is hundreds of
+  MB per season. Filter early.
+- **Forgetting `play_type` filters.** PBP includes every snap, including
+  kickoffs, extra points, and special-teams quirks. For offensive analysis,
+  filter to `pass`, `run`, `field_goal`, `punt`.
+- **Treating `score_differential` as "what the score is."** It's the **offense's
+  lead** at the start of the play. Negative means the offense is trailing.
+- **Mixing NULLs on `down`.** Plays without a down (kickoffs, two-point
+  attempts) have `NULL`. Filter them out or your aggregates will skew.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. What's the difference between `weekly_stats` and `pbp` granularity?
+2. Why use `columns=[...]` when calling `import_pbp_data`?
+3. What does `score_differential = -7` mean about the offense?
+
+</LessonSection>
+
+</Lesson>

@@ -1,0 +1,119 @@
+---
+title: PARTITION BY and running totals
+description: Cumulative sums, per-group ranks, and rolling averages — all in one OVER clause.
+sidebar:
+  order: 2
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 3 · Lesson 2</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+`PARTITION BY` is `GROUP BY` for windows. It re-starts the ranking, the running
+total, or the rolling average every time the partition column changes. That's
+how you compute *running team totals through the season* or *per-team top
+receivers* in one query.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+```sql
+SUM(col) OVER (
+    PARTITION BY group_col
+    ORDER BY sort_col
+    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+)
+```
+
+The frame clause (`ROWS BETWEEN ...`) controls *which rows in the partition the
+function sees*. Two patterns cover 95% of cases:
+
+- **Running total** — `UNBOUNDED PRECEDING AND CURRENT ROW` (everything from
+  the start of the partition through this row). The default when you provide
+  `ORDER BY` without an explicit frame.
+- **Rolling window** — `n PRECEDING AND CURRENT ROW` (last n+1 rows). Use for
+  3-game moving averages, 5-game form, etc.
+
+```sql
+AVG(rushing_yards) OVER (
+    PARTITION BY player_display_name
+    ORDER BY week
+    ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+)   -- 3-game rolling average per player
+```
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+Lions weekly points scored, with a running season total and a 3-game rolling
+average:
+
+```sql
+WITH lions_games AS (
+    SELECT
+        week,
+        CASE WHEN home_team = 'DET' THEN home_score ELSE away_score END AS pts
+    FROM schedules
+    WHERE season = 2024
+      AND game_type = 'REG'
+      AND (home_team = 'DET' OR away_team = 'DET')
+)
+SELECT
+    week,
+    pts,
+    SUM(pts) OVER (ORDER BY week) AS season_total,
+    ROUND(AVG(pts) OVER (
+        ORDER BY week
+        ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+    )::numeric, 1) AS rolling_3_avg
+FROM lions_games
+ORDER BY week;
+```
+
+You get 18 rows, each with this week's points, the running total through this
+week, and the 3-game average.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+For every Lions player in 2024, compute their **running rushing yards total
+through the season** — one row per player-week, with cumulative yards in a
+new column. Sort by player, then week.
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **Forgetting `ORDER BY` inside `OVER` for running totals.** Without it,
+  Postgres treats the whole partition as one frame, so every row gets the same
+  total. The `ORDER BY` is what makes "running" mean "through this row."
+- **Default frame surprise.** When you write `SUM(...) OVER (ORDER BY week)`,
+  the default frame is `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` —
+  not `ROWS`. Usually fine, but watch out when sort values tie.
+- **`PARTITION BY` typo.** Partitioning by the wrong column silently produces
+  the wrong answer. Always sanity-check by inspecting the rows of one
+  partition.
+- **Aggregate window without `PARTITION BY`.** That's a total across all rows
+  in the result set — useful, but not what you want for per-team / per-player
+  splits.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. What does `PARTITION BY` do that `GROUP BY` doesn't?
+2. What's the frame clause for a 5-game rolling average?
+3. Why does `SUM(col) OVER ()` (no partition, no order) just compute one value
+   for every row?
+
+</LessonSection>
+
+</Lesson>

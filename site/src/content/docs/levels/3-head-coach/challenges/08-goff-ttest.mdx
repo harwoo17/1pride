@@ -1,0 +1,94 @@
+---
+title: Goff in wins vs losses — t-test
+description: scipy.stats applied. Test if Goff's passing yards differ significantly by result.
+sidebar:
+  order: 8
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 3 · Challenge 8</span>
+
+<Challenge difficulty="allpro">
+
+<Fragment slot="prompt">
+Run an independent t-test (Welch's) on Jared Goff's 2024 regular-season
+passing yards, comparing Lions wins to Lions losses. Print the mean for each
+group, the sample sizes, the t-statistic, and the p-value. Then write 1-2
+sentences interpreting the result honestly (n is small).
+</Fragment>
+
+<Fragment slot="output">
+
+Sample output shape:
+
+```
+Wins:   n=12, mean=287.4
+Losses: n=5,  mean=242.6
+t = 1.12, p = 0.291
+```
+Plus a short interpretation.
+
+</Fragment>
+
+<Fragment slot="hint">
+
+Pull Goff's per-week passing yards and the Lions result for each week (CTE or
+two-query merge). Split into two arrays. `stats.ttest_ind(wins, losses,
+equal_var=False)`.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```python
+import pandas as pd
+from scipy import stats
+from sqlalchemy import create_engine
+
+eng = create_engine("postgresql+psycopg://onepride:lions@localhost:5432/onepride")
+
+df = pd.read_sql(
+    """
+    WITH games AS (
+        SELECT season, week,
+            CASE
+                WHEN home_team = 'DET' AND home_score > away_score THEN 'W'
+                WHEN away_team = 'DET' AND away_score > home_score THEN 'W'
+                WHEN home_score = away_score THEN 'T'
+                ELSE 'L'
+            END AS result
+        FROM schedules
+        WHERE season = 2024 AND game_type = 'REG'
+          AND (home_team = 'DET' OR away_team = 'DET')
+    )
+    SELECT g.week, g.result, ws.passing_yards
+    FROM games g
+    JOIN weekly_stats ws USING (season, week)
+    WHERE ws.player_display_name = 'Jared Goff'
+      AND ws.season_type = 'REG'
+    """,
+    eng,
+)
+
+wins   = df.loc[df['result'] == 'W', 'passing_yards']
+losses = df.loc[df['result'] == 'L', 'passing_yards']
+
+t, p = stats.ttest_ind(wins, losses, equal_var=False)
+
+print(f"Wins:   n={len(wins)}, mean={wins.mean():.1f}")
+print(f"Losses: n={len(losses)}, mean={losses.mean():.1f}")
+print(f"t = {t:.2f}, p = {p:.3f}")
+```
+
+Interpretation: with so few losses (probably 3-5), the t-test is *severely*
+underpowered. Even a 50-yard gap in means can plausibly come from noise. The
+honest read is "we can't conclude much from this sample — Goff was good when
+the team won and we don't have enough losses to compare against."
+
+That's a real-world reminder: situational splits in single seasons are mostly
+noise. The next move would be to pool multiple seasons.
+
+</Fragment>
+
+</Challenge>

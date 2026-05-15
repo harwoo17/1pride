@@ -1,0 +1,57 @@
+---
+title: Rank Lions rushers per week
+description: Window function intro — DENSE_RANK over carries within each week.
+sidebar:
+  order: 1
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 3 · Challenge 1</span>
+
+<Challenge difficulty="rookie">
+
+<Fragment slot="prompt">
+For every Lions 2024 regular-season week, rank the team's rushers by rushing
+yards. Return week, player name, rushing yards, carries, and rank. Filter to
+players with at least 1 carry. Sort by week, then rank.
+</Fragment>
+
+<Fragment slot="output">
+
+| week | player_display_name | yards | carries | rush_rank |
+|---|---|---|---|---|
+
+</Fragment>
+
+<Fragment slot="hint">
+
+`DENSE_RANK() OVER (PARTITION BY week ORDER BY rushing_yards DESC)`. Then
+order the outer query by week, then rank.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```sql
+SELECT
+    week,
+    player_display_name,
+    rushing_yards   AS yards,
+    carries,
+    DENSE_RANK() OVER (PARTITION BY week ORDER BY rushing_yards DESC) AS rush_rank
+FROM weekly_stats
+WHERE recent_team = 'DET'
+  AND season = 2024
+  AND season_type = 'REG'
+  AND carries IS NOT NULL
+  AND carries > 0
+ORDER BY week, rush_rank;
+```
+
+Per-week leaderboard. Add `WHERE rush_rank = 1` (in a CTE wrapper, since you
+can't filter on a window function directly) for just the weekly leader.
+
+</Fragment>
+
+</Challenge>

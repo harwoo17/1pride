@@ -8,6 +8,7 @@ Postgres in Docker, nflverse data via `nfl_data_py`, loaded with a Click CLI.
 |---|---|---|
 | `weekly_stats` | `nfl.import_weekly_data` | One row per player-week-season |
 | `schedules`    | `nfl.import_schedules`    | One row per game |
+| `pbp`          | `nfl.import_pbp_data`     | One row per play. Needed for Level 3+. |
 
 Schema lives in [`schema.sql`](./schema.sql) and is loaded automatically by Docker
 the first time the Postgres container boots.
@@ -31,17 +32,23 @@ That's enough for every Level 1 lesson and challenge.
 ## CLI
 
 ```bash
-# Single year
+# Single year, L1/L2 tables (default)
 uv run python -m onepride_data.load --years 2024
 
 # Just one table
 uv run python -m onepride_data.load --years 2024 --tables weekly
 uv run python -m onepride_data.load --years 2024 --tables schedules
 
+# Add play-by-play (slow — ~50k rows per season, several hundred MB total)
+uv run python -m onepride_data.load --years 2024 --tables pbp
+
+# Everything
+uv run python -m onepride_data.load --years 2020-2024 --tables all
+
 # Comma list (non-contiguous years)
 uv run python -m onepride_data.load --years 2019,2021,2023
 
-# Wipe both tables before insert (vs. default which deletes-by-year)
+# Wipe target tables before insert (vs. default which deletes-by-year)
 uv run python -m onepride_data.load --years 2020-2024 --truncate
 ```
 

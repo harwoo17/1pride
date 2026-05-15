@@ -1,0 +1,124 @@
+---
+title: scipy.stats — significance, distributions, intervals
+description: When eyeballing a chart isn't enough, scipy.stats gives you the math.
+sidebar:
+  order: 7
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 3 · Lesson 7</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+"Is this real, or is it noise?" comes up the moment you start making
+situational calls. scipy.stats is a small library that answers it: significance
+tests, distributions, confidence intervals, correlation. You don't need a
+stats degree — you need the right test for the question.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+Four tests handle most football questions:
+
+| Question shape | Test |
+|---|---|
+| "Are two groups' averages different?" | `ttest_ind` (independent t-test) |
+| "Is a frequency split different from chance?" | `chi2_contingency` |
+| "Do these two metrics move together?" | `pearsonr` (linear) or `spearmanr` (rank) |
+| "What's a reasonable range for this average?" | `bootstrap` for a confidence interval |
+
+Common pattern:
+
+```python
+from scipy import stats
+
+# Goff's passing yards in wins vs losses — is the gap real or noise?
+wins   = df.loc[df['result'] == 'W', 'passing_yards']
+losses = df.loc[df['result'] == 'L', 'passing_yards']
+
+t, p = stats.ttest_ind(wins, losses, equal_var=False)
+print(f"t = {t:.2f}, p = {p:.3f}")
+```
+
+A `p` near 0.05 or below is the loose convention for "probably real." Don't
+over-claim with small samples — 17 games is *not* a lot of data.
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+Bootstrap a 95% confidence interval for Lions points-per-game in 2024:
+
+```python
+import numpy as np
+import pandas as pd
+from scipy import stats
+from sqlalchemy import create_engine
+
+eng = create_engine("postgresql+psycopg://onepride:lions@localhost:5432/onepride")
+
+points = pd.read_sql(
+    """
+    SELECT CASE WHEN home_team = 'DET' THEN home_score ELSE away_score END AS pts
+    FROM schedules
+    WHERE season = 2024 AND game_type = 'REG'
+      AND (home_team = 'DET' OR away_team = 'DET')
+    """,
+    eng,
+)['pts'].to_numpy()
+
+res = stats.bootstrap(
+    (points,),
+    statistic=np.mean,
+    confidence_level=0.95,
+    n_resamples=10_000,
+    random_state=42,
+)
+
+print(f"Mean PPG: {points.mean():.1f}")
+print(f"95% CI:   [{res.confidence_interval.low:.1f}, "
+      f"{res.confidence_interval.high:.1f}]")
+```
+
+You'll get a confidence interval that's noticeably wide because the sample is
+small. That's the data telling you "I'm not certain." Respect it.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Test whether **Lions rushing attempts** are significantly higher in wins vs
+losses in 2024. Pull all 17 Lions games, split by result, run an independent
+t-test, and report `t` and `p`.
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **`equal_var=True` by default.** Don't trust it — use `equal_var=False`
+  (Welch's t-test) unless you've confirmed equal variances. It's the safer
+  default.
+- **Treating `p < 0.05` as gospel.** With 17 games per season, you're often
+  underpowered. Report the effect size *and* the interval, not just the
+  p-value.
+- **Pearson on non-linear data.** `pearsonr` measures *linear* correlation.
+  For rank-order relationships, `spearmanr`.
+- **`bootstrap` without `random_state`.** Pin the seed for reproducible
+  results. Otherwise your "95% CI" jiggles every time you run the notebook.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. Which scipy test answers "are these two groups' means different?"
+2. Why use Welch's t-test (`equal_var=False`) as the default?
+3. What does `n_resamples=10_000` control in `stats.bootstrap`?
+
+</LessonSection>
+
+</Lesson>

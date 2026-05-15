@@ -1,0 +1,68 @@
+---
+title: Top 3 receivers per NFL team, 2024
+description: Per-team leaderboard via DENSE_RANK in a CTE, filtered to top 3.
+sidebar:
+  order: 4
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 3 · Challenge 4</span>
+
+<Challenge difficulty="starter">
+
+<Fragment slot="prompt">
+For every NFL team, return the **top 3 receivers** by 2024 regular-season
+receiving yards. Output: team, player name, yards, team rank (1, 2, 3).
+Sort by team, then rank.
+</Fragment>
+
+<Fragment slot="output">
+
+| recent_team | player_display_name | yards | rk |
+|---|---|---|---|
+
+</Fragment>
+
+<Fragment slot="hint">
+
+CTE that groups by player + team and sums yards. Outer query uses
+`DENSE_RANK() OVER (PARTITION BY recent_team ORDER BY yards DESC)`. Wrap that
+in another CTE so you can `WHERE rk &lt;= 3` (you can't filter on a window
+function in the same query).
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```sql
+WITH per_player AS (
+    SELECT
+        recent_team,
+        player_display_name,
+        SUM(receiving_yards) AS yards
+    FROM weekly_stats
+    WHERE season = 2024
+      AND season_type = 'REG'
+      AND position_group IN ('WR', 'TE')
+      AND targets IS NOT NULL
+      AND targets > 0
+    GROUP BY recent_team, player_display_name
+),
+ranked AS (
+    SELECT *,
+        DENSE_RANK() OVER (PARTITION BY recent_team ORDER BY yards DESC) AS rk
+    FROM per_player
+)
+SELECT recent_team, player_display_name, yards, rk
+FROM ranked
+WHERE rk <= 3
+ORDER BY recent_team, rk;
+```
+
+The two-CTE pattern (aggregate first, then rank, then filter) is the
+canonical "top N per group" query in SQL.
+
+</Fragment>
+
+</Challenge>

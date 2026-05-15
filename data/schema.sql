@@ -77,3 +77,44 @@ CREATE INDEX IF NOT EXISTS idx_schedules_season_week
 
 CREATE INDEX IF NOT EXISTS idx_schedules_teams
     ON schedules (home_team, away_team, season);
+
+CREATE TABLE IF NOT EXISTS pbp (
+    play_id                  BIGINT,
+    game_id                  TEXT,
+    season                   INT,
+    week                     INT,
+    season_type              TEXT,
+    posteam                  TEXT,
+    defteam                  TEXT,
+    qtr                      INT,
+    down                     INT,
+    ydstogo                  INT,
+    yardline_100             INT,
+    game_seconds_remaining   INT,
+    quarter_seconds_remaining INT,
+    half_seconds_remaining   INT,
+    score_differential       INT,
+    posteam_score            INT,
+    defteam_score            INT,
+    play_type                TEXT,
+    yards_gained             REAL,
+    epa                      REAL,
+    wpa                      REAL,
+    wp                       REAL,
+    success                  REAL,
+    passer_player_name       TEXT,
+    rusher_player_name       TEXT,
+    receiver_player_name     TEXT,
+    description              TEXT,
+    PRIMARY KEY (game_id, play_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_pbp_season_week
+    ON pbp (season, week);
+
+CREATE INDEX IF NOT EXISTS idx_pbp_posteam_season
+    ON pbp (posteam, season);
+
+CREATE INDEX IF NOT EXISTS idx_pbp_down
+    ON pbp (down)
+    WHERE down IS NOT NULL;

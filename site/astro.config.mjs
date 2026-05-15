@@ -60,7 +60,17 @@ export default defineConfig({
 				{
 					label: 'Level 3 — Head coach',
 					collapsed: true,
-					items: [{ label: 'Overview', slug: 'levels/3-head-coach' }],
+					items: [
+						{ label: 'Overview', slug: 'levels/3-head-coach' },
+						{
+							label: 'Lessons',
+							items: [{ autogenerate: { directory: 'levels/3-head-coach/lessons' } }],
+						},
+						{
+							label: 'Challenges',
+							items: [{ autogenerate: { directory: 'levels/3-head-coach/challenges' } }],
+						},
+					],
 				},
 				{
 					label: 'Level 4 — General manager',

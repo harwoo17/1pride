@@ -69,7 +69,7 @@ body {
   animation-play-state: paused;
 }
 
-/* Stripe pattern for hero — abstract field-feel without marks */
+/* Vertical stripe pattern for hero — abstract field-feel without marks */
 .stripes {
   background-image: linear-gradient(
     90deg,
@@ -78,4 +78,58 @@ body {
     transparent 1px,
     transparent 80px
   );
+}
+
+/* Yard-line stripes — horizontal bands, used on hero + defining moments */
+.yard-lines {
+  background:
+    linear-gradient(180deg, transparent, transparent 49px, rgba(0,118,182,0.05) 49px, rgba(0,118,182,0.05) 50px, transparent 50px) 0 0 / 100% 50px,
+    linear-gradient(180deg, transparent 0px, rgba(15,19,24,0.02) 1px, transparent 1px) 0 0 / 100% 200px;
+}
+
+/* Hard-hat / construction warning stripes — section dividers */
+.hardhat-rule {
+  height: 8px;
+  background-image: repeating-linear-gradient(
+    45deg,
+    #0f1318 0,
+    #0f1318 12px,
+    #ffcb05 12px,
+    #ffcb05 24px
+  );
+}
+
+/* Quote ticker — slower, beefier than the score ticker */
+@keyframes ticker-scroll-slow {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.ticker-track-slow {
+  animation: ticker-scroll-slow 80s linear infinite;
+}
+.ticker-track-slow:hover {
+  animation-play-state: paused;
+}
+
+/* DUB / ROUT badge — big punchy chip for blowout wins */
+.dub-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.05em 0.5em;
+  background: #ffcb05;
+  color: #0f1318;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  border: 2px solid #0f1318;
+}
+
+/* Stamp — slightly rotated "stamp" effect for impact callouts */
+.stamp {
+  display: inline-block;
+  padding: 0.25em 0.75em;
+  border: 3px solid currentColor;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  transform: rotate(-3deg);
 }

@@ -4,7 +4,7 @@ Run:
     uv run --python 3.11 --extra api uvicorn onepride_data.api:app --reload
 
 Endpoints expose pre-aggregated Lions analytics over the local Postgres.
-Designed to be the backend for app.1pride.dev — keep responses small,
+Designed to be the backend for app.1pride.app — keep responses small,
 cacheable, and JSON-shaped for the Next.js frontend.
 """
 from __future__ import annotations
@@ -21,7 +21,7 @@ from .db import engine
 
 app = FastAPI(
     title="1PRIDE API",
-    description="Lions analytics over nflverse data. Backs app.1pride.dev.",
+    description="Lions analytics over nflverse data. Backs app.1pride.app.",
     version="0.1.0",
 )
 
@@ -30,7 +30,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "https://app.1pride.dev",
+        "https://app.1pride.app",
     ],
     allow_methods=["GET"],
     allow_headers=["*"],

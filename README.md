@@ -13,9 +13,9 @@ capstone app will live in a sibling repo (`1pride-app`).
 
 | Path | What it is |
 |---|---|
-| [`site/`](./site) | Curriculum site — Astro + Starlight, deploys to `1pride.dev` |
+| [`site/`](./site) | Curriculum site — Astro + Starlight, deploys to `1pride.app` |
 | [`data/`](./data) | Local Postgres + Python loader for nflverse data |
-| [`app/`](./app)   | Level 5 capstone — Next.js + Tailwind app, deploys to `app.1pride.dev` |
+| [`app/`](./app)   | Level 5 capstone — Next.js + Tailwind app, deploys to `app.1pride.app` |
 | [`DEPLOY.md`](./DEPLOY.md) | How to deploy both Vercel projects |
 | [`1pride_brief.md`](./1pride_brief.md) | The project brief |
 
@@ -27,7 +27,7 @@ capstone app will live in a sibling repo (`1pride-app`).
 | 2 | Position coach | WR efficiency scouting card |
 | 3 | Head coach | 4th-down decision EV analyzer |
 | 4 | General manager | Draft pick value model |
-| 5 | Owner | Deployed analytics app at `app.1pride.dev` |
+| 5 | Owner | Deployed analytics app at `app.1pride.app` |
 
 ## Quick start
 

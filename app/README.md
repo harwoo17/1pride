@@ -1,6 +1,6 @@
 # 1PRIDE app (Level 5 capstone — scaffold)
 
-The deployed analytics app. Final destination: `app.1pride.dev`.
+The deployed analytics app. Final destination: `app.1pride.app`.
 
 ## Stack
 

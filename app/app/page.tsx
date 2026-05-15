@@ -252,7 +252,7 @@ function Header() {
             Charts
           </Link>
           <a
-            href="https://1pride.dev"
+            href="https://1pride.app"
             className="border-b-2 border-transparent px-2 py-1 hover:border-[var(--lions-blue)]"
           >
             Curriculum
@@ -312,7 +312,7 @@ function Hero({
             data for the entire Dan Campbell era — every game, every play, every
             4th-down decision. The Level 5 capstone of the{" "}
             <a
-              href="https://1pride.dev"
+              href="https://1pride.app"
               className="font-semibold text-[var(--lions-blue)] hover:underline"
             >
               1PRIDE
@@ -1132,7 +1132,7 @@ function Footer({
             </div>
             <ul className="space-y-1 text-sm">
               <li>
-                <a href="https://1pride.dev" className="hover:text-[#ffcb05]">
+                <a href="https://1pride.app" className="hover:text-[#ffcb05]">
                   Curriculum →
                 </a>
               </li>

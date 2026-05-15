@@ -23,10 +23,10 @@ cd site
 npx vercel --prod
 ```
 
-## Custom domain (1pride.dev)
+## Custom domain (1pride.app)
 
-1. Buy `1pride.dev` (e.g. Namecheap, Cloudflare, Porkbun).
-2. In Vercel: **Project → Settings → Domains → Add → `1pride.dev`**.
+1. Buy `1pride.app` (e.g. Namecheap, Cloudflare, Porkbun).
+2. In Vercel: **Project → Settings → Domains → Add → `1pride.app`**.
 3. Set DNS at your registrar to the records Vercel shows (usually an `A` record
    to `76.76.21.21` and a `CNAME` for `www` to `cname.vercel-dns.com`).
 4. SSL provisions automatically once DNS resolves.

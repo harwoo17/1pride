@@ -27,8 +27,8 @@ The minimum prod stack:
 
 | Component | Service | Free tier |
 |---|---|---|
-| Static site (`1pride.dev`) | Vercel | yes, generous |
-| App (`app.1pride.dev`)     | Vercel | yes, generous |
+| Static site (`1pride.app`) | Vercel | yes, generous |
+| App (`app.1pride.app`)     | Vercel | yes, generous |
 | Postgres                   | [Neon](https://neon.tech) | yes, 0.5GB |
 | FastAPI                    | [Fly.io](https://fly.io) or [Render](https://render.com) | small free tier |
 
@@ -36,7 +36,7 @@ Environment variables connect them. From the app, you need:
 
 ```bash
 # .env.production (set in Vercel dashboard)
-NEXT_PUBLIC_API_BASE=https://api.1pride.dev
+NEXT_PUBLIC_API_BASE=https://api.1pride.app
 ```
 
 From the API:
@@ -47,10 +47,10 @@ DATABASE_URL=postgresql+psycopg://user:pass@ep-x.neon.tech:5432/onepride?sslmode
 
 Custom domains:
 
-- **Vercel project → Settings → Domains** — add `1pride.dev` and
-  `app.1pride.dev`.
+- **Vercel project → Settings → Domains** — add `1pride.app` and
+  `app.1pride.app`.
 - **DNS at your registrar** — Vercel shows the exact records.
-- **For the API** — a `CNAME api.1pride.dev → fly.dev hostname`, then add
+- **For the API** — a `CNAME api.1pride.app → fly.dev hostname`, then add
   the cert in Fly.
 
 </LessonSection>
@@ -82,7 +82,7 @@ fly.toml `processes` block) needs the uvicorn command:
 web: uvicorn onepride_data.api:app --host 0.0.0.0 --port 8080
 ```
 
-Then `fly certs add api.1pride.dev` after pointing DNS.
+Then `fly certs add api.1pride.app` after pointing DNS.
 
 </LessonSection>
 
@@ -91,13 +91,13 @@ Then `fly certs add api.1pride.dev` after pointing DNS.
 Don't try the live deploy here — it's coupled to your domain purchase.
 Instead, sketch the **rollout checklist** for going live:
 
-1. Buy `1pride.dev`.
+1. Buy `1pride.app`.
 2. Create Neon project, copy `DATABASE_URL`.
 3. Run the loader once against Neon: `DATABASE_URL=... uv run python -m onepride_data.load --years 2021-2024 --tables all`.
 4. `vercel --prod` from `site/` and from `app/`.
 5. `fly launch` + `fly deploy` from `data/`.
-6. Point DNS for `1pride.dev`, `app.1pride.dev`, `api.1pride.dev`.
-7. Set `NEXT_PUBLIC_API_BASE=https://api.1pride.dev` in Vercel's app project.
+6. Point DNS for `1pride.app`, `app.1pride.app`, `api.1pride.app`.
+7. Set `NEXT_PUBLIC_API_BASE=https://api.1pride.app` in Vercel's app project.
 8. Re-deploy the app (Vercel picks up new env vars).
 
 The whole rollout from "have a clean repo" to "live URL" is under an hour

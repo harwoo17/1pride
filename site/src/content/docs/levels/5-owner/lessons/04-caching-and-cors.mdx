@@ -38,7 +38,7 @@ The API can cache too. FastAPI doesn't bake this in, but you can either:
 - Add `Cache-Control: public, max-age=3600` headers, or
 - Use a CDN (Cloudflare) in front of the API.
 
-**CORS.** When the browser at `app.1pride.dev` calls `api.1pride.dev`, the
+**CORS.** When the browser at `app.1pride.app` calls `api.1pride.app`, the
 browser blocks the request unless the API explicitly opts in via headers.
 
 ```python
@@ -48,7 +48,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "https://app.1pride.dev",
+        "https://app.1pride.app",
     ],
     allow_methods=["GET"],
     allow_headers=["*"],

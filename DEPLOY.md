@@ -1,84 +1,267 @@
 # Deploying 1PRIDE
 
-Two Vercel projects, one repo. The root is a monorepo; each project deploys
-from its own subdirectory.
+Domain: `1pride.app` (Cloudflare Registrar).
+Three services to deploy, $0/yr beyond the domain itself.
 
-| Project | Subdirectory | Production domain | Vercel framework |
-|---|---|---|---|
-| Curriculum site | `site/` | `1pride.dev` | Astro |
-| L5 app          | `app/`  | `app.1pride.dev` | Next.js |
+| Service | Where | Production URL |
+|---|---|---|
+| Curriculum site | Vercel free | `1pride.app` (apex) + `www.1pride.app` |
+| L5 app | Vercel free | `app.1pride.app` |
+| FastAPI backend | Fly.io free | `api.1pride.app` |
+| Postgres | Neon free (0.5 GB) | `ep-xxx.neon.tech` |
 
-## First deploy — CLI (no GitHub required)
+Read top to bottom — each step assumes the previous is done.
 
-You can deploy from your laptop without linking GitHub. Useful while git auth
-is still being sorted.
+---
 
-### One-time: log into Vercel
+## 0. One-time logins (all browser-based)
 
 ```bash
+# Vercel (deploys the two web projects)
 npx vercel login
+
+# Fly.io (deploys the FastAPI backend)
+brew install flyctl
+fly auth signup        # if you don't have an account
+# or
+fly auth login         # if you already do
+
+# Neon (free Postgres — sign up via browser)
+open https://console.neon.tech/
 ```
 
-Opens a browser. Pick the email associated with your Vercel account; it
-authenticates once and saves a token locally.
+After Neon signup: click **New Project** → name it `1pride` → region `US East`
+or `US Central` → copy the connection string they show you. It'll look like
+`postgresql://neondb_owner:xxxxx@ep-xxx-pooler.us-east-2.aws.neon.tech/onepride?sslmode=require`.
 
-### Curriculum site
+Save it somewhere safe; we'll use it as `DATABASE_URL` in two places.
+
+---
+
+## 1. Deploy the curriculum site
 
 ```bash
-cd "Ventures & Work Products/1PRIDE/Code/site"
-npx vercel               # preview deploy → 1pride-<hash>.vercel.app
-npx vercel --prod        # production deploy
+cd "Documents/Ventures & Work Products/1PRIDE/Code/site"
+npx vercel
 ```
 
-When prompted on first deploy:
+Prompts:
 
 - **Set up and deploy?** Yes
 - **Which scope?** your personal account
 - **Link to existing project?** No
 - **Project name?** `1pride`
-- **In which directory is your code located?** `./` (you're already in `site/`)
-- **Want to modify these settings?** No (`vercel.json` provides them)
+- **Directory?** `./` (you're already in `site/`)
+- **Modify settings?** No
 
-### L5 app
+You'll get a preview URL like `https://1pride-xyz.vercel.app`. Then promote
+to production:
 
 ```bash
-cd "Ventures & Work Products/1PRIDE/Code/app"
-npx vercel               # preview
-npx vercel --prod        # production
+npx vercel --prod
+```
+
+---
+
+## 2. Deploy the L5 app (Next.js)
+
+```bash
+cd ../app
+npx vercel
 ```
 
 Same prompts. Project name: `1pride-app`.
 
-## Custom domains
+```bash
+npx vercel --prod
+```
 
-Once each project has a production URL, attach the domains:
+---
 
-1. **Vercel dashboard → Project → Settings → Domains**
-2. Add `1pride.dev` to the `1pride` project; add `app.1pride.dev` to the
-   `1pride-app` project.
-3. At your registrar (Cloudflare / Namecheap / Porkbun), point DNS to the
-   records Vercel shows. Typical:
-   - `1pride.dev` (apex)     → `A` record to `76.76.21.21`
-   - `www.1pride.dev`        → `CNAME` to `cname.vercel-dns.com`
-   - `app.1pride.dev`        → `CNAME` to `cname.vercel-dns.com`
-4. SSL provisions automatically once DNS resolves (usually under a minute).
+## 3. Set up Neon Postgres + load Lions data
 
-## Once git is connected
+```bash
+cd ../data
 
-After GitHub auth is sorted and `harwoo17/1pride` exists, switch from CLI
-deploys to GitHub-connected auto-deploys:
+# Sanity check — make sure DATABASE_URL works against Neon
+DATABASE_URL='<paste-neon-connection-string-here>' \
+  uv run --python 3.11 python -c "
+import os, psycopg
+c = psycopg.connect(os.environ['DATABASE_URL'].replace('postgresql+psycopg', 'postgresql'))
+print('connected:', c.execute('SELECT version()').fetchone()[0][:40])
+"
 
-1. **Vercel dashboard → Project → Settings → Git → Connect Git Repository**
-2. Pick `harwoo17/1pride`.
-3. For each project, set the **Root Directory** to `site` or `app`
-   respectively. Vercel will redeploy on every push to `main`.
+# Apply schema to Neon
+DATABASE_URL='<paste>' \
+  uv run --python 3.11 python -c "
+import os
+from sqlalchemy import create_engine, text
+url = os.environ['DATABASE_URL']
+if not url.startswith('postgresql+psycopg'): url = url.replace('postgresql', 'postgresql+psycopg', 1)
+eng = create_engine(url)
+with eng.begin() as c, open('schema.sql') as f:
+    c.execute(text(f.read()))
+print('schema loaded')
+"
 
-You can keep running `npx vercel` from the CLI either way — it works alongside
-GitHub-connected deploys.
+# Load all the Lions data into Neon (5-15 minutes; PBP is the slow part)
+DATABASE_URL='<paste, with postgresql+psycopg:// prefix>' \
+  uv run --python 3.11 python -m onepride_data.load \
+    --years 2021-2024 --tables all
+DATABASE_URL='<paste>' \
+  uv run --python 3.11 python -m onepride_data.load \
+    --years 2025 --tables schedules
+DATABASE_URL='<paste>' \
+  uv run --python 3.11 python -m onepride_data.load \
+    --years 2025 --tables pbp
+DATABASE_URL='<paste>' \
+  uv run --python 3.11 python -m onepride_data.load \
+    --years 2025 --tables derive-weekly
+```
 
-## Environment variables
+`DATABASE_URL` for the loader needs the `postgresql+psycopg://` SQLAlchemy
+prefix; for raw `psycopg.connect` it's just `postgresql://`. The Neon UI
+gives you the plain form — add `+psycopg` after `postgresql` for the loader.
 
-When the L5 FastAPI backend lands and the Next.js app needs a `DATABASE_URL`
-or `API_BASE`, set them in **Project → Settings → Environment Variables** in
-the Vercel dashboard (or pass them on the command line with
-`vercel env add`). Don't commit secrets.
+---
+
+## 4. Deploy the FastAPI backend to Fly.io
+
+From `data/`:
+
+```bash
+fly launch --copy-config --no-deploy --name 1pride-api
+```
+
+When prompted:
+- **Region?** `ord` (Chicago) — already in `fly.toml`
+- **Postgres cluster?** No (we have Neon)
+- **Redis?** No
+
+Set the DB URL as a secret (so it's not in the repo):
+
+```bash
+fly secrets set DATABASE_URL='postgresql+psycopg://<neon-conn-string-here>'
+```
+
+Deploy:
+
+```bash
+fly deploy
+```
+
+After it finishes, you'll have `https://1pride-api.fly.dev`. Verify:
+
+```bash
+curl https://1pride-api.fly.dev/health
+curl https://1pride-api.fly.dev/api/lions/seasons
+```
+
+---
+
+## 5. Wire the app to the production API
+
+In **Vercel → 1pride-app project → Settings → Environment Variables**:
+
+```
+Key:   NEXT_PUBLIC_API_BASE
+Value: https://api.1pride.app
+Env:   Production, Preview, Development
+```
+
+Redeploy so the new env var ships:
+
+```bash
+cd ../app && npx vercel --prod
+```
+
+(For now you could point at `https://1pride-api.fly.dev` directly if you
+want to skip the custom domain. Just remember to swap to `api.1pride.app`
+once DNS is set up.)
+
+---
+
+## 6. Custom domain — DNS at Cloudflare
+
+You bought `1pride.app` through Cloudflare Registrar. The DNS panel for the
+domain lives at: **Cloudflare dashboard → 1pride.app → DNS → Records**.
+
+You need three subdomains pointing at three providers:
+
+| Subdomain | Type | Target | Where |
+|---|---|---|---|
+| `1pride.app` (apex) | `CNAME` (flattened) or `A` | Vercel | `1pride` Vercel project |
+| `www.1pride.app` | `CNAME` | `cname.vercel-dns.com` | redirects to apex |
+| `app.1pride.app` | `CNAME` | `cname.vercel-dns.com` | `1pride-app` Vercel project |
+| `api.1pride.app` | `CNAME` | `<your-app>.fly.dev` | `1pride-api` Fly app |
+
+### Vercel side (do this first, **before** the DNS records)
+
+1. **Vercel → `1pride` project → Settings → Domains → Add Domain** →
+   `1pride.app`. Vercel will show the exact DNS values it wants (usually
+   the apex via `A 76.76.21.21` or a CNAME flattening to
+   `cname.vercel-dns.com`).
+2. Same for `www.1pride.app`.
+3. **`1pride-app` project → Settings → Domains → Add Domain** →
+   `app.1pride.app`.
+
+### Fly side
+
+```bash
+cd data
+fly certs add api.1pride.app
+fly certs show api.1pride.app   # shows what CNAME target to use
+```
+
+It'll print something like `Hostname: 1pride-api.fly.dev`.
+
+### Cloudflare DNS panel — add the records
+
+1. **Type:** CNAME → **Name:** `app` → **Target:** `cname.vercel-dns.com`
+   → **Proxy:** **off** (gray cloud) — Vercel issues its own TLS.
+2. **Type:** CNAME → **Name:** `www` → **Target:** `cname.vercel-dns.com`
+   → **Proxy:** off.
+3. **Type:** CNAME → **Name:** `api` → **Target:** `1pride-api.fly.dev`
+   → **Proxy:** off.
+4. **Type:** A → **Name:** `@` (or `1pride.app`) → **Target:** `76.76.21.21`
+   (Vercel's apex IP — check what Vercel told you in step 1) → **Proxy:** off.
+
+Cloudflare's proxy (the orange cloud) interferes with how Vercel and Fly
+issue Let's Encrypt certs. Keep proxy **off** for all four records.
+
+DNS usually resolves in 1-5 minutes. Vercel and Fly will auto-provision
+SSL certs once they can verify the records.
+
+---
+
+## 7. Sanity-check the live stack
+
+```bash
+# Curriculum
+curl -I https://1pride.app
+
+# L5 app — should 200
+curl -I https://app.1pride.app
+
+# API — should return JSON
+curl https://api.1pride.app/health
+curl https://api.1pride.app/api/lions/seasons
+
+# End-to-end — the app's stat-leaders block should render real data
+curl -s https://app.1pride.app | grep -o "Amon-Ra" | head -1
+```
+
+If everything passes you're live. Total spend: $12 for the domain. Server
+costs: $0 unless usage exceeds Fly/Vercel/Neon free tiers (very unlikely
+for a portfolio site).
+
+---
+
+## 8. Going forward — scheduled data refresh
+
+Once a week (Tuesday morning post-MNF), refresh the data with a GitHub
+Actions cron. The workflow file goes at `.github/workflows/refresh.yml` —
+see L5 Lesson 3 in the curriculum for the YAML. Set the same
+`DATABASE_URL` as a GitHub repo secret.
+
+That's it. Site, app, API — all live, all free, all yours.

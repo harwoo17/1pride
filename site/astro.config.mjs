@@ -4,7 +4,7 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://1pride.dev',
+	site: 'https://1pride.app',
 	integrations: [
 		starlight({
 			title: '1PRIDE',

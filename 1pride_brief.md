@@ -55,7 +55,7 @@ Three reasons the structure earns its keep:
 
 ### Level 5: Owner
 **Identity.** Franchise strategy, full-stack thinking.
-**Capstone.** Public Lions analytics app, end to end. Raw nflverse → ETL → Postgres → FastAPI → Next.js UI → deployed to `app.1pride.dev`.
+**Capstone.** Public Lions analytics app, end to end. Raw nflverse → ETL → Postgres → FastAPI → Next.js UI → deployed to `app.1pride.app`.
 **Unlock.** Live URL, public repo, README good enough that a stranger could fork and contribute.
 
 ## 4. Content structure (tutorial-first)
@@ -101,9 +101,9 @@ Roughly 40-50 lessons, 40-50 challenges, 5 capstones across the whole curriculum
 
 ## 5. Tech stack
 
-**Curriculum site (1pride.dev).** Astro Starlight. Static, content-heavy, content-as-files in MDX. Already in your stack from stifledcreative.com.
+**Curriculum site (1pride.app).** Astro Starlight. Static, content-heavy, content-as-files in MDX. Already in your stack from stifledcreative.com.
 
-**L5 capstone app (app.1pride.dev).** Next.js + Tailwind + shadcn/ui frontend. FastAPI backend. Built when you reach L5.
+**L5 capstone app (app.1pride.app).** Next.js + Tailwind + shadcn/ui frontend. FastAPI backend. Built when you reach L5.
 
 **Database.** Postgres. Local via Docker for L1-L3. Managed (Neon or Supabase) starting L4 when you need to point an API at it.
 
@@ -158,7 +158,7 @@ Roughly 40-50 lessons, 40-50 challenges, 5 capstones across the whole curriculum
 ## 9. Build phases
 
 **Phase 0: Setup (week 1).**
-- Buy `1pride.dev`
+- Buy `1pride.app`
 - Set up Astro Starlight project, deploy a placeholder to Vercel
 - Create `1pride` GitHub repo (public)
 - Set up Postgres locally via Docker
@@ -180,7 +180,7 @@ Roughly 40-50 lessons, 40-50 challenges, 5 capstones across the whole curriculum
 
 **Phase 3: Level 5 build (weeks 10-13).**
 - L5 lessons (FastAPI, deployment, ETL)
-- Build the deployed app at app.1pride.dev
+- Build the deployed app at app.1pride.app
 - Scheduled data refresh
 - Public launch
 
@@ -192,7 +192,7 @@ Roughly 40-50 lessons, 40-50 challenges, 5 capstones across the whole curriculum
 
 ## 10. Success metrics
 
-**Job search signal.** Recruiter mentions 1PRIDE on a screen. Hiring manager opens the GitHub repo or 1pride.dev. Click-through from your resume or LinkedIn.
+**Job search signal.** Recruiter mentions 1PRIDE on a screen. Hiring manager opens the GitHub repo or 1pride.app. Click-through from your resume or LinkedIn.
 
 **Learning signal.** You can write a CTE without looking it up. You can build a scikit-learn pipeline from a blank file. You can deploy a Next.js + FastAPI app end to end without a tutorial.
 
@@ -215,6 +215,6 @@ Roughly 40-50 lessons, 40-50 challenges, 5 capstones across the whole curriculum
 
 ## 13. What this looks like done
 
-Fourteen weeks from start: a public GitHub repo, a live curriculum at 1pride.dev, a deployed analytics app at app.1pride.dev, and a blog post on stifledcreative.com walking through the journey.
+Fourteen weeks from start: a public GitHub repo, a live curriculum at 1pride.app, a deployed analytics app at app.1pride.app, and a blog post on stifledcreative.com walking through the journey.
 
 A hiring manager opens the link, sees the architecture, reads the code, and knows in two minutes that you can do the job.

@@ -1,0 +1,65 @@
+---
+title: Lions 40+ point games in 2024
+description: Every regular-season game where the Lions scored at least 40 points.
+sidebar:
+  order: 6
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 1 · Challenge 6</span>
+
+<Challenge difficulty="starter">
+
+<Fragment slot="prompt">
+Return every 2024 regular-season game where the Lions scored **40 or more
+points**. Show week, opponent, Lions points, opponent points, and result. Order
+by week.
+</Fragment>
+
+<Fragment slot="output">
+
+| week | opponent | det_points | opp_points | result |
+|---|---|---|---|---|
+| *(int)* | *(team)* | *(int)* | *(int)* | W / L |
+
+</Fragment>
+
+<Fragment slot="hint">
+
+The Lions can be the `home_team` *or* the `away_team` for any given game. The
+cleanest approach is a `CASE` expression that picks the right side. `result` in
+the schedules table is the **point differential from the home team's view**, so
+infer W/L from whichever side the Lions are on.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```sql
+SELECT
+    week,
+    CASE WHEN home_team = 'DET' THEN away_team ELSE home_team END AS opponent,
+    CASE WHEN home_team = 'DET' THEN home_score ELSE away_score END AS det_points,
+    CASE WHEN home_team = 'DET' THEN away_score ELSE home_score END AS opp_points,
+    CASE
+        WHEN home_team = 'DET' AND home_score > away_score THEN 'W'
+        WHEN away_team = 'DET' AND away_score > home_score THEN 'W'
+        WHEN home_score = away_score THEN 'T'
+        ELSE 'L'
+    END AS result
+FROM schedules
+WHERE season = 2024
+  AND game_type = 'REG'
+  AND (
+       (home_team = 'DET' AND home_score >= 40)
+    OR (away_team = 'DET' AND away_score >= 40)
+  )
+ORDER BY week;
+```
+
+`CASE` is the SQL ternary. You'll see it constantly — this is your warm-up.
+
+</Fragment>
+
+</Challenge>

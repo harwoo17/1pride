@@ -1,0 +1,104 @@
+---
+title: COUNT, SUM, AVG, MAX, MIN
+description: Collapse many rows into one number. Aggregates before GROUP BY.
+sidebar:
+  order: 4
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 1 · Lesson 4</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+You don't always want a row per game. Sometimes you want one number: "how many
+touchdowns did Amon-Ra catch in 2024?" That's `SUM`. "What's his per-game
+average?" That's `AVG`. Aggregates turn many rows into one.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+Five aggregates do most of the work:
+
+| Function | Returns | Notes |
+|---|---|---|
+| `COUNT(*)` | row count | counts everything, even rows with NULLs |
+| `COUNT(col)` | non-NULL row count | useful for "how many games had a sack?" |
+| `SUM(col)` | total | NULLs ignored |
+| `AVG(col)` | mean | NULLs ignored — the denominator is non-NULL count |
+| `MIN`, `MAX` | extremes | works on numbers, strings, dates |
+
+An aggregate query with no `GROUP BY` collapses the whole filtered set into a
+**single row**:
+
+```sql
+SELECT
+    COUNT(*)              AS games_played,
+    SUM(receiving_yards)  AS total_rec_yards,
+    AVG(receiving_yards)  AS avg_rec_yards,
+    MAX(receiving_yards)  AS best_game,
+    MIN(receiving_yards)  AS worst_game
+FROM weekly_stats
+WHERE player_display_name = 'Amon-Ra St. Brown'
+  AND season = 2024
+  AND season_type = 'REG';
+```
+
+One row out, five columns. That's the shape of a non-grouped aggregate.
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+How many 100-yard rushing games did David Montgomery and Jahmyr Gibbs *combined*
+post in 2024 regular season?
+
+```sql
+SELECT COUNT(*) AS hundred_yard_games
+FROM weekly_stats
+WHERE recent_team = 'DET'
+  AND season = 2024
+  AND season_type = 'REG'
+  AND player_display_name IN ('David Montgomery', 'Jahmyr Gibbs')
+  AND rushing_yards >= 100;
+```
+
+The filter happens row-by-row, then `COUNT(*)` totals the survivors.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+What was Jared Goff's **average passing yards per game** in the 2024 regular
+season? Round to one decimal in your head; the SQL just needs `AVG`.
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **Mixing aggregates with non-aggregated columns.** `SELECT player_display_name,
+  SUM(receiving_yards) FROM weekly_stats` is an error without a `GROUP BY`. You
+  either pick one row (with a filter) or you group (Lesson 7+ territory).
+- **Forgetting `AVG` ignores `NULL`.** If half the rows have a NULL value, the
+  average is over the other half. That's usually what you want, but verify with
+  `COUNT(col)` if it matters.
+- **`SUM` over a NULL-only set returns NULL, not 0.** Wrap with `COALESCE(SUM(...), 0)`
+  if you want a zero.
+- **`COUNT(*)` vs `COUNT(col)`.** `COUNT(*)` is faster and counts every row.
+  `COUNT(col)` only counts where the column isn't NULL.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. Without `GROUP BY`, how many rows does `SELECT COUNT(*), AVG(rushing_yards) FROM weekly_stats` return?
+2. What does `AVG` do with NULL values?
+3. When would you choose `COUNT(receiving_yards)` over `COUNT(*)`?
+
+</LessonSection>
+
+</Lesson>

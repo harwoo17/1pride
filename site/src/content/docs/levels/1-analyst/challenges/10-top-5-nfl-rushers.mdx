@@ -1,0 +1,56 @@
+---
+title: Top 5 NFL rushers, Week 1 2024
+description: Step outside Detroit. Pull the top 5 rushers across the league for Week 1.
+sidebar:
+  order: 10
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 1 · Challenge 10</span>
+
+<Challenge difficulty="allpro">
+
+<Fragment slot="prompt">
+The Lions filter is gone. Return the **top 5 NFL rushers** of Week 1, 2024 —
+their name, team, rushing yards, carries, and rushing TDs. Sort by rushing
+yards descending, tie-break by TDs.
+</Fragment>
+
+<Fragment slot="output">
+
+Five rows:
+
+| player_display_name | recent_team | rushing_yards | carries | rushing_tds |
+|---|---|---|---|---|
+| *(player)* | *(team)* | *(yards)* | *(carries)* | *(tds)* |
+
+</Fragment>
+
+<Fragment slot="hint">
+
+Drop the `recent_team = 'DET'` filter. Keep `season = 2024 AND week = 1`. Add
+`carries IS NOT NULL` so you don't get a string of zero-carry receivers tied at
+the bottom.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```sql
+SELECT player_display_name, recent_team, rushing_yards, carries, rushing_tds
+FROM weekly_stats
+WHERE season = 2024
+  AND week = 1
+  AND season_type = 'REG'
+  AND carries IS NOT NULL
+ORDER BY rushing_yards DESC, rushing_tds DESC
+LIMIT 5;
+```
+
+Why this matters: every Level 2+ analysis needs *cross-team* queries. Getting
+comfortable removing the team filter is its own small skill.
+
+</Fragment>
+
+</Challenge>

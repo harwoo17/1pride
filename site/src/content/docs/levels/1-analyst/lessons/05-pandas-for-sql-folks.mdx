@@ -1,0 +1,121 @@
+---
+title: pandas for the SQL-curious
+description: read_sql, DataFrame filtering, sort_values, head. SQL operations in Python.
+sidebar:
+  order: 5
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 1 · Lesson 5</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+SQL is great for pulling the data. Charts, models, and reproducible analysis live
+in Python. pandas is the bridge: it gives you SQL-shaped operations as Python
+methods on a `DataFrame`.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+A `DataFrame` is a table — rows, columns, a header, an index. The four operations
+that map cleanly from SQL:
+
+| SQL | pandas |
+|---|---|
+| `SELECT a, b FROM t` | `df[['a', 'b']]` |
+| `WHERE a > 100` | `df[df['a'] > 100]` (boolean mask) |
+| `ORDER BY a DESC` | `df.sort_values('a', ascending=False)` |
+| `LIMIT 10` | `df.head(10)` |
+
+You can pull straight from Postgres using `read_sql`, then chain pandas methods:
+
+```python
+import pandas as pd
+from sqlalchemy import create_engine
+
+eng = create_engine("postgresql+psycopg://onepride:lions@localhost:5432/onepride")
+
+df = pd.read_sql(
+    """SELECT player_display_name, week, rushing_yards
+       FROM weekly_stats
+       WHERE recent_team = 'DET' AND season = 2024 AND season_type = 'REG'""",
+    eng,
+)
+
+top5 = (
+    df.sort_values('rushing_yards', ascending=False)
+      .head(5)
+)
+```
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+The same "best receiving games" query from Lesson 3, end to end in Python:
+
+```python
+import pandas as pd
+from sqlalchemy import create_engine
+
+eng = create_engine("postgresql+psycopg://onepride:lions@localhost:5432/onepride")
+
+raw = pd.read_sql(
+    "SELECT * FROM weekly_stats WHERE recent_team = 'DET' AND season = 2024",
+    eng,
+)
+
+best = (
+    raw[raw['receiving_yards'].notna()]
+      .sort_values('receiving_yards', ascending=False)
+      .loc[:, ['player_display_name', 'week', 'opponent_team',
+               'receiving_yards', 'receiving_tds']]
+      .head(5)
+)
+
+print(best.to_string(index=False))
+```
+
+`raw[...]` is a boolean mask. `.loc[:, [...]]` picks columns. Method chains read
+top to bottom like a query plan.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Using `read_sql` and pandas (no `WHERE` clause in the SQL), pull every 2024
+regular-season Lions row into `df`, then find the **single highest fantasy
+points game** using only pandas methods.
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **`df[col > 100]` instead of `df[df[col] > 100]`.** The first compares a
+  string to a number. The second creates a boolean mask of the right length.
+- **Forgetting `.copy()` when slicing for later mutation.** If you plan to add
+  columns to a filtered subset, do `subset = df[mask].copy()` to silence the
+  `SettingWithCopyWarning`.
+- **`==` vs `=`.** SQL uses `=`; pandas uses Python's `==`. Mix them up and
+  you'll get assignments where you wanted comparisons.
+- **String comparisons.** `df['recent_team'] == 'DET'` works. `'DET' in
+  df['recent_team']` looks like English but is wrong. Use `.isin(['DET'])` for
+  multi-value matches.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. What does `df.head(10)` correspond to in SQL?
+2. How do you express `WHERE recent_team IN ('DET', 'GB')` in pandas?
+3. Given a DataFrame `df` with a `rushing_yards` column, write the pandas
+   equivalent of `SELECT * FROM ... WHERE rushing_yards >= 100 ORDER BY rushing_yards DESC LIMIT 5`.
+
+</LessonSection>
+
+</Lesson>

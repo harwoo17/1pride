@@ -1,0 +1,98 @@
+---
+title: Filtering with WHERE
+description: AND, OR, IN, BETWEEN, NULL. The five filters that handle 90% of stat lookups.
+sidebar:
+  order: 2
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 1 · Lesson 2</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+A `SELECT` without `WHERE` returns everything. Filtering is where you stop pulling
+the league and start pulling the Lions.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+`WHERE` accepts any expression that evaluates to true or false, row by row. The
+five operators that come up daily:
+
+| Operator | Meaning | Example |
+|---|---|---|
+| `=` `!=` | exact match / not match | `season = 2024` |
+| `>` `<` `>=` `<=` | comparison (numbers, dates) | `rushing_yards > 100` |
+| `AND` `OR` `NOT` | combine conditions | `season = 2024 AND week = 1` |
+| `IN (...)` | match any value in a list | `recent_team IN ('DET', 'GB')` |
+| `BETWEEN a AND b` | inclusive range | `week BETWEEN 1 AND 9` |
+
+`NULL` is the wrench: equality with `NULL` is always `NULL` (not `TRUE`). Use
+`IS NULL` / `IS NOT NULL`.
+
+```sql
+SELECT player_display_name, rushing_yards
+FROM weekly_stats
+WHERE recent_team = 'DET'
+  AND season = 2024
+  AND rushing_yards IS NOT NULL
+  AND rushing_yards >= 50;
+```
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+Every Lions player-week in the 2024 regular season with at least one touchdown of
+any kind:
+
+```sql
+SELECT player_display_name, week, rushing_tds, receiving_tds, passing_tds
+FROM weekly_stats
+WHERE recent_team = 'DET'
+  AND season = 2024
+  AND season_type = 'REG'
+  AND (rushing_tds > 0 OR receiving_tds > 0 OR passing_tds > 0)
+ORDER BY week, player_display_name;
+```
+
+Parentheses matter. `AND` binds tighter than `OR`, so without them you'd get
+"season is 2024 AND rushing_tds > 0" *or* "receiving_tds > 0" — which would pull
+non-Lions, non-2024 rows.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Write a query that returns Lions players who had a **300+ passing yard game** in
+the 2024 regular season. Sort by week.
+
+You only need `recent_team`, `season`, `season_type`, and one numeric filter.
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **`= NULL` instead of `IS NULL`.** The first always returns no rows.
+- **Bare `OR` with `AND`.** `team = 'DET' AND week = 1 OR week = 2` matches every
+  Week 2 row in the database. Wrap the `OR` clause in parens.
+- **String comparisons are case-sensitive.** `recent_team = 'det'` returns zero
+  rows. nflverse uses upper-case team abbreviations.
+- **`BETWEEN` is inclusive on both ends.** `BETWEEN 1 AND 9` includes Weeks 1 and 9.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. Why does `WHERE rushing_yards = NULL` never match anything?
+2. Rewrite `WHERE recent_team = 'DET' OR recent_team = 'GB' OR recent_team = 'MIN' OR recent_team = 'CHI'` more concisely.
+3. What's the difference between `WHERE week BETWEEN 1 AND 9` and `WHERE week > 1 AND week < 9`?
+
+</LessonSection>
+
+</Lesson>

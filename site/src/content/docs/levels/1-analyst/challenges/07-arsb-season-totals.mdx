@@ -1,0 +1,56 @@
+---
+title: Amon-Ra St. Brown season totals, 2024
+description: One row of season aggregates for ARSB.
+sidebar:
+  order: 7
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 1 · Challenge 7</span>
+
+<Challenge difficulty="starter">
+
+<Fragment slot="prompt">
+Return Amon-Ra St. Brown's **2024 regular-season totals**: games played,
+receptions, receiving yards, receiving touchdowns, average yards per game, and
+his single best game (max receiving yards). One row.
+</Fragment>
+
+<Fragment slot="output">
+
+| games | receptions | rec_yards | rec_tds | yards_per_game | best_game |
+|---|---|---|---|---|---|
+| *(int)* | *(int)* | *(int)* | *(int)* | *(decimal)* | *(int)* |
+
+</Fragment>
+
+<Fragment slot="hint">
+
+`COUNT(*)` for games, `SUM` for the totals, `ROUND(AVG, 1)` for yards per game,
+`MAX` for the best game. All in one `SELECT` — no `GROUP BY` needed because the
+`WHERE` already narrows to one player-season.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```sql
+SELECT
+    COUNT(*) AS games,
+    SUM(receptions) AS receptions,
+    SUM(receiving_yards) AS rec_yards,
+    SUM(receiving_tds) AS rec_tds,
+    ROUND(AVG(receiving_yards)::numeric, 1) AS yards_per_game,
+    MAX(receiving_yards) AS best_game
+FROM weekly_stats
+WHERE player_display_name = 'Amon-Ra St. Brown'
+  AND season = 2024
+  AND season_type = 'REG';
+```
+
+Sanity check: if `yards_per_game * games ≈ rec_yards`, the aggregates agree.
+
+</Fragment>
+
+</Challenge>

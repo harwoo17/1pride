@@ -1,0 +1,52 @@
+---
+title: Lions 100-yard receiving games, 2024
+description: Every Lions player-week with 100+ receiving yards.
+sidebar:
+  order: 8
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 1 · Challenge 8</span>
+
+<Challenge difficulty="starter">
+
+<Fragment slot="prompt">
+Return every Lions player-week in the 2024 regular season with **100 or more
+receiving yards**. Sort by yards descending, tie-break by week.
+</Fragment>
+
+<Fragment slot="output">
+
+Many rows, four columns:
+
+| player_display_name | week | receiving_yards | receiving_tds |
+|---|---|---|---|
+| *(player)* | *(int)* | *(int)* | *(int)* |
+
+</Fragment>
+
+<Fragment slot="hint">
+
+This is a `WHERE` + `ORDER BY` problem — no aggregates. Same skeleton as
+Challenge 1 with the threshold bumped to 100 and no `LIMIT`.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```sql
+SELECT player_display_name, week, receiving_yards, receiving_tds
+FROM weekly_stats
+WHERE recent_team = 'DET'
+  AND season = 2024
+  AND season_type = 'REG'
+  AND receiving_yards >= 100
+ORDER BY receiving_yards DESC, week ASC;
+```
+
+Useful follow-up: change the threshold to 150 and see how many games survive.
+
+</Fragment>
+
+</Challenge>

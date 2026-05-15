@@ -1,0 +1,98 @@
+---
+title: Sorting and limiting
+description: ORDER BY, ASC/DESC, multi-column sort, and LIMIT for top-N queries.
+sidebar:
+  order: 3
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 1 · Lesson 3</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+"Who's the leading rusher" is a sort plus a limit. So is "five worst defenses" and
+"top 10 receiving games this year." Once you have the sort right, the answer is
+the top row.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+`ORDER BY` runs after `WHERE`. Two things to know:
+
+- **Direction.** `ASC` is the default (ascending). `DESC` flips it. You almost
+  always want `DESC` for leaderboards.
+- **Tie-breakers.** When the sort column ties, the database is free to return
+  rows in any order — unless you add a second sort key. Always tie-break with
+  something stable (a week, a name, an id).
+
+```sql
+SELECT player_display_name, week, rushing_yards
+FROM weekly_stats
+WHERE recent_team = 'DET' AND season = 2024
+ORDER BY rushing_yards DESC, week ASC
+LIMIT 10;
+```
+
+`LIMIT` caps the row count *after* sorting. `LIMIT 1` is the "leader" shortcut.
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+The five biggest Lions receiving games of 2024:
+
+```sql
+SELECT player_display_name, week, opponent_team, receiving_yards, receiving_tds
+FROM weekly_stats
+WHERE recent_team = 'DET'
+  AND season = 2024
+  AND season_type = 'REG'
+ORDER BY receiving_yards DESC
+LIMIT 5;
+```
+
+Add `, receiving_tds DESC` as a tie-breaker if two players hit the same yardage —
+the player with more TDs comes first.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Find the **three lowest-scoring** Lions games of 2024 — the games where they
+themselves scored the fewest points. You'll need the `schedules` table this time.
+
+Hint: the Lions can be the `home_team` or the `away_team`. You can use a `CASE`
+expression, or just write two queries and `UNION` them later (that's Lesson 8
+territory — for now, just filter to one side and run the query twice).
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **Forgetting `DESC`.** SQL sorts ascending by default, so without it your
+  "leader" query returns the *least*.
+- **`NULL` sort order surprises.** Postgres puts `NULL` last on `ASC` and first
+  on `DESC`. Add `NULLS LAST` to keep nulls out of your top-N.
+- **`LIMIT` without `ORDER BY`.** You get *some* 10 rows, not the *top* 10. Always
+  pair them.
+- **Sorting by a column you didn't select.** That's legal in standard SQL, but
+  it's worth selecting the column anyway — otherwise you can't see why the
+  ordering came out the way it did.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. What does `ORDER BY rushing_yards DESC NULLS LAST` do?
+2. If you remove `LIMIT 5`, what changes about the result?
+3. How would you write "fifth-leading rusher" instead of "leading rusher"?
+   (Hint: `OFFSET`.)
+
+</LessonSection>
+
+</Lesson>

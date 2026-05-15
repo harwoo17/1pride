@@ -1,0 +1,56 @@
+---
+title: Every Lion who scored in 2024
+description: Distinct list of Lions players who scored at least one touchdown in 2024.
+sidebar:
+  order: 3
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 1 · Challenge 3</span>
+
+<Challenge difficulty="rookie">
+
+<Fragment slot="prompt">
+Return the **distinct list** of Lions players who scored at least one rushing,
+receiving, or passing touchdown in the 2024 regular season. Alphabetical by name.
+</Fragment>
+
+<Fragment slot="output">
+
+A single column, one row per player:
+
+| player_display_name |
+|---|
+| *(name)* |
+| *(name)* |
+| ... |
+
+</Fragment>
+
+<Fragment slot="hint">
+
+`SELECT DISTINCT` collapses duplicate rows. Filter for any TD &gt; 0 with an `OR`
+across the three TD columns. Wrap the `OR` in parens so it doesn't escape the
+`AND` boundary.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```sql
+SELECT DISTINCT player_display_name
+FROM weekly_stats
+WHERE recent_team = 'DET'
+  AND season = 2024
+  AND season_type = 'REG'
+  AND (rushing_tds > 0 OR receiving_tds > 0 OR passing_tds > 0)
+ORDER BY player_display_name;
+```
+
+You'll see Montgomery, Gibbs, LaPorta, ARSB, Jameson Williams, Goff (passing
+TDs count), and a handful of role players.
+
+</Fragment>
+
+</Challenge>

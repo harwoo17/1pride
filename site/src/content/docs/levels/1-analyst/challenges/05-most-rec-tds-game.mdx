@@ -1,0 +1,54 @@
+---
+title: Most receiving TDs in a single Lions game, 2024
+description: The single best Lions receiving-TD game of the 2024 season.
+sidebar:
+  order: 5
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 1 · Challenge 5</span>
+
+<Challenge difficulty="starter">
+
+<Fragment slot="prompt">
+Find the Lions player-week in 2024 with the most receiving touchdowns. Return
+the player, the week, the opponent, the receiving yards, and the receiving TDs.
+Tie-break by receiving yards.
+</Fragment>
+
+<Fragment slot="output">
+
+A single row:
+
+| player_display_name | week | opponent_team | receiving_yards | receiving_tds |
+|---|---|---|---|---|
+| *(player)* | *(int)* | *(team)* | *(yards)* | *(tds)* |
+
+</Fragment>
+
+<Fragment slot="hint">
+
+`ORDER BY receiving_tds DESC, receiving_yards DESC` for the tie-break, then
+`LIMIT 1`. Watch the column name — it's `receiving_tds`, not `rec_tds`.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```sql
+SELECT player_display_name, week, opponent_team,
+       receiving_yards, receiving_tds
+FROM weekly_stats
+WHERE recent_team = 'DET'
+  AND season = 2024
+  AND season_type = 'REG'
+ORDER BY receiving_tds DESC, receiving_yards DESC
+LIMIT 1;
+```
+
+Reasonable expectation: Amon-Ra or Jameson Williams, depending on the week.
+
+</Fragment>
+
+</Challenge>

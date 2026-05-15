@@ -1,0 +1,109 @@
+---
+title: Your first chart
+description: A clean matplotlib bar chart of Lions rushing leaders. Labels, sources, no chartjunk.
+sidebar:
+  order: 6
+---
+
+import Lesson from '~/components/Lesson.astro';
+import LessonSection from '~/components/LessonSection.astro';
+
+<span class="level-badge">Level 1 · Lesson 6</span>
+
+<Lesson>
+
+<LessonSection title="Hook">
+
+Numbers are how you find the story. Charts are how you tell it. Your first chart
+doesn't need to be pretty — it needs a title, axis labels, and a data source.
+
+</LessonSection>
+
+<LessonSection title="Concept">
+
+matplotlib's basic chart loop:
+
+1. Pull the data into a DataFrame.
+2. Pick the right chart type. Comparing values across categories → bar chart.
+3. Plot. `df.plot(kind='bar', x='label', y='value')`.
+4. Add **title**, **axis labels**, and a **source caption**. Always.
+5. Save or `plt.show()`.
+
+```python
+import matplotlib.pyplot as plt
+import pandas as pd
+from sqlalchemy import create_engine
+
+eng = create_engine("postgresql+psycopg://onepride:lions@localhost:5432/onepride")
+
+df = pd.read_sql(
+    """SELECT player_display_name, SUM(rushing_yards) AS yards
+       FROM weekly_stats
+       WHERE recent_team = 'DET' AND season = 2024 AND season_type = 'REG'
+       GROUP BY player_display_name
+       ORDER BY yards DESC
+       LIMIT 5""",
+    eng,
+)
+
+ax = df.plot(kind='barh', x='player_display_name', y='yards',
+             color='#0076B6', legend=False, figsize=(7, 4))
+ax.invert_yaxis()                     # top bar = leader
+ax.set_title('Lions 2024 rushing leaders (regular season)')
+ax.set_xlabel('Rushing yards')
+ax.set_ylabel('')
+ax.figure.text(0.99, 0.01, 'Source: nflverse', ha='right', fontsize=8, color='gray')
+plt.tight_layout()
+plt.savefig('rushing-leaders-2024.png', dpi=150)
+```
+
+(`GROUP BY` is technically Lesson 7 territory — but you can use the snippet
+above and read it as "sum per player." You'll write your own next level.)
+
+</LessonSection>
+
+<LessonSection title="Lions example">
+
+The snippet above is the example. Run it in a Jupyter cell and you'll get a
+horizontal bar chart with David Montgomery and Jahmyr Gibbs on top.
+
+A few small choices that matter:
+
+- **Horizontal bars** (`barh`) when labels are long names. Vertical bar charts
+  cram or rotate the labels.
+- **Invert the y-axis** so the leader is on top — that's the convention readers
+  expect.
+- **`color='#0076B6'`** — one color, the 1PRIDE accent. No rainbow per bar.
+- **A source caption.** Always. Charts get screenshotted out of context.
+
+</LessonSection>
+
+<LessonSection title="Try it">
+
+Make a bar chart of Lions **passing yards by week** for 2024 regular season. Use
+vertical bars (`kind='bar'`), week on the x-axis, yards on the y-axis. Title,
+axis labels, source caption — all three.
+
+</LessonSection>
+
+<LessonSection title="Common mistakes">
+
+- **No title.** A chart without a title is a Rorschach test.
+- **No source.** You can always re-find it, but the reader can't.
+- **Default matplotlib palette.** Tab-orange and sky-blue everywhere. Pick a
+  color that matches your subject. Honolulu Blue (`#0076B6`) for Lions charts.
+- **Skipping `plt.tight_layout()`.** Long labels get cut off in the saved PNG.
+- **`plt.savefig` after `plt.show()`.** `plt.show()` resets the figure in some
+  setups. Save first, then show — or skip show and just save.
+
+</LessonSection>
+
+<LessonSection title="Quick check">
+
+1. Why `barh` instead of `bar` for player-name bar charts?
+2. What three labels does every chart need?
+3. What does `ax.invert_yaxis()` do in a horizontal bar chart, and why?
+
+</LessonSection>
+
+</Lesson>

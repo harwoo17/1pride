@@ -1,0 +1,56 @@
+---
+title: Montgomery yards per carry, 2024
+description: David Montgomery's season average yards per rush attempt.
+sidebar:
+  order: 4
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 1 · Challenge 4</span>
+
+<Challenge difficulty="rookie">
+
+<Fragment slot="prompt">
+Compute David Montgomery's **yards per carry** across the 2024 regular season —
+total rushing yards divided by total carries. Round to two decimal places.
+</Fragment>
+
+<Fragment slot="output">
+
+A single row:
+
+| yards_per_carry |
+|---|
+| *(decimal)* |
+
+</Fragment>
+
+<Fragment slot="hint">
+
+`SUM(rushing_yards) / SUM(carries)` is correct in principle, but integer-vs-real
+math will bite you. Cast one side to `REAL` or use `::numeric`. `ROUND(..., 2)`
+for two decimals.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```sql
+SELECT
+    ROUND(
+        SUM(rushing_yards)::numeric / NULLIF(SUM(carries), 0),
+        2
+    ) AS yards_per_carry
+FROM weekly_stats
+WHERE player_display_name = 'David Montgomery'
+  AND season = 2024
+  AND season_type = 'REG';
+```
+
+`NULLIF(SUM(carries), 0)` prevents a divide-by-zero if the filter ever returns
+nothing. Habit worth forming early.
+
+</Fragment>
+
+</Challenge>

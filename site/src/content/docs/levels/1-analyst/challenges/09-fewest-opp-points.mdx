@@ -1,0 +1,57 @@
+---
+title: Lowest-scoring Lions opponent, 2024
+description: The opponent that scored the fewest points against Detroit in 2024.
+sidebar:
+  order: 9
+---
+
+import Challenge from '~/components/Challenge.astro';
+
+<span class="level-badge">Level 1 · Challenge 9</span>
+
+<Challenge difficulty="starter">
+
+<Fragment slot="prompt">
+Find the 2024 regular-season game in which the Lions' **opponent** scored the
+**fewest points**. Return the week, opponent, Lions points, and opponent points.
+Just one row — the single lowest opponent score.
+</Fragment>
+
+<Fragment slot="output">
+
+| week | opponent | det_points | opp_points |
+|---|---|---|---|
+| *(int)* | *(team)* | *(int)* | *(int)* |
+
+</Fragment>
+
+<Fragment slot="hint">
+
+Like Challenge 6, the Lions can be home or away. Use `CASE` to compute the
+opponent's score regardless of side, then sort by it ascending with `LIMIT 1`.
+
+</Fragment>
+
+<Fragment slot="solution">
+
+```sql
+SELECT
+    week,
+    CASE WHEN home_team = 'DET' THEN away_team ELSE home_team END AS opponent,
+    CASE WHEN home_team = 'DET' THEN home_score ELSE away_score END AS det_points,
+    CASE WHEN home_team = 'DET' THEN away_score ELSE home_score END AS opp_points
+FROM schedules
+WHERE season = 2024
+  AND game_type = 'REG'
+  AND (home_team = 'DET' OR away_team = 'DET')
+ORDER BY opp_points ASC, week ASC
+LIMIT 1;
+```
+
+You can sort by a `CASE` expression directly, but the readable version aliases
+it as a column. SQL's order of operations lets you reference the alias in
+`ORDER BY`.
+
+</Fragment>
+
+</Challenge>

@@ -23,6 +23,7 @@ hero:
 ---
 
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import LevelIcon from '~/components/LevelIcon.astro';
 
 A self-paced data curriculum that takes you from `SELECT *` to a deployed
 analytics app, using **every game of the Dan Campbell era** (2021–present)
@@ -33,23 +34,28 @@ as the substrate and a football-org hierarchy as the level progression.
 ## The depth chart
 
 <CardGrid stagger>
-	<Card title="Level 1 — Analyst" icon="pencil">
+	<Card title="Level 1 — Analyst">
+		<LevelIcon level={1} size={34} />
 		Pull stats on request. `SELECT`, `WHERE`, `ORDER BY`, basic aggregates.
 		Capstone: a 2024 season recap notebook.
 	</Card>
-	<Card title="Level 2 — Position coach" icon="puzzle">
+	<Card title="Level 2 — Position coach">
+		<LevelIcon level={2} size={34} />
 		Develop a position group. `JOIN`, `GROUP BY`, `HAVING`.
 		Capstone: a WR efficiency scouting card.
 	</Card>
-	<Card title="Level 3 — Head coach" icon="seti:clock">
+	<Card title="Level 3 — Head coach">
+		<LevelIcon level={3} size={34} />
 		Situational decisions. Window functions, CTEs, scipy, plotly.
 		Capstone: a 4th-down decision EV analyzer.
 	</Card>
-	<Card title="Level 4 — General manager" icon="seti:db">
+	<Card title="Level 4 — General manager">
+		<LevelIcon level={4} size={34} />
 		Roster construction. Schema design, scikit-learn, dbt basics.
 		Capstone: a draft-pick value model.
 	</Card>
-	<Card title="Level 5 — Owner" icon="rocket">
+	<Card title="Level 5 — Owner">
+		<LevelIcon level={5} size={34} />
 		Franchise strategy. FastAPI + Next.js, end to end.
 		Capstone: a live app at `app.1pride.app`.
 	</Card>

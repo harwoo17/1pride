@@ -5,7 +5,7 @@
    Ink:       #0A1929  (Navy-tinted near-black)
 */
 
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;500;600;700;800;900&display=swap');
 
 :root {
 	--sl-color-accent-low: #002a47;
@@ -30,7 +30,7 @@
 
 	--sl-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
 	--sl-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-	--font-display: 'Barlow Condensed', 'Inter', sans-serif;
+	--font-display: 'Roboto Condensed', 'Inter', sans-serif;
 }
 
 :root[data-theme='light'] {

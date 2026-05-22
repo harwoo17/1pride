@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Barlow_Condensed, Inter, JetBrains_Mono } from "next/font/google";
+import { Roboto_Condensed, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Intro } from "@/components/Intro";
 
@@ -8,10 +8,10 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-const display = Barlow_Condensed({
+const display = Roboto_Condensed({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["500", "600", "700", "800", "900"],
+  weight: ["400", "500", "600", "700", "800", "900"],
 });
 
 const mono = JetBrains_Mono({

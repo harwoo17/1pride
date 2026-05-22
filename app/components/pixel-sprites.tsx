@@ -3,7 +3,7 @@
 import { useId } from "react";
 
 // Stylized varsity-logo lion. Bold profile silhouette, two flat colors
-// + clean outline + accent gold mane peaks. Embraces SVG's strength
+// + clean outline + accent silver mane peaks. Embraces SVG's strength
 // (flat vector, sharp edges) instead of fighting it (photo-real plush).
 //
 // Five expressions vary the EYE only — the silhouette stays consistent
@@ -19,8 +19,10 @@ const C = {
   highlight: "#b3d8ec",
   silver: "#b0b7bc",
   silverDark: "#6a7178",
-  gold: "#ffcb05",
-  goldDeep: "#c89500",
+  // Mane-peak accent. Kept the `gold`/`goldDeep` keys for back-compat with
+  // the SVG refs below, but the palette is now silver-only (no gold).
+  gold: "#d8dde0",
+  goldDeep: "#8a9095",
   white: "#ffffff",
   ink: "#0a1929",
 } as const;

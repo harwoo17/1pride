@@ -1,37 +1,39 @@
-# fly.toml — 1PRIDE FastAPI backend
-# Deploys data/src/onepride_data/api.py to api.1pride.app on Fly.io.
+# fly.toml app configuration file generated for 1pride-api on 2026-05-20T10:06:46-05:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
 
-app = "1pride-api"
-primary_region = "ord"   # Chicago — close to the Lions and to Neon US-East
+app = '1pride-api'
+primary_region = 'ord'
 
 [build]
-  dockerfile = "Dockerfile"
+  dockerfile = 'Dockerfile'
 
 [env]
-  PORT = "8080"
+  PORT = '8080'
 
 [http_service]
   internal_port = 8080
   force_https = true
-  auto_stop_machines = "stop"
+  auto_stop_machines = 'stop'
   auto_start_machines = true
-  min_machines_running = 0   # scale-to-zero (free tier); first request after idle wakes it
+  min_machines_running = 0
 
-[http_service.concurrency]
-  type = "requests"
-  hard_limit = 100
-  soft_limit = 80
+  [http_service.concurrency]
+    type = 'requests'
+    hard_limit = 100
+    soft_limit = 80
 
-# Health probe — /health touches the DB, so this doubles as a DB ping
-[[http_service.checks]]
-  interval = "30s"
-  timeout = "5s"
-  grace_period = "15s"
-  method = "GET"
-  path = "/health"
+  [[http_service.checks]]
+    interval = '30s'
+    timeout = '5s'
+    grace_period = '15s'
+    method = 'GET'
+    path = '/health'
 
 [[vm]]
-  size = "shared-cpu-1x"
-  memory = "256mb"
-  cpu_kind = "shared"
+  size = 'shared-cpu-1x'
+  memory = '256mb'
+  cpu_kind = 'shared'
   cpus = 1
+  memory_mb = 256

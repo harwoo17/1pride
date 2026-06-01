@@ -248,7 +248,7 @@ function Header() {
             1PRIDE
           </div>
           <div className="hidden font-display text-xs font-semibold uppercase tracking-[0.2em] text-[var(--lions-silver-dark)] sm:block">
-            EST. {ERA_START} · Kneecap Division
+            Detroit · Est. {ERA_START} · Kneecap Division
           </div>
         </div>
         <nav className="flex items-center gap-1 font-display text-sm font-semibold uppercase tracking-wider">

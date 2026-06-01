@@ -66,7 +66,10 @@ html, body { background-color: #ffffff !important; }
 	position: absolute;
 	inset: 0;
 	background-image:
-		repeating-linear-gradient(90deg, rgba(0,118,182,0.04) 0 1px, transparent 1px 80px);
+		/* hash marks every 80px (vertical) */
+		repeating-linear-gradient(90deg, rgba(0,118,182,0.08) 0 1px, transparent 1px 80px),
+		/* yard lines every 50px (horizontal) */
+		repeating-linear-gradient(180deg, rgba(0,118,182,0.06) 0 1px, transparent 1px 50px);
 	pointer-events: none;
 }
 [data-has-hero] .hero h1 {

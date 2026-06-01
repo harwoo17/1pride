@@ -177,22 +177,24 @@ button:active, [role="button"]:active, a[href]:active {
   .shimmer { animation: none; opacity: 0; }
 }
 
-/* Vertical stripe pattern for hero — abstract field-feel without marks */
+/* Vertical hash marks — every 80px, more visible after the football-feel
+   refresh so the field treatment actually reads. */
 .stripes {
   background-image: linear-gradient(
     90deg,
-    rgba(0, 118, 182, 0.04) 0px,
-    rgba(0, 118, 182, 0.04) 1px,
+    rgba(0, 118, 182, 0.09) 0px,
+    rgba(0, 118, 182, 0.09) 1px,
     transparent 1px,
     transparent 80px
   );
 }
 
-/* Yard-line stripes — horizontal bands, used on hero + defining moments */
+/* Yard-line stripes — horizontal bands every 50px with a heavier 5-yard
+   line every 200px. The pattern reads as a football field underlay. */
 .yard-lines {
   background:
-    linear-gradient(180deg, transparent, transparent 49px, rgba(0,118,182,0.05) 49px, rgba(0,118,182,0.05) 50px, transparent 50px) 0 0 / 100% 50px,
-    linear-gradient(180deg, transparent 0px, rgba(15,19,24,0.02) 1px, transparent 1px) 0 0 / 100% 200px;
+    linear-gradient(180deg, transparent, transparent 49px, rgba(0,118,182,0.10) 49px, rgba(0,118,182,0.10) 50px, transparent 50px) 0 0 / 100% 50px,
+    linear-gradient(180deg, transparent 0px, rgba(0,118,182,0.16) 1px, transparent 1px) 0 0 / 100% 200px;
 }
 
 /* Construction-stripe section divider — Lions deep navy alternating

@@ -61,6 +61,45 @@ html, body { background-color: #ffffff !important; }
 	background:
 		linear-gradient(180deg, #ffffff 0%, #fafbfc 100%);
 }
+/* Football decoration — faded football mark in the hero corner. Inline
+   SVG via data-URI so there's no extra request. */
+[data-has-hero] .hero::after {
+	content: '';
+	position: absolute;
+	right: 5%;
+	top: 32%;
+	width: 320px;
+	height: 160px;
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 140'><ellipse cx='140' cy='70' rx='120' ry='55' fill='none' stroke='%230076b6' stroke-width='6'/><line x1='68' y1='70' x2='212' y2='70' stroke='%230076b6' stroke-width='4'/><line x1='100' y1='58' x2='100' y2='82' stroke='%230076b6' stroke-width='3'/><line x1='120' y1='58' x2='120' y2='82' stroke='%230076b6' stroke-width='3'/><line x1='140' y1='58' x2='140' y2='82' stroke='%230076b6' stroke-width='3'/><line x1='160' y1='58' x2='160' y2='82' stroke='%230076b6' stroke-width='3'/><line x1='180' y1='58' x2='180' y2='82' stroke='%230076b6' stroke-width='3'/></svg>");
+	background-repeat: no-repeat;
+	background-size: contain;
+	opacity: 0.20;
+	pointer-events: none;
+	display: none;
+}
+@media (min-width: 1024px) {
+	[data-has-hero] .hero::after {
+		display: block;
+	}
+}
+
+/* End-zone band — diagonal blue+silver field divider, reads as a
+   stadium end-zone stripe between sections. */
+.endzone-band {
+	position: relative;
+	height: 18px;
+	margin: 2.5rem 0;
+	background: repeating-linear-gradient(
+		45deg,
+		var(--lions-blue) 0,
+		var(--lions-blue) 18px,
+		#d8dde0 18px,
+		#d8dde0 36px
+	);
+	border-top: 2px solid var(--lions-blue);
+	border-bottom: 2px solid var(--lions-blue);
+}
+
 [data-has-hero] .hero::before {
 	content: '';
 	position: absolute;

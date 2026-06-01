@@ -25,6 +25,14 @@ export default defineConfig({
 					content:
 						"try{localStorage.setItem('starlight-theme','light');document.documentElement.dataset.theme='light';}catch(e){}",
 				},
+				// Audio language: soft Lion roar on first click + a synthesized
+				// click sound on every button/link press after that. Mirrors the
+				// app's SoundLayer for the curriculum site.
+				{
+					tag: 'script',
+					content:
+						"(function(){var first=true,actx=null;function g(){if(!actx&&(window.AudioContext||window.webkitAudioContext))actx=new(window.AudioContext||window.webkitAudioContext)();if(actx&&actx.state==='suspended')actx.resume();return actx;}function c(){var x=g();if(!x)return;var t=x.currentTime,o=x.createOscillator(),G=x.createGain();o.type='triangle';o.frequency.setValueAtTime(880,t);o.frequency.exponentialRampToValueAtTime(440,t+0.06);G.gain.setValueAtTime(0.001,t);G.gain.exponentialRampToValueAtTime(0.18,t+0.005);G.gain.exponentialRampToValueAtTime(0.001,t+0.08);o.connect(G).connect(x.destination);o.start(t);o.stop(t+0.1);}function r(){try{var a=new Audio('/sounds/lion-roar.mp3');a.volume=0.32;a.play().catch(function(){});}catch(e){}}document.addEventListener('click',function(e){var t=e.target;if(!t.closest||!t.closest('button, a[href]'))return;if(first){first=false;r();}c();});})();",
+				},
 				{
 					tag: 'meta',
 					attrs: { property: 'og:type', content: 'website' },

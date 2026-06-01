@@ -134,6 +134,31 @@ body {
   transform: translateY(0);
 }
 
+/* End-zone band — bold blue+silver diagonal divider, reads as a stadium
+   end-zone stripe between major sections. */
+.endzone-band {
+  position: relative;
+  height: 18px;
+  background: repeating-linear-gradient(
+    45deg,
+    var(--lions-blue) 0,
+    var(--lions-blue) 18px,
+    var(--lions-silver-light) 18px,
+    var(--lions-silver-light) 36px
+  );
+  border-top: 2px solid var(--lions-blue);
+  border-bottom: 2px solid var(--lions-blue);
+}
+
+/* Scoreboard pulse dot — small live-game indicator alongside stat labels */
+@keyframes scoreboard-pulse {
+  0%, 100% { opacity: 0.45; }
+  50%      { opacity: 1; }
+}
+.scoreboard-pulse {
+  animation: scoreboard-pulse 1.6s ease-in-out infinite;
+}
+
 /* Tactile click feedback — every interactive element scales down briefly
    on press. Combined with the global SoundLayer, every click feels
    physical: scale-down + audible "click". */

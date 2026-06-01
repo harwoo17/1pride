@@ -306,8 +306,22 @@ function Hero({
   worstLoss: WeeklyGame | null;
 }) {
   return (
-    <section className="stripes yard-lines relative border-b border-zinc-200 bg-gradient-to-b from-white to-zinc-50">
-      <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 lg:grid-cols-[1.4fr_1fr]">
+    <section className="stripes yard-lines relative overflow-hidden border-b border-zinc-200 bg-gradient-to-b from-white to-zinc-50">
+      {/* Faded football mark — decorative, sits behind content */}
+      <svg
+        viewBox="0 0 280 140"
+        className="pointer-events-none absolute right-6 top-12 hidden w-80 opacity-[0.10] md:block"
+        aria-hidden="true"
+      >
+        <ellipse cx="140" cy="70" rx="120" ry="55" fill="none" stroke="var(--lions-blue)" strokeWidth="6" />
+        <line x1="68" y1="70" x2="212" y2="70" stroke="var(--lions-blue)" strokeWidth="4" />
+        <line x1="100" y1="58" x2="100" y2="82" stroke="var(--lions-blue)" strokeWidth="3" />
+        <line x1="120" y1="58" x2="120" y2="82" stroke="var(--lions-blue)" strokeWidth="3" />
+        <line x1="140" y1="58" x2="140" y2="82" stroke="var(--lions-blue)" strokeWidth="3" />
+        <line x1="160" y1="58" x2="160" y2="82" stroke="var(--lions-blue)" strokeWidth="3" />
+        <line x1="180" y1="58" x2="180" y2="82" stroke="var(--lions-blue)" strokeWidth="3" />
+      </svg>
+      <div className="relative mx-auto grid max-w-6xl gap-10 px-6 py-16 lg:grid-cols-[1.4fr_1fr]">
         <div>
           <div className="mb-3 flex items-center gap-2 font-display text-xs font-bold uppercase tracking-[0.25em] text-[var(--lions-blue)]">
             <span className="inline-block h-1.5 w-6 bg-[var(--lions-blue)]" />
@@ -413,22 +427,29 @@ function StatBox({
 }) {
   return (
     <div
-      className={`card-lift flex flex-col justify-between border-l-4 ${
+      className={`card-lift relative flex flex-col justify-between border-2 ${
         emphasize
-          ? "border-[var(--lions-accent)] bg-[var(--lions-blue-deep)] text-[var(--lions-ink-inverse)]"
+          ? "border-[var(--lions-blue)] bg-[var(--lions-blue)] text-white"
           : "border-[var(--lions-blue)] bg-white"
-      } p-4 shadow-sm`}
+      } p-5 shadow-md ring-2 ring-inset ${
+        emphasize ? "ring-white/30" : "ring-[var(--lions-silver-light)]"
+      }`}
     >
       <div
-        className={`font-display text-xs font-bold uppercase tracking-[0.18em] ${
-          emphasize ? "text-[var(--lions-accent)]" : "text-[var(--lions-silver-dark)]"
+        className={`flex items-center gap-2 font-display text-[10px] font-bold uppercase tracking-[0.22em] ${
+          emphasize ? "text-white" : "text-[var(--lions-silver-dark)]"
         }`}
       >
+        <span
+          className={`scoreboard-pulse inline-block h-1.5 w-1.5 rounded-full ${
+            emphasize ? "bg-white" : "bg-[var(--lions-blue)]"
+          }`}
+        />
         {label}
       </div>
       <div
-        className={`font-display font-black tabular ${
-          small ? "text-3xl" : "text-5xl"
+        className={`font-display font-black tabular leading-none ${
+          small ? "text-4xl" : "text-6xl"
         } ${emphasize ? "text-white" : "text-[var(--lions-charcoal)]"}`}
       >
         {countTo !== undefined ? (
@@ -441,7 +462,11 @@ function StatBox({
           value
         )}
         {suffix && (
-          <span className="ml-1 text-xl text-[var(--lions-silver-dark)]">
+          <span
+            className={`ml-1 text-xl ${
+              emphasize ? "text-white/70" : "text-[var(--lions-silver-dark)]"
+            }`}
+          >
             {suffix}
           </span>
         )}

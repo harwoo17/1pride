@@ -15,7 +15,7 @@ const C = {
   outline: "#000000",
   base: "#0076b6",          // Honolulu Blue — body of the lion
   baseShadow: "#00558a",
-  baseDeep: "#002a47",
+  baseDeep: "#00558a", /* navy stripped — use blue-dark for shadow depth */
   highlight: "#b3d8ec",
   silver: "#b0b7bc",
   silverDark: "#6a7178",

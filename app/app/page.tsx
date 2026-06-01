@@ -315,7 +315,7 @@ function Hero({
             <span className="text-[var(--lions-silver-dark)]">·</span>
             <span className="text-[var(--lions-silver-dark)]">17 of 17</span>
           </div>
-          <h1 className="font-display text-5xl font-black uppercase leading-none tracking-tight text-[var(--lions-charcoal)] sm:text-6xl md:text-7xl lg:text-8xl">
+          <h1 className="font-display text-7xl font-black uppercase leading-[0.92] tracking-tight text-[var(--lions-charcoal)] sm:text-8xl md:text-9xl lg:text-[9.5rem]">
             Don't blink.
             <br />
             <span className="text-[var(--lions-blue)]">Bite the kneecap.</span>

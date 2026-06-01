@@ -2,8 +2,22 @@
    Primary:   #0076B6  (Honolulu Blue — the main color)
    Secondary: #B0B7BC  (Silver / steel)
    Surface:   #FFFFFF  (White)
-   Ink:       #0A1929  (Navy-tinted near-black)
-*/
+   Ink:       #0A1929  (Navy-tinted near-black, body text only)
+
+   No navy as a surface — Starlight's dark default backdrop is forcibly
+   replaced with white below. */
+
+/* ─── Strip navy surfaces (kills Starlight's dark splash backdrop) ─── */
+html, body { background-color: #ffffff !important; }
+:root, :root[data-theme='light'], :root[data-theme='dark'] {
+	--sl-color-bg: #ffffff;
+	--sl-color-bg-nav: #ffffff;
+	--sl-color-bg-sidebar: #ffffff;
+}
+.main-pane, .main-frame, .page, main { background-color: #ffffff !important; }
+[data-has-hero] body, [data-has-hero] .main-pane, [data-has-hero] main {
+	background-color: #ffffff !important;
+}
 
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;500;600;700;800;900&display=swap');
 
@@ -61,7 +75,7 @@
 	text-transform: uppercase;
 	letter-spacing: -0.02em;
 	line-height: 0.92;
-	font-size: clamp(2.5rem, 7vw, 5.5rem) !important;
+	font-size: clamp(3.5rem, 9vw, 8rem) !important;
 	color: var(--lions-ink);
 }
 [data-has-hero] .hero .tagline {
@@ -69,7 +83,7 @@
 	font-weight: 700;
 	text-transform: uppercase;
 	letter-spacing: 0.18em;
-	font-size: 1.05rem !important;
+	font-size: 1.35rem !important;
 	color: var(--lions-blue);
 	max-width: 36ch;
 }
@@ -204,7 +218,7 @@
 	font-family: var(--font-display);
 	font-weight: 900 !important;
 	letter-spacing: 0.02em;
-	font-size: 1.5rem !important;
+	font-size: 1.85rem !important;
 }
 
 /* ─── Inline code in body — tone down Starlight's default red-ish bg */

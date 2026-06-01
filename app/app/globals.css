@@ -6,8 +6,12 @@
      black, to cut eye strain on long reads. */
   --lions-blue: #0076b6;
   --lions-blue-dark: #00558a;
-  --lions-blue-deep: #002a47;
-  --lions-blue-darker: #001b30;    /* footer / deepest backdrops */
+  /* Navy stripped — both "deep" tokens now point at Honolulu blue so
+     every section that used to be a dark navy backdrop renders as
+     saturated Lions blue instead. Palette is blue + silver + white,
+     no navy. Token names kept to avoid churning ~30 call sites. */
+  --lions-blue-deep: #0076b6;
+  --lions-blue-darker: #0076b6;
   --lions-silver: #b0b7bc;
   --lions-silver-dark: #6a7178;
   --lions-silver-light: #d8dde0;   /* hairlines / muted accents */
@@ -128,6 +132,16 @@ body {
 .fade-in.is-visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Tactile click feedback — every interactive element scales down briefly
+   on press. Combined with the global SoundLayer, every click feels
+   physical: scale-down + audible "click". */
+button, [role="button"], a[href] {
+  transition: transform 100ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+button:active, [role="button"]:active, a[href]:active {
+  transform: scale(0.96);
 }
 
 /* Card hover affordance — used on Defining Moments, Insights, Chart

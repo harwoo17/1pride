@@ -16,6 +16,15 @@ export default defineConfig({
 			// branded image. Cross-domain OG works fine on every major
 			// platform.
 			head: [
+				// Force light theme — Starlight's dark default rendered a
+				// navy backdrop, which is off-palette (blue + silver + white
+				// only). Runs before Starlight's own theme script so there's
+				// no flash of dark.
+				{
+					tag: 'script',
+					content:
+						"try{localStorage.setItem('starlight-theme','light');document.documentElement.dataset.theme='light';}catch(e){}",
+				},
 				{
 					tag: 'meta',
 					attrs: { property: 'og:type', content: 'website' },

@@ -11,7 +11,7 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 const LIONS_BLUE = "#0076B6";
-const LIONS_BLUE_DEEP = "#002a47";
+const LIONS_BLUE_DEEP = "#0076B6"; /* navy stripped — points at Honolulu blue */
 const SILVER = "#B0B7BC";
 const SILVER_LIGHT = "#d8dde0";
 const SILVER_DARK = "#6a7178";

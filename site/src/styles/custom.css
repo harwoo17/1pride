@@ -274,12 +274,32 @@ html, body { background-color: #ffffff !important; }
 }
 .lesson-section > h3:first-child {
 	margin-top: 0;
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
 	font-family: var(--font-display);
-	font-size: 0.85rem;
+	font-size: 0.9rem;
 	font-weight: 800;
 	letter-spacing: 0.18em;
 	text-transform: uppercase;
 	color: var(--sl-color-accent);
+}
+.lesson-section-glyph {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.7rem;
+	height: 1.7rem;
+	background: var(--lions-blue);
+	color: #ffffff;
+	font-size: 0.95rem;
+	font-weight: 700;
+	letter-spacing: 0;
+	line-height: 1;
+	flex-shrink: 0;
+}
+.lesson-section-title {
+	display: inline-block;
 }
 
 /* ─── Site title in the top nav — bump weight + tracking */

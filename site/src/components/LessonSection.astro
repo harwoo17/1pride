@@ -3,8 +3,24 @@ interface Props {
 	title: string;
 }
 const { title } = Astro.props;
+
+// Map the standard lesson sections to a small broadcast-style glyph that
+// renders inside a Honolulu-blue chip beside the section title. Falls
+// back to a dot for custom titles. Lessons feel like playbook pages.
+const SECTION_GLYPHS: Record<string, string> = {
+	Hook: '→',
+	Concept: '⊕',
+	'Lions example': '★',
+	'Try it': '▶',
+	'Common mistakes': '⚠',
+	'Quick check': '✓',
+};
+const glyph = SECTION_GLYPHS[title] ?? '·';
 ---
 <section class="lesson-section">
-	<h3>{title}</h3>
+	<h3>
+		<span class="lesson-section-glyph" aria-hidden="true">{glyph}</span>
+		<span class="lesson-section-title">{title}</span>
+	</h3>
 	<slot />
 </section>

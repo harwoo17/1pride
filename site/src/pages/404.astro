@@ -1,0 +1,106 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+---
+
+<StarlightPage
+	frontmatter={{
+		title: 'False start',
+		description: '5-yard penalty. This page is off-sides.',
+		template: 'splash',
+	}}
+>
+	<div class="false-start">
+		<span class="penalty-flag">Penalty · Offense</span>
+		<h1 class="false-start-headline">False start.</h1>
+		<p class="false-start-call">5-yard penalty. Replay first down.</p>
+		<p class="false-start-body">
+			That URL doesn&rsquo;t exist on 1PRIDE. Wrong audible, bad snap count,
+			some sort of pre-snap confusion. Step back to the line of scrimmage
+			and try again.
+		</p>
+		<div class="false-start-actions">
+			<a href="/" class="false-start-cta">
+				Take the field <span aria-hidden="true">→</span>
+			</a>
+			<a href="/levels/1-analyst/" class="false-start-link">Start at Level 1</a>
+		</div>
+	</div>
+	<div class="endzone-band"></div>
+</StarlightPage>
+
+<style>
+	.false-start {
+		max-width: 56ch;
+		padding: 3rem 0 2rem;
+	}
+	.penalty-flag {
+		display: inline-block;
+		background: var(--lions-blue);
+		color: #fff;
+		padding: 0.3rem 0.9rem;
+		font-family: var(--font-display);
+		font-weight: 800;
+		font-size: 0.78rem;
+		letter-spacing: 0.25em;
+		text-transform: uppercase;
+		margin-bottom: 1.25rem;
+	}
+	.false-start-headline {
+		font-family: var(--font-display);
+		font-weight: 900;
+		font-size: clamp(3.5rem, 12vw, 9.5rem) !important;
+		line-height: 0.92;
+		letter-spacing: -0.02em;
+		text-transform: uppercase;
+		color: var(--lions-ink);
+		margin: 0 0 0.5rem;
+	}
+	.false-start-call {
+		font-family: var(--font-display);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.18em;
+		font-size: 1.05rem !important;
+		color: var(--lions-blue);
+		margin: 0 0 1.5rem;
+	}
+	.false-start-body {
+		font-size: 1.05rem;
+		line-height: 1.55;
+		color: #2a2f33;
+		margin-bottom: 2rem;
+	}
+	.false-start-actions {
+		display: flex;
+		align-items: center;
+		gap: 1.5rem;
+		flex-wrap: wrap;
+	}
+	.false-start-cta {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		background: var(--lions-blue);
+		color: #fff !important;
+		padding: 0.85rem 1.5rem;
+		font-family: var(--font-display);
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.12em;
+		font-size: 1rem;
+		text-decoration: none;
+		transition: transform 100ms ease-out, box-shadow 100ms ease-out;
+	}
+	.false-start-cta:hover {
+		transform: translateY(-1px);
+		box-shadow: 0 6px 18px -6px rgba(0, 118, 182, 0.45);
+	}
+	.false-start-link {
+		font-family: var(--font-display);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.12em;
+		font-size: 0.9rem;
+		color: var(--lions-blue);
+	}
+</style>

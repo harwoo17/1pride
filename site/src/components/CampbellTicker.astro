@@ -1,0 +1,92 @@
+---
+// Rotating Dan Campbell quote ticker — mirrors the score-ticker on the
+// L5 app for visual continuity across the brand. Quotes scroll right-to-
+// left in a slow horizontal marquee. The numbered bumpers (01, 02, …)
+// echo the broadcast lower-third style of the app's QuoteTicker.
+
+const CAMPBELL_QUOTES = [
+	'Bite a kneecap off.',
+	'Punch you in the mouth.',
+	"We don't blink.",
+	'These dudes.',
+	'Knock you down. Get up. Knock you down again.',
+	'Hard. Tough. Smart. Disciplined.',
+	"We're gonna kick you in the teeth.",
+	'Earn the right.',
+];
+
+// Duplicate for a seamless loop
+const entries = [...CAMPBELL_QUOTES, ...CAMPBELL_QUOTES];
+---
+
+<div class="campbell-ticker" role="marquee" aria-label="Dan Campbell quotes">
+	<div class="campbell-track">
+		{
+			entries.map((quote, i) => (
+				<span class="campbell-quote">
+					<span class="campbell-quote-num">
+						{String((i % CAMPBELL_QUOTES.length) + 1).padStart(2, '0')}
+					</span>
+					<span class="campbell-quote-text">&ldquo;{quote}&rdquo;</span>
+					<span class="campbell-quote-att">— D.C., HC</span>
+				</span>
+			))
+		}
+	</div>
+</div>
+
+<style>
+	.campbell-ticker {
+		position: relative;
+		overflow: hidden;
+		background: var(--lions-blue);
+		color: #ffffff;
+		border-top: 2px solid var(--lions-blue);
+		border-bottom: 2px solid var(--lions-blue);
+		margin: 2rem 0 2.5rem;
+	}
+	.campbell-track {
+		display: flex;
+		width: max-content;
+		gap: 3rem;
+		padding: 0.85rem 0;
+		white-space: nowrap;
+		animation: campbell-scroll 60s linear infinite;
+		will-change: transform;
+	}
+	.campbell-track:hover {
+		animation-play-state: paused;
+	}
+	@keyframes campbell-scroll {
+		0%   { transform: translateX(0); }
+		100% { transform: translateX(-50%); }
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.campbell-track { animation: none; }
+	}
+	.campbell-quote {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 0.65rem;
+		font-family: var(--font-display);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		font-size: 1rem;
+	}
+	.campbell-quote-num {
+		font-family: var(--sl-font-mono);
+		font-size: 0.7rem;
+		opacity: 0.55;
+		font-weight: 500;
+	}
+	.campbell-quote-text {
+		font-size: 1rem;
+	}
+	.campbell-quote-att {
+		font-size: 0.65rem;
+		opacity: 0.7;
+		letter-spacing: 0.18em;
+		margin-left: 0.25rem;
+	}
+</style>

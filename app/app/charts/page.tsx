@@ -168,12 +168,13 @@ function SummaryStat({
   accentBlue?: boolean;
 }) {
   return (
-    <div className="bg-white p-3 ring-1 ring-zinc-100">
-      <div className="font-display text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--lions-silver-dark)]">
+    <div className="bg-white p-4 ring-2 ring-inset ring-[var(--lions-silver-light)]">
+      <div className="flex items-center gap-2 font-display text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--lions-silver-dark)]">
+        <span className="scoreboard-pulse inline-block h-1.5 w-1.5 rounded-full bg-[var(--lions-blue)]" />
         {label}
       </div>
       <div
-        className={`font-display text-2xl font-black tabular ${
+        className={`mt-2 font-display text-4xl font-black tabular leading-none ${
           accentBlue ? "text-[var(--lions-blue)]" : "text-[var(--lions-charcoal)]"
         }`}
       >

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Roboto_Condensed, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Intro } from "@/components/Intro";
+import { SoundLayer } from "@/components/SoundLayer";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -95,6 +96,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-[var(--lions-paper-warm)] text-[var(--lions-charcoal)] font-sans">
         <Intro />
+        <SoundLayer />
         {children}
       </body>
     </html>

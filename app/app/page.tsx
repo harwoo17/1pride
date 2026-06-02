@@ -21,6 +21,23 @@ export const revalidate = 3600;
 const ERA_START = 2021;
 const LATEST_SEASON = 2025;
 
+// Public Lions jersey numbers (2024 roster) — used to render a small
+// jersey chip next to player names in StatLeaders. Facts, not branding.
+const JERSEY_NUMBERS: Record<string, number> = {
+  "Jared Goff": 16,
+  "Amon-Ra St. Brown": 14,
+  "Jameson Williams": 9,
+  "Sam LaPorta": 87,
+  "David Montgomery": 5,
+  "Jahmyr Gibbs": 26,
+  "Penei Sewell": 58,
+  "Aidan Hutchinson": 97,
+  "Tim Patrick": 12,
+  "Brock Wright": 89,
+  "Kalif Raymond": 11,
+  "Craig Reynolds": 13,
+};
+
 const CAMPBELL_QUOTES = [
   "Bite a kneecap off.",
   "Punch you in the mouth.",
@@ -880,7 +897,19 @@ function StatLeaders({
                   <td className="py-2 font-mono text-xs text-[var(--lions-silver-dark)]">
                     {String(i + 1).padStart(2, "0")}
                   </td>
-                  <td className="py-2 font-semibold">{r.name}</td>
+                  <td className="py-2 font-semibold">
+                    <span className="inline-flex items-center gap-2">
+                      {JERSEY_NUMBERS[r.name] !== undefined && (
+                        <span
+                          className="inline-flex h-5 min-w-[1.75rem] items-center justify-center rounded-sm bg-[var(--lions-blue)] px-1 font-mono text-[10px] font-bold text-white"
+                          aria-label={`Jersey number ${JERSEY_NUMBERS[r.name]}`}
+                        >
+                          {JERSEY_NUMBERS[r.name]}
+                        </span>
+                      )}
+                      {r.name}
+                    </span>
+                  </td>
                   <td className="py-2 text-[var(--lions-silver-dark)]">
                     {r.position}
                   </td>

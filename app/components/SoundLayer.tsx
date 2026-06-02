@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { playClick, playBonk, playDing, playRoar } from "@/lib/sounds";
+import { playClick, playBonk, playDing, playRoar, playCheer } from "@/lib/sounds";
 
 /**
  * Global click sound + first-interaction roar.
@@ -41,6 +41,8 @@ export function SoundLayer() {
           return playDing();
         case "roar":
           return playRoar(0.04, 0.55);
+        case "cheer":
+          return playCheer(0, 0.7);
         case "click":
           return playClick();
       }

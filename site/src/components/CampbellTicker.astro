@@ -1,34 +1,43 @@
 ---
-// Rotating Dan Campbell quote ticker — mirrors the score-ticker on the
-// L5 app for visual continuity across the brand. Quotes scroll right-to-
-// left in a slow horizontal marquee. The numbered bumpers (01, 02, …)
-// echo the broadcast lower-third style of the app's QuoteTicker.
+// Org-wide voices ticker — quotes and composite voices from across the
+// Lions org, head coach down to analytics. Mirrors the QuoteTicker on
+// the L5 app for visual continuity. Real attributable quotes carry the
+// name; the rest are role-based composite voices.
 
-const CAMPBELL_QUOTES = [
-	'Bite a kneecap off.',
-	'Punch you in the mouth.',
-	"We don't blink.",
-	'These dudes.',
-	'Knock you down. Get up. Knock you down again.',
-	'Hard. Tough. Smart. Disciplined.',
-	"We're gonna kick you in the teeth.",
-	'Earn the right.',
+const ORG_VOICES: { role: string; text: string }[] = [
+	{ role: 'HC · Dan Campbell', text: 'Bite a kneecap off.' },
+	{ role: 'GM · Brad Holmes', text: 'I love these dudes.' },
+	{ role: 'HC · Dan Campbell', text: 'Punch you in the mouth.' },
+	{ role: 'Ownership', text: 'Win in Detroit. Win for Detroit.' },
+	{ role: "HC · Dan Campbell", text: "We don't blink." },
+	{ role: 'GM · Brad Holmes', text: "We're going to swing big." },
+	{ role: 'HC · Dan Campbell', text: 'These dudes.' },
+	{ role: 'OC · Play caller', text: "Aggressive isn't reckless." },
+	{ role: 'HC · Dan Campbell', text: 'Knock you down. Get up. Knock you down again.' },
+	{ role: 'DC · Defense', text: 'Set the standard.' },
+	{ role: 'HC · Dan Campbell', text: 'Hard. Tough. Smart. Disciplined.' },
+	{ role: 'Position coach', text: 'Brick by brick.' },
+	{ role: 'HC · Dan Campbell', text: "We're gonna kick you in the teeth." },
+	{ role: 'Scouting', text: 'Eyes on every snap.' },
+	{ role: 'HC · Dan Campbell', text: 'Earn the right.' },
+	{ role: 'Analytics', text: 'Trust the chart. Trust the EPA.' },
+	{ role: 'Locker room', text: 'Forward. Always forward.' },
+	{ role: 'Offensive line', text: 'Move the rock.' },
 ];
 
-// Duplicate for a seamless loop
-const entries = [...CAMPBELL_QUOTES, ...CAMPBELL_QUOTES];
+const entries = [...ORG_VOICES, ...ORG_VOICES];
 ---
 
-<div class="campbell-ticker" role="marquee" aria-label="Dan Campbell quotes">
+<div class="campbell-ticker" role="marquee" aria-label="Voices from across the Lions org">
 	<div class="campbell-track">
 		{
-			entries.map((quote, i) => (
+			entries.map((v, i) => (
 				<span class="campbell-quote">
 					<span class="campbell-quote-num">
-						{String((i % CAMPBELL_QUOTES.length) + 1).padStart(2, '0')}
+						{String((i % ORG_VOICES.length) + 1).padStart(2, '0')}
 					</span>
-					<span class="campbell-quote-text">&ldquo;{quote}&rdquo;</span>
-					<span class="campbell-quote-att">— D.C., HC</span>
+					<span class="campbell-quote-role">{v.role}</span>
+					<span class="campbell-quote-text">&ldquo;{v.text}&rdquo;</span>
 				</span>
 			))
 		}
@@ -83,10 +92,14 @@ const entries = [...CAMPBELL_QUOTES, ...CAMPBELL_QUOTES];
 	.campbell-quote-text {
 		font-size: 1rem;
 	}
-	.campbell-quote-att {
-		font-size: 0.65rem;
-		opacity: 0.7;
-		letter-spacing: 0.18em;
-		margin-left: 0.25rem;
+	.campbell-quote-role {
+		display: inline-block;
+		background: #ffffff;
+		color: var(--lions-blue);
+		padding: 0.1rem 0.45rem;
+		font-size: 0.62rem;
+		font-weight: 800;
+		letter-spacing: 0.16em;
+		border-radius: 2px;
 	}
 </style>

@@ -38,15 +38,28 @@ const JERSEY_NUMBERS: Record<string, number> = {
   "Craig Reynolds": 13,
 };
 
-const CAMPBELL_QUOTES = [
-  "Bite a kneecap off.",
-  "Punch you in the mouth.",
-  "We don't blink.",
-  "These dudes.",
-  "Knock you down. Get up. Knock you down again.",
-  "Hard. Tough. Smart. Disciplined.",
-  "We're gonna kick you in the teeth.",
-  "Earn the right.",
+// Voices from across the org — Head Coach down to Analytics. Real public
+// quotes are attributed by name; composite role-voices stand in for the
+// rest. Loops in the QuoteTicker on the L5 home page.
+const ORG_VOICES: { role: string; text: string }[] = [
+  { role: "HC · Dan Campbell", text: "Bite a kneecap off." },
+  { role: "GM · Brad Holmes", text: "I love these dudes." },
+  { role: "HC · Dan Campbell", text: "Punch you in the mouth." },
+  { role: "Ownership", text: "Win in Detroit. Win for Detroit." },
+  { role: "HC · Dan Campbell", text: "We don't blink." },
+  { role: "GM · Brad Holmes", text: "We're going to swing big." },
+  { role: "HC · Dan Campbell", text: "These dudes." },
+  { role: "OC · Play caller", text: "Aggressive isn't reckless." },
+  { role: "HC · Dan Campbell", text: "Knock you down. Get up. Knock you down again." },
+  { role: "DC · Defense", text: "Set the standard." },
+  { role: "HC · Dan Campbell", text: "Hard. Tough. Smart. Disciplined." },
+  { role: "Position coach", text: "Brick by brick." },
+  { role: "HC · Dan Campbell", text: "We're gonna kick you in the teeth." },
+  { role: "Scouting", text: "Eyes on every snap." },
+  { role: "HC · Dan Campbell", text: "Earn the right." },
+  { role: "Analytics", text: "Trust the chart. Trust the EPA." },
+  { role: "Locker room", text: "Forward. Always forward." },
+  { role: "Offensive line", text: "Move the rock." },
 ];
 
 const TEAM_NAMES: Record<string, string> = {
@@ -79,7 +92,7 @@ export default async function Home() {
   return (
     <>
       <Ticker games={games} lastUpdated={lastUpdated} />
-      <QuoteTicker quotes={CAMPBELL_QUOTES} />
+      <QuoteTicker voices={ORG_VOICES} />
       <Header />
 
       <main className="flex-1">
@@ -233,20 +246,20 @@ function Ticker({
 
 // ─── QUOTE TICKER ──────────────────────────────────────────────────────────
 
-function QuoteTicker({ quotes }: { quotes: string[] }) {
-  const entries = [...quotes, ...quotes];
+function QuoteTicker({ voices }: { voices: { role: string; text: string }[] }) {
+  const entries = [...voices, ...voices];
   return (
-    <div className="border-b-2 border-[var(--lions-blue-deep)] bg-[var(--lions-silver)] overflow-hidden">
-      <div className="ticker-track-slow flex w-max items-center gap-10 py-2 whitespace-nowrap font-display text-sm font-bold tracking-wider text-[var(--lions-blue-deep)] uppercase">
-        {entries.map((q, i) => (
+    <div className="border-b-2 border-white/40 bg-[var(--lions-silver)] overflow-hidden">
+      <div className="ticker-track-slow flex w-max items-center gap-10 py-2 whitespace-nowrap font-display text-sm font-bold tracking-wider text-[var(--lions-blue)] uppercase">
+        {entries.map((v, i) => (
           <span key={i} className="flex items-center gap-4 px-3">
-            <span className="font-mono text-[10px] tracking-[0.2em] text-[var(--lions-blue-deep)]/60">
-              {String((i % quotes.length) + 1).padStart(2, "0")}
+            <span className="font-mono text-[10px] tracking-[0.2em] text-[var(--lions-blue)]/60">
+              {String((i % voices.length) + 1).padStart(2, "0")}
             </span>
-            <span className="text-base">&ldquo;{q}&rdquo;</span>
-            <span className="text-xs text-[var(--lions-blue-deep)]/60">
-              — D.C., HC
+            <span className="rounded-sm bg-[var(--lions-blue)] px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-white">
+              {v.role}
             </span>
+            <span className="text-base">&ldquo;{v.text}&rdquo;</span>
           </span>
         ))}
       </div>
@@ -323,20 +336,29 @@ function Hero({
   worstLoss: WeeklyGame | null;
 }) {
   return (
-    <section className="stripes yard-lines relative overflow-hidden border-b border-zinc-200 bg-gradient-to-b from-white to-zinc-50">
-      {/* Faded football mark — decorative, sits behind content */}
+    <section className="stripes yard-lines relative overflow-hidden border-b border-white/15 bg-[var(--lions-blue)] text-white">
+      {/* Faded football mark — silver outline on the Honolulu-blue field,
+          with shading + laces for a richer 3D feel (not flat clip art) */}
       <svg
         viewBox="0 0 280 140"
-        className="pointer-events-none absolute right-6 top-12 hidden w-80 opacity-[0.10] md:block"
+        className="pointer-events-none absolute right-6 top-12 hidden w-96 opacity-[0.14] md:block"
         aria-hidden="true"
       >
-        <ellipse cx="140" cy="70" rx="120" ry="55" fill="none" stroke="var(--lions-blue)" strokeWidth="6" />
-        <line x1="68" y1="70" x2="212" y2="70" stroke="var(--lions-blue)" strokeWidth="4" />
-        <line x1="100" y1="58" x2="100" y2="82" stroke="var(--lions-blue)" strokeWidth="3" />
-        <line x1="120" y1="58" x2="120" y2="82" stroke="var(--lions-blue)" strokeWidth="3" />
-        <line x1="140" y1="58" x2="140" y2="82" stroke="var(--lions-blue)" strokeWidth="3" />
-        <line x1="160" y1="58" x2="160" y2="82" stroke="var(--lions-blue)" strokeWidth="3" />
-        <line x1="180" y1="58" x2="180" y2="82" stroke="var(--lions-blue)" strokeWidth="3" />
+        <defs>
+          <linearGradient id="ball-fill" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.0" />
+            <stop offset="55%" stopColor="#ffffff" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity="0.0" />
+          </linearGradient>
+        </defs>
+        <ellipse cx="140" cy="70" rx="120" ry="55" fill="url(#ball-fill)" stroke="#ffffff" strokeWidth="5" />
+        <ellipse cx="140" cy="70" rx="108" ry="46" fill="none" stroke="#ffffff" strokeWidth="1.2" opacity="0.5" />
+        <line x1="68" y1="70" x2="212" y2="70" stroke="#ffffff" strokeWidth="4" />
+        <line x1="100" y1="58" x2="100" y2="82" stroke="#ffffff" strokeWidth="3" />
+        <line x1="120" y1="58" x2="120" y2="82" stroke="#ffffff" strokeWidth="3" />
+        <line x1="140" y1="58" x2="140" y2="82" stroke="#ffffff" strokeWidth="3" />
+        <line x1="160" y1="58" x2="160" y2="82" stroke="#ffffff" strokeWidth="3" />
+        <line x1="180" y1="58" x2="180" y2="82" stroke="#ffffff" strokeWidth="3" />
       </svg>
       <div className="relative mx-auto grid max-w-6xl gap-10 px-6 py-16 lg:grid-cols-[1.4fr_1fr]">
         <div>
@@ -346,16 +368,16 @@ function Hero({
             <span className="text-[var(--lions-silver-dark)]">·</span>
             <span className="text-[var(--lions-silver-dark)]">17 of 17</span>
           </div>
-          <h1 className="font-display text-7xl font-black uppercase leading-[0.92] tracking-tight text-[var(--lions-charcoal)] sm:text-8xl md:text-9xl lg:text-[9.5rem]">
+          <h1 className="font-display text-7xl font-black uppercase leading-[0.92] tracking-tight text-white sm:text-8xl md:text-9xl lg:text-[9.5rem]">
             Don't blink.
             <br />
-            <span className="text-[var(--lions-blue)]">Bite the kneecap.</span>
+            <span className="text-[var(--lions-silver-light)]">Bite the kneecap.</span>
           </h1>
-          <p className="mt-6 max-w-xl text-base text-zinc-600">
+          <p className="mt-6 max-w-xl text-base text-white/85">
             Lions analytics, all heart. Real{" "}
             <a
               href="https://github.com/nflverse"
-              className="font-semibold text-[var(--lions-blue)] hover:underline"
+              className="font-semibold text-[var(--lions-silver-light)] underline decoration-white/40 underline-offset-2 hover:decoration-white"
             >
               nflverse
             </a>{" "}

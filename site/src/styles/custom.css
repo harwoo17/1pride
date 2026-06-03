@@ -7,19 +7,88 @@
    No navy as a surface — Starlight's dark default backdrop is forcibly
    replaced with white below. */
 
-/* ─── Strip navy surfaces (kills Starlight's dark splash backdrop) ─── */
-html, body { background-color: #ffffff !important; }
-:root, :root[data-theme='light'], :root[data-theme='dark'] {
-	--sl-color-bg: #ffffff;
-	--sl-color-bg-nav: #ffffff;
-	--sl-color-bg-sidebar: #ffffff;
+/* ─── Honolulu Blue page background ── strict Lions palette: page chrome
+       and splash heroes are saturated Honolulu blue with white text; the
+       inner content panel on long-form pages (lessons, about) stays
+       light so 78 pages of curriculum remain readable. */
+html, body {
+	background-color: var(--lions-blue) !important;
+	color: #ffffff;
 }
-.main-pane, .main-frame, .page, main { background-color: #ffffff !important; }
-[data-has-hero] body, [data-has-hero] .main-pane, [data-has-hero] main {
-	background-color: #ffffff !important;
+:root, :root[data-theme='light'], :root[data-theme='dark'] {
+	--sl-color-bg: var(--lions-blue);
+	--sl-color-bg-nav: var(--lions-blue);
+	--sl-color-bg-sidebar: var(--lions-blue);
+	--sl-color-text: #ffffff;
+	--sl-color-text-accent: #ffffff;
+	--sl-color-accent-high: #ffffff;
+}
+.main-frame, .page, main { background-color: var(--lions-blue) !important; }
+
+/* Splash pages — fully Honolulu blue, white headlines */
+[data-has-hero] body,
+[data-has-hero] .main-pane,
+[data-has-hero] main { background-color: var(--lions-blue) !important; }
+
+/* Sidebar + header chrome — blue with white text */
+header[class*='Header'],
+.sidebar,
+.sidebar-content,
+nav[aria-label] {
+	background-color: var(--lions-blue) !important;
+	color: #ffffff;
+}
+.sidebar-content a,
+.sidebar-content summary,
+.sidebar-content .large {
+	color: #ffffff !important;
+}
+.sidebar-content a[aria-current='page'] {
+	background: rgba(255, 255, 255, 0.18) !important;
+	color: #ffffff !important;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;500;600;700;800;900&display=swap');
+/* Lesson / About content panel — light card on the blue field for
+   readable long-form. Starlight wraps article content in `.sl-markdown-content`. */
+:not([data-has-hero]) .sl-markdown-content,
+:not([data-has-hero]) main article {
+	background: #ffffff;
+	color: var(--lions-ink);
+	padding: 2rem 2.5rem;
+	border-radius: 0;
+	margin-top: 1rem;
+}
+:not([data-has-hero]) .sl-markdown-content h1,
+:not([data-has-hero]) .sl-markdown-content h2,
+:not([data-has-hero]) .sl-markdown-content h3,
+:not([data-has-hero]) .sl-markdown-content p,
+:not([data-has-hero]) .sl-markdown-content li {
+	color: var(--lions-ink);
+}
+
+/* Splash hero — pure Honolulu blue, white display headline */
+[data-has-hero] .hero {
+	background: var(--lions-blue) !important;
+}
+[data-has-hero] .hero h1 {
+	color: #ffffff !important;
+}
+[data-has-hero] .hero .tagline {
+	color: var(--lions-silver-light) !important;
+}
+
+/* Splash body MDX (subhead + section H2s) on the blue page */
+[data-has-hero] .sl-markdown-content { color: #ffffff; }
+[data-has-hero] .sl-markdown-content h2,
+[data-has-hero] .sl-markdown-content h3,
+[data-has-hero] .sl-markdown-content p,
+[data-has-hero] .sl-markdown-content li { color: #ffffff; }
+[data-has-hero] .sl-markdown-content :not(pre) > code {
+	background: rgba(255, 255, 255, 0.18) !important;
+	color: #ffffff !important;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Antonio:wght@400;500;600;700&display=swap');
 
 :root {
 	--sl-color-accent-low: #002a47;
@@ -44,7 +113,7 @@ html, body { background-color: #ffffff !important; }
 
 	--sl-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
 	--sl-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-	--font-display: 'Roboto Condensed', 'Inter', sans-serif;
+	--font-display: 'Antonio', 'Inter', sans-serif;
 }
 
 :root[data-theme='light'] {
@@ -58,24 +127,31 @@ html, body { background-color: #ffffff !important; }
 .hero {
 	position: relative;
 	overflow: hidden;
-	background:
-		linear-gradient(180deg, #ffffff 0%, #fafbfc 100%);
+	background: var(--lions-blue);
 }
-/* Football decoration — faded football mark in the hero corner. Inline
-   SVG via data-URI so there's no extra request. */
+/* Football decoration — silver mark in the hero corner. Inline SVG via
+   data-URI so there's no extra request. Drifts gently to feel alive. */
 [data-has-hero] .hero::after {
 	content: '';
 	position: absolute;
 	right: 5%;
-	top: 32%;
-	width: 320px;
-	height: 160px;
-	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 140'><ellipse cx='140' cy='70' rx='120' ry='55' fill='none' stroke='%230076b6' stroke-width='6'/><line x1='68' y1='70' x2='212' y2='70' stroke='%230076b6' stroke-width='4'/><line x1='100' y1='58' x2='100' y2='82' stroke='%230076b6' stroke-width='3'/><line x1='120' y1='58' x2='120' y2='82' stroke='%230076b6' stroke-width='3'/><line x1='140' y1='58' x2='140' y2='82' stroke='%230076b6' stroke-width='3'/><line x1='160' y1='58' x2='160' y2='82' stroke='%230076b6' stroke-width='3'/><line x1='180' y1='58' x2='180' y2='82' stroke='%230076b6' stroke-width='3'/></svg>");
+	top: 28%;
+	width: 360px;
+	height: 180px;
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 140'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%25' stop-color='%23ffffff' stop-opacity='0.0'/><stop offset='55%25' stop-color='%23ffffff' stop-opacity='0.35'/><stop offset='100%25' stop-color='%23ffffff' stop-opacity='0.0'/></linearGradient></defs><ellipse cx='140' cy='70' rx='120' ry='55' fill='url(%23g)' stroke='%23ffffff' stroke-width='5'/><ellipse cx='140' cy='70' rx='108' ry='46' fill='none' stroke='%23ffffff' stroke-width='1.2' opacity='0.6'/><line x1='68' y1='70' x2='212' y2='70' stroke='%23ffffff' stroke-width='4'/><line x1='100' y1='58' x2='100' y2='82' stroke='%23ffffff' stroke-width='3'/><line x1='120' y1='58' x2='120' y2='82' stroke='%23ffffff' stroke-width='3'/><line x1='140' y1='58' x2='140' y2='82' stroke='%23ffffff' stroke-width='3'/><line x1='160' y1='58' x2='160' y2='82' stroke='%23ffffff' stroke-width='3'/><line x1='180' y1='58' x2='180' y2='82' stroke='%23ffffff' stroke-width='3'/></svg>");
 	background-repeat: no-repeat;
 	background-size: contain;
-	opacity: 0.20;
+	opacity: 0.40;
 	pointer-events: none;
 	display: none;
+	animation: hero-ball-float 7s ease-in-out infinite;
+}
+@keyframes hero-ball-float {
+	0%, 100% { transform: translateY(0) rotate(-2deg); }
+	50%      { transform: translateY(-10px) rotate(2deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+	[data-has-hero] .hero::after { animation: none; }
 }
 @media (min-width: 1024px) {
 	[data-has-hero] .hero::after {
@@ -83,21 +159,21 @@ html, body { background-color: #ffffff !important; }
 	}
 }
 
-/* End-zone band — diagonal blue+silver field divider, reads as a
-   stadium end-zone stripe between sections. */
+/* End-zone band — diagonal silver+white field divider that pops on the
+   Honolulu-blue page surface. */
 .endzone-band {
 	position: relative;
 	height: 18px;
 	margin: 2.5rem 0;
 	background: repeating-linear-gradient(
 		45deg,
-		var(--lions-blue) 0,
-		var(--lions-blue) 18px,
-		#d8dde0 18px,
-		#d8dde0 36px
+		#ffffff 0,
+		#ffffff 18px,
+		var(--lions-silver-light) 18px,
+		var(--lions-silver-light) 36px
 	);
-	border-top: 2px solid var(--lions-blue);
-	border-bottom: 2px solid var(--lions-blue);
+	border-top: 2px solid #ffffff;
+	border-bottom: 2px solid #ffffff;
 }
 
 [data-has-hero] .hero::before {
@@ -105,10 +181,10 @@ html, body { background-color: #ffffff !important; }
 	position: absolute;
 	inset: 0;
 	background-image:
-		/* hash marks every 80px (vertical) */
-		repeating-linear-gradient(90deg, rgba(0,118,182,0.08) 0 1px, transparent 1px 80px),
+		/* hash marks every 80px (vertical) — white-tint on the blue field */
+		repeating-linear-gradient(90deg, rgba(255,255,255,0.12) 0 1px, transparent 1px 80px),
 		/* yard lines every 50px (horizontal) */
-		repeating-linear-gradient(180deg, rgba(0,118,182,0.06) 0 1px, transparent 1px 50px);
+		repeating-linear-gradient(180deg, rgba(255,255,255,0.10) 0 1px, transparent 1px 50px);
 	pointer-events: none;
 }
 [data-has-hero] .hero h1 {

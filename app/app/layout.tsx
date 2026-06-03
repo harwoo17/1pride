@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Roboto_Condensed, Inter, JetBrains_Mono } from "next/font/google";
+import { Antonio, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Intro } from "@/components/Intro";
 import { SoundLayer } from "@/components/SoundLayer";
@@ -9,10 +9,10 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-const display = Roboto_Condensed({
+const display = Antonio({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const mono = JetBrains_Mono({
@@ -94,7 +94,7 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${display.variable} ${mono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[var(--lions-paper-warm)] text-[var(--lions-charcoal)] font-sans">
+      <body className="min-h-full flex flex-col bg-[var(--lions-blue)] text-white font-sans">
         <Intro />
         <SoundLayer />
         {children}

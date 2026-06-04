@@ -240,6 +240,46 @@ body:has(.hero) .sl-markdown-content blockquote {
 }
 .card .level-icon { opacity: 1; }
 
+/* ─── LinkCards (Start here) — frosted panels on the blue field ──────
+   Readable white title + silver-light dek (the default dim gray failed
+   contrast on Honolulu), a green accent rail that grows on hover, and a
+   lift. Keeps blue dominant (frosted, not solid white). */
+.sl-link-card {
+	position: relative !important;
+	background: rgba(255, 255, 255, 0.07) !important;
+	border: 1px solid rgba(255, 255, 255, 0.28) !important;
+	border-radius: 10px !important;
+	overflow: hidden;
+	transition: transform 180ms ease-out, background 180ms ease-out, border-color 180ms ease-out !important;
+}
+.sl-link-card::before {
+	content: '';
+	position: absolute;
+	left: 0; top: 0; bottom: 0;
+	width: 3px;
+	background: var(--retro-green, #34e27a);
+	transform: scaleY(0);
+	transform-origin: top;
+	transition: transform 200ms ease-out;
+}
+.sl-link-card:hover {
+	transform: translateY(-2px);
+	background: rgba(255, 255, 255, 0.12) !important;
+	border-color: rgba(255, 255, 255, 0.5) !important;
+}
+.sl-link-card:hover::before { transform: scaleY(1); }
+.sl-link-card .title {
+	color: #ffffff !important;
+	font-family: var(--font-display);
+	font-weight: 800;
+	letter-spacing: -0.01em;
+}
+.sl-link-card .description {
+	color: var(--silver-light, #d7dce0) !important;
+	opacity: 1 !important;
+}
+.sl-link-card .icon { color: var(--silver-light, #d7dce0) !important; }
+
 /* ─── Sidebar groups — small typography upgrade */
 .sidebar-content summary,
 .sidebar-content .large {

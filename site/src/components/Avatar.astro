@@ -86,9 +86,12 @@ const badgeText = gold ? '#3a2c06' : '#06351c';
 		<!-- specular highlight upper-left -->
 		<ellipse cx="84" cy="64" rx="13" ry="9" fill="#ffffff" opacity="0.55" />
 
-		<!-- visor band (no facial features, mascot-clean) -->
-		<path d="M58 84 Q100 96 142 84 L142 96 Q100 108 58 96 Z" fill={`url(#${uid}-visor)`} />
-		<path d="M60 86 Q100 96 140 86" stroke={badgeFill} stroke-width="1.4" fill="none" opacity="0.8" />
+		<!-- visor band — glossy tinted sport visor (no facial features) -->
+		<path d="M57 83 Q100 96 143 83 L143 97 Q100 110 57 97 Z" fill={`url(#${uid}-visor)`} />
+		<!-- specular streak so it reads as glass, not a flat bar -->
+		<path d="M64 87 Q100 96 136 87" stroke="#ffffff" stroke-width="2.4" fill="none" opacity="0.38" stroke-linecap="round" />
+		<!-- accent underline -->
+		<path d="M61 93 Q100 103 139 93" stroke={badgeFill} stroke-width="1.6" fill="none" opacity="0.9" />
 
 		{/* ── per-tier prop ────────────────────────────────────────── */}
 		{tier === 1 && (
@@ -101,27 +104,32 @@ const badgeText = gold ? '#3a2c06' : '#06351c';
 			</g>
 		)}
 		{tier === 2 && (
-			<g>{/* binoculars at the visor */}
-				<rect x="74" y="80" width="20" height="14" rx="3" fill="#1b1c1d" />
-				<rect x="106" y="80" width="20" height="14" rx="3" fill="#1b1c1d" />
-				<rect x="92" y="83" width="16" height="6" fill="#3a3d40" />
-				<circle cx="84" cy="87" r="4" fill={badgeFill} opacity="0.8" />
-				<circle cx="116" cy="87" r="4" fill={badgeFill} opacity="0.8" />
+			<g>{/* binoculars raised to the visor — two clear barrels + lenses */}
+				<rect x="66" y="72" width="26" height="30" rx="7" fill="#1b1c1d" stroke="#3a3d40" stroke-width="1.5" />
+				<rect x="108" y="72" width="26" height="30" rx="7" fill="#1b1c1d" stroke="#3a3d40" stroke-width="1.5" />
+				<rect x="90" y="80" width="20" height="9" rx="3" fill="#3a3d40" />
+				<circle cx="79" cy="100" r="8" fill="#0b0b0c" stroke="#16934e" stroke-width="2.4" />
+				<circle cx="121" cy="100" r="8" fill="#0b0b0c" stroke="#16934e" stroke-width="2.4" />
+				<circle cx="76" cy="97" r="2.4" fill="#9af3bb" />
+				<circle cx="118" cy="97" r="2.4" fill="#9af3bb" />
 			</g>
 		)}
 		{tier === 3 && (
-			<g>{/* whistle on a lanyard */}
-				<path d="M84 120 L96 150 M116 120 L104 150" stroke="#eef1f3" stroke-width="2.5" fill="none" />
-				<path d="M92 150 h18 a5 5 0 0 1 5 5 a7 7 0 0 1 -7 7 h-12 a4 4 0 0 1 -4 -4 v-4 a4 4 0 0 1 0 -4 z" fill={badgeFill} stroke="#16934e" stroke-width="1.2" />
+			<g>{/* whistle on a lanyard — bigger, with bore + mouthpiece */}
+				<path d="M82 120 L96 150 M118 120 L104 150" stroke="#eef1f3" stroke-width="2.5" fill="none" />
+				<path d="M88 149 h20 a8 8 0 0 1 8 8 a10 10 0 0 1 -10 10 h-16 a5 5 0 0 1 -5 -5 v-8 a5 5 0 0 1 0 -5 z" fill={badgeFill} stroke="#16934e" stroke-width="1.5" />
+				<rect x="106" y="151" width="14" height="6" rx="3" fill={badgeFill} stroke="#16934e" stroke-width="1.2" />
+				<circle cx="99" cy="160" r="3.6" fill="#06351c" opacity="0.55" />
 			</g>
 		)}
 		{tier === 4 && (
-			<g>{/* laminated call-sheet */}
-				<rect x="112" y="142" width="40" height="32" rx="2" fill="#eef1f3" stroke="#6f767b" stroke-width="1.5" transform="rotate(-6 132 158)" />
-				<g transform="rotate(-6 132 158)" stroke={badgeFill} stroke-width="1.4">
-					<line x1="118" y1="150" x2="146" y2="150" />
-					<line x1="118" y1="158" x2="146" y2="158" />
-					<line x1="118" y1="166" x2="138" y2="166" />
+			<g>{/* laminated call-sheet held up — reads as a play card (X's & O's) */}
+				<rect x="73" y="137" width="54" height="40" rx="3" fill="#eef1f3" stroke="#6f767b" stroke-width="1.5" transform="rotate(-4 100 157)" />
+				<g transform="rotate(-4 100 157)">
+					<text x="80" y="151" font-family="monospace" font-size="8" font-weight="700" fill="#0076b6">X O X</text>
+					<path d="M82 155 q9 5 18 0" stroke="#16934e" stroke-width="1.3" fill="none" stroke-dasharray="1 2" />
+					<line x1="80" y1="162" x2="120" y2="162" stroke="#0076b6" stroke-width="1.3" />
+					<line x1="80" y1="168" x2="112" y2="168" stroke="#6f767b" stroke-width="1.3" />
 				</g>
 			</g>
 		)}

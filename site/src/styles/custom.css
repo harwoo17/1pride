@@ -57,35 +57,103 @@
 	--sl-color-accent-high: #003a5a;
 }
 
-/* ─── SURFACE RESET (brief §1 + §13) ────────────────────────────────
-   NO navy. Page surface is paper white with ink body text. The splash
-   Hero (Hero.astro) is the only Honolulu-blue surface and owns its own
-   background/grid/lion/football — so we do NOT restyle `.hero` here. */
+/* ─── SURFACE — HONOLULU BLUE IS THE MAIN COLOR ──────────────────────
+   Per Joey: Honolulu blue is the dominant color, especially backgrounds.
+   The page, chrome, and sidebar are all Honolulu blue with white text
+   (NO navy — navy was Starlight's dark default, #0a1929; this is the
+   bright team blue #0076b6). Long-form curriculum content (lessons,
+   challenges, about) sits in a WHITE PANEL on the blue field so 78 pages
+   of prose + code stay readable — that's the brief's "ink on white
+   surfaces, white on Honolulu surfaces" rule, with Honolulu as the
+   surface that dominates the page. */
 html, body {
-	background: var(--paper, #fff) !important;
-	color: var(--ink, #0b0b0c);
+	background: var(--honolulu, #0076b6) !important;
+	color: #ffffff;
 }
 :root, :root[data-theme='light'], :root[data-theme='dark'] {
-	--sl-color-bg: #ffffff;
-	--sl-color-bg-nav: #ffffff;
-	--sl-color-bg-sidebar: #ffffff;
-	--sl-color-text: var(--ink, #0b0b0c);
-	--sl-color-text-accent: var(--honolulu, #0076b6);
-	--sl-color-hairline: var(--silver-light, #d7dce0);
-	--sl-color-hairline-light: var(--silver-light, #d7dce0);
+	--sl-color-bg: var(--honolulu, #0076b6);
+	--sl-color-bg-nav: var(--honolulu, #0076b6);
+	--sl-color-bg-sidebar: var(--honolulu, #0076b6);
+	--sl-color-text: #ffffff;
+	--sl-color-text-accent: #ffffff;
+	--sl-color-hairline: rgba(255, 255, 255, 0.22);
+	--sl-color-hairline-light: rgba(255, 255, 255, 0.18);
 }
 .main-frame, .page, main,
-.sl-markdown-content,
 header[class*='Header'],
 .sidebar, .sidebar-content,
 [data-has-hero] .main-pane,
 [data-has-hero] main {
-	background-color: #ffffff !important;
+	background-color: var(--honolulu, #0076b6) !important;
+	color: #ffffff;
+}
+/* Sidebar links + nav text → white on the blue */
+.sidebar-content a,
+.sidebar-content summary,
+.sidebar-content .large,
+nav a, .site-title {
+	color: #ffffff !important;
+}
+.sidebar-content a[aria-current='page'] {
+	background: rgba(255, 255, 255, 0.18) !important;
+	color: #ffffff !important;
+}
+
+/* Long-form content → white readable panel on the Honolulu field.
+   (Splash body, which has the hero, stays white-on-blue and is handled
+   separately below.) */
+:not([data-has-hero]) .sl-markdown-content {
+	background: var(--paper, #fff);
+	color: var(--ink, #0b0b0c);
+	padding: 2rem clamp(1.25rem, 4vw, 3rem);
+	border-radius: 12px;
+	border: 1px solid var(--silver, #b0b7bc);
+	margin-top: 1.25rem;
+}
+:not([data-has-hero]) .sl-markdown-content :is(h1, h2, h3, h4, h5, p, li, td, th, strong, em) {
 	color: var(--ink, #0b0b0c);
 }
-.sl-markdown-content :is(h1, h2, h3, h4, p, li) {
-	color: var(--ink, #0b0b0c);
+
+/* Splash body — white text directly on the blue field, cards float.
+   The home page uses the custom Hero override, so Starlight doesn't tag
+   it [data-has-hero]; detect it via :has(.hero) instead and KEEP the
+   page Honolulu-blue (no white panel) so blue stays dominant. */
+body:has(.hero) :not([data-has-hero]) .sl-markdown-content,
+body:has(.hero) .sl-markdown-content {
+	background: transparent !important;
+	border: 0 !important;
+	padding: 0 !important;
+	margin-top: 1.5rem !important;
+	color: #ffffff !important;
 }
+body:has(.hero) .sl-markdown-content :is(h1, h2, h3, h4, p, li, strong, em) {
+	color: #ffffff !important;
+}
+/* …but white cards on the splash keep INK text (else white-on-white) */
+body:has(.hero) .sl-markdown-content .card,
+body:has(.hero) .sl-markdown-content .card :is(p, li, span, div, strong, em, .title) {
+	color: var(--ink, #0b0b0c) !important;
+}
+body:has(.hero) .sl-markdown-content .card p,
+body:has(.hero) .sl-markdown-content .card :is(span, div):not(.title):not(.level-icon) {
+	opacity: 0.82;
+}
+/* inline code chips inside splash cards — honolulu on a silver tint */
+body:has(.hero) .sl-markdown-content .card :not(pre) > code {
+	background: var(--silver-light, #d7dce0) !important;
+	color: var(--honolulu, #0076b6) !important;
+	opacity: 1;
+}
+body:has(.hero) .sl-markdown-content :not(pre) > code {
+	background: rgba(255, 255, 255, 0.16) !important;
+	color: #ffffff !important;
+}
+/* Splash blockquote (the mission line) — silver bar on blue */
+body:has(.hero) .sl-markdown-content blockquote {
+	border-inline-start: 3px solid var(--silver-light, #d7dce0);
+	color: #ffffff !important;
+}
+
 /* Headings use the display family (Archivo Expanded) */
 .sl-markdown-content :is(h1, h2, h3) {
 	font-family: var(--font-display);

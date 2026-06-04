@@ -1,0 +1,80 @@
+---
+// Quote ticker — scrolling marquee of verified Lions quotes. Reads the
+// same no-fabrication source as before (quotes.ts → getQuotes() drops any
+// entry without a source_url), just rendered as a ticker instead of a
+// card wall. Honolulu-blue bar, JetBrains Mono attribution, pauses on
+// hover, respects prefers-reduced-motion.
+import { getQuotes } from '~/data/quotes';
+const quotes = getQuotes();
+// Duplicate for a seamless loop.
+const entries = [...quotes, ...quotes];
+---
+
+{quotes.length > 0 && (
+	<div class="quote-ticker" role="marquee" aria-label="Lions quotes">
+		<div class="qt-track">
+			{entries.map((q, i) => (
+				<span class="qt-item">
+					<span class="qt-num">{String((i % quotes.length) + 1).padStart(2, '0')}</span>
+					<span class="qt-text">&ldquo;{q.text}&rdquo;</span>
+					<a class="qt-cite" href={q.sourceUrl} target="_blank" rel="noopener" title={q.sourceLabel}>
+						— {q.name}, {q.role} · {q.year}
+					</a>
+				</span>
+			))}
+		</div>
+	</div>
+)}
+
+<style>
+	.quote-ticker {
+		position: relative;
+		overflow: hidden;
+		margin: 2rem 0 2.5rem;
+		background: var(--honolulu, #0076b6);
+		border-top: 1px solid var(--silver, #b0b7bc);
+		border-bottom: 1px solid var(--silver, #b0b7bc);
+	}
+	.qt-track {
+		display: flex;
+		width: max-content;
+		gap: 3rem;
+		padding: 0.8rem 0;
+		white-space: nowrap;
+		animation: qt-scroll 75s linear infinite;
+		will-change: transform;
+	}
+	.qt-track:hover { animation-play-state: paused; }
+	@keyframes qt-scroll {
+		from { transform: translateX(0); }
+		to   { transform: translateX(-50%); }
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.qt-track { animation: none; flex-wrap: wrap; white-space: normal; }
+	}
+	.qt-item {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 0.75rem;
+		color: #fff;
+	}
+	.qt-num {
+		font-family: var(--sl-font-mono, monospace);
+		font-size: 0.7rem;
+		opacity: 0.6;
+	}
+	.qt-text {
+		font-family: var(--font-display, sans-serif);
+		font-weight: 600;
+		font-size: 1rem;
+	}
+	.qt-cite {
+		font-family: var(--sl-font-mono, monospace);
+		font-size: 0.66rem;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--silver-light, #d7dce0);
+		text-decoration: none;
+	}
+	.qt-cite:hover { color: #fff; text-decoration: underline; }
+</style>

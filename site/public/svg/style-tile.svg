@@ -1,0 +1,105 @@
+<svg viewBox="0 0 1200 920" xmlns="http://www.w3.org/2000/svg" font-family="Arial, Helvetica, sans-serif">
+  <defs>
+    <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+      <path d="M60 0H0V60" fill="none" stroke="#34E27A" stroke-width="1" opacity="0.18"/>
+    </pattern>
+    <radialGradient id="lionGlow" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#34E27A" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#34E27A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Honolulu base + grid -->
+  <rect width="1200" height="920" fill="#0076B6"/>
+  <rect width="1200" height="920" fill="url(#grid)"/>
+
+  <!-- HUD header -->
+  <text x="48" y="58" fill="#FFFFFF" font-size="34" font-weight="900" letter-spacing="2">1PRIDE</text>
+  <text x="220" y="56" fill="#B0B7BC" font-size="13" font-family="monospace" letter-spacing="3">STYLE TILE — HONOLULU REBUILD · NO NAVY</text>
+  <line x1="48" y1="76" x2="1152" y2="76" stroke="#B0B7BC" stroke-width="1" opacity="0.5"/>
+
+  <!-- PALETTE -->
+  <text x="48" y="116" fill="#B0B7BC" font-size="12" font-family="monospace" letter-spacing="2">FIG. 01 — PALETTE</text>
+  <g transform="translate(48,132)">
+    <rect x="0"   y="0" width="150" height="84" rx="6" fill="#0076B6" stroke="#B0B7BC"/>
+    <rect x="170" y="0" width="150" height="84" rx="6" fill="#B0B7BC"/>
+    <rect x="340" y="0" width="150" height="84" rx="6" fill="#FFFFFF"/>
+    <rect x="510" y="0" width="150" height="84" rx="6" fill="#0B0B0C"/>
+    <rect x="680" y="0" width="150" height="84" rx="6" fill="#34E27A"/>
+    <text x="6"   y="104" fill="#FFFFFF" font-size="11" font-family="monospace">HONOLULU #0076B6</text>
+    <text x="176" y="104" fill="#FFFFFF" font-size="11" font-family="monospace">SILVER #B0B7BC</text>
+    <text x="346" y="104" fill="#FFFFFF" font-size="11" font-family="monospace">WHITE #FFFFFF</text>
+    <text x="516" y="104" fill="#FFFFFF" font-size="11" font-family="monospace">INK #0B0B0C</text>
+    <text x="686" y="104" fill="#FFFFFF" font-size="11" font-family="monospace">GREEN #34E27A</text>
+  </g>
+
+  <!-- HERO TYPE TREATMENT -->
+  <text x="48" y="296" fill="#B0B7BC" font-size="12" font-family="monospace" letter-spacing="2">FIG. 02 — HERO TYPE (solid + outline mix)</text>
+  <text x="46" y="356" fill="#FFFFFF" font-size="58" font-weight="900" letter-spacing="-1">RUN YOUR REPS.</text>
+  <text x="46" y="420" font-size="58" font-weight="900" letter-spacing="-1" fill="none" stroke="#FFFFFF" stroke-width="2">CLIMB THE DEPTH CHART.</text>
+  <text x="48" y="452" fill="#B0B7BC" font-size="15" font-family="monospace">Training the next generation of NFL analysts.</text>
+  <!-- blueprint annotation -->
+  <g stroke="#34E27A" stroke-width="1.5" opacity="0.8">
+    <line x1="48" y1="470" x2="430" y2="470"/>
+    <line x1="48" y1="465" x2="48" y2="475"/>
+    <line x1="430" y1="465" x2="430" y2="475"/>
+  </g>
+  <text x="200" y="488" fill="#34E27A" font-size="10" font-family="monospace">10 YDS</text>
+
+  <!-- SPINNING FOOTBALL MOTIF -->
+  <text x="820" y="296" fill="#B0B7BC" font-size="12" font-family="monospace" letter-spacing="2">FIG. 03 — 360° FOOTBALL</text>
+  <g transform="translate(990,400)">
+    <circle r="120" fill="url(#lionGlow)"/>
+    <ellipse rx="105" ry="58" fill="none" stroke="#B0B7BC" stroke-width="2.5"/>
+    <ellipse rx="70" ry="58" fill="none" stroke="#34E27A" stroke-width="1.5" opacity="0.7"/>
+    <ellipse rx="32" ry="58" fill="none" stroke="#34E27A" stroke-width="1.5" opacity="0.5"/>
+    <line x1="-46" y1="0" x2="46" y2="0" stroke="#FFFFFF" stroke-width="3"/>
+    <g stroke="#FFFFFF" stroke-width="3">
+      <line x1="-34" y1="-9" x2="-34" y2="9"/>
+      <line x1="-17" y1="-9" x2="-17" y2="9"/>
+      <line x1="0"   y1="-9" x2="0"   y2="9"/>
+      <line x1="17"  y1="-9" x2="17"  y2="9"/>
+      <line x1="34"  y1="-9" x2="34"  y2="9"/>
+    </g>
+    <text x="0" y="92" fill="#B0B7BC" font-size="11" font-family="monospace" text-anchor="middle">wireframe · tumbles · loader motif</text>
+  </g>
+
+  <!-- CARD SAMPLE (fixed layout) -->
+  <text x="48" y="544" fill="#B0B7BC" font-size="12" font-family="monospace" letter-spacing="2">FIG. 04 — CARD (kicker · icon · title · dek)</text>
+  <g transform="translate(48,560)">
+    <rect width="520" height="150" rx="10" fill="#FFFFFF" stroke="#B0B7BC"/>
+    <!-- corner ticks -->
+    <g stroke="#B0B7BC" stroke-width="1.5">
+      <path d="M12 12 h14 M12 12 v14" fill="none"/>
+      <path d="M508 138 h-14 M508 138 v-14" fill="none"/>
+    </g>
+    <text x="28" y="40" fill="#0076B6" font-size="11" font-family="monospace" letter-spacing="2">THE FILM ROOM</text>
+    <!-- simple film-reel icon -->
+    <g transform="translate(28,52)" stroke="#0076B6" stroke-width="2" fill="none">
+      <circle cx="14" cy="16" r="14"/>
+      <circle cx="14" cy="16" r="3" fill="#34E27A" stroke="none"/>
+      <circle cx="8" cy="10" r="2"/><circle cx="20" cy="10" r="2"/><circle cx="8" cy="22" r="2"/><circle cx="20" cy="22" r="2"/>
+    </g>
+    <text x="72" y="76" fill="#0B0B0C" font-size="22" font-weight="800">Query real data, live.</text>
+    <text x="28" y="116" fill="#0B0B0C" font-size="14" opacity="0.82">DuckDB-WASM + CodeMirror against 2025 nflverse —</text>
+    <text x="28" y="136" fill="#0B0B0C" font-size="14" opacity="0.82">run a query, get a chart, learn the encoding.</text>
+  </g>
+
+  <!-- LADDER -->
+  <text x="48" y="752" fill="#B0B7BC" font-size="12" font-family="monospace" letter-spacing="2">FIG. 05 — DEPTH CHART (7 tiers · 90s avatars)</text>
+  <g transform="translate(48,768)" font-size="12" font-family="monospace" fill="#0076B6" font-weight="700">
+    <g>
+      <rect x="0"   y="0" width="150" height="40" rx="6" fill="#FFFFFF" stroke="#B0B7BC"/><text x="75" y="25" text-anchor="middle">1 ANALYST</text>
+      <rect x="162" y="0" width="150" height="40" rx="6" fill="#FFFFFF" stroke="#B0B7BC"/><text x="237" y="25" text-anchor="middle">2 SCOUT</text>
+      <rect x="324" y="0" width="170" height="40" rx="6" fill="#FFFFFF" stroke="#B0B7BC"/><text x="409" y="25" text-anchor="middle">3 POS. COACH</text>
+      <rect x="506" y="0" width="170" height="40" rx="6" fill="#FFFFFF" stroke="#B0B7BC"/><text x="591" y="25" text-anchor="middle">4 COORDINATOR</text>
+    </g>
+    <g transform="translate(0,52)">
+      <rect x="0"   y="0" width="160" height="40" rx="6" fill="#FFFFFF" stroke="#B0B7BC"/><text x="80" y="25" text-anchor="middle">5 HEAD COACH</text>
+      <rect x="172" y="0" width="120" height="40" rx="6" fill="#FFFFFF" stroke="#B0B7BC"/><text x="232" y="25" text-anchor="middle">6 GM</text>
+      <rect x="304" y="0" width="140" height="40" rx="6" fill="#34E27A" stroke="#34E27A"/><text x="374" y="25" text-anchor="middle" fill="#0B0B0C">7 OWNER</text>
+    </g>
+  </g>
+
+  <text x="48" y="900" fill="#B0B7BC" font-size="11" font-family="monospace" opacity="0.7">type shown approximates Archivo Expanded / Saira / JetBrains Mono · grid line = retro-green · zero navy</text>
+</svg>

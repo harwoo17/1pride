@@ -1,69 +1,49 @@
 ---
 title: 1PRIDE
-description: Run your reps. Climb the depth chart. A self-paced data curriculum on Detroit Lions data.
+description: Training the next generation of NFL analysts. Run your reps, climb the depth chart.
 template: splash
 hero:
-  title: |
-    Run your reps.<br/>
-    Climb the depth<br/>
-    chart.
-  tagline: DETROIT LIONS · DAN CAMPBELL ERA · ONE PRIDE
+  title: Run your reps. Climb the depth chart.
+  tagline: Training the next generation of NFL analysts.
   actions:
-    - text: Take the field
-      link: /levels/1-analyst/
+    - text: Start Training Camp
+      link: /lessons/01-reading-the-run-game
       icon: right-arrow
-    - text: Playbook
-      link: /how-it-works/
-      icon: open-book
-      variant: minimal
-    - text: Chart room
-      link: https://app.1pride.app
-      icon: external
-      variant: minimal
 ---
 
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import LevelIcon from '~/components/LevelIcon.astro';
-import CampbellTicker from '~/components/CampbellTicker.astro';
-import StadiumSilhouette from '~/components/StadiumSilhouette.astro';
 
-A self-paced data **playbook** that takes you from `SELECT *` to a deployed
-analytics app. **Every game, every play of the Dan Campbell era** (2021–present)
-is your substrate — Goff, ARSB, Hutch, Gibbs, the dudes. The org chart —
-Analyst → Owner — is your depth chart. Forward. Always forward.
+> Training the next generation of NFL analysts — one rep at a time.
+
+Every rep is a read. Tape, data, decisions — learn the game behind the game.
 
 **33 lessons · 42 challenges · 5 capstones · ~270K rows of real Lions data.**
 
-<StadiumSilhouette />
-
-<CampbellTicker />
-
-<div class="endzone-band" />
-
-## The depth chart
+## The Depth Chart
 
 <CardGrid stagger>
-	<Card title="Level 1 — Analyst">
+	<Card title="Analyst">
 		<LevelIcon level={1} size={34} />
 		Pull stats on request. `SELECT`, `WHERE`, `ORDER BY`, basic aggregates.
 		Capstone: a 2024 season recap notebook.
 	</Card>
-	<Card title="Level 2 — Position coach">
+	<Card title="Position Coach">
 		<LevelIcon level={2} size={34} />
 		Develop a position group. `JOIN`, `GROUP BY`, `HAVING`.
 		Capstone: a WR efficiency scouting card.
 	</Card>
-	<Card title="Level 3 — Head coach">
+	<Card title="Head Coach">
 		<LevelIcon level={3} size={34} />
 		Situational decisions. Window functions, CTEs, scipy, plotly.
 		Capstone: a 4th-down decision EV analyzer.
 	</Card>
-	<Card title="Level 4 — General manager">
+	<Card title="General Manager">
 		<LevelIcon level={4} size={34} />
 		Roster construction. Schema design, scikit-learn, dbt basics.
 		Capstone: a draft-pick value model.
 	</Card>
-	<Card title="Level 5 — Owner">
+	<Card title="Owner">
 		<LevelIcon level={5} size={34} />
 		Franchise strategy. FastAPI + Next.js, end to end.
 		Capstone: a live app at `app.1pride.app`.
@@ -85,22 +65,22 @@ the platform. The org chart is the curriculum.
 ## Start here
 
 <LinkCard
-	title="About 1PRIDE"
+	title="The Franchise"
 	href="/about/"
-	description="What 1PRIDE is and why the football-org structure earns its keep."
+	description="Why a football-org structure earns its keep."
 />
 <LinkCard
-	title="How it works"
-	href="/how-it-works/"
-	description="Lessons, challenges, capstones, and the unlock loop."
-/>
-<LinkCard
-	title="Setup"
+	title="Two-Minute Setup"
 	href="/setup/"
-	description="Postgres + uv + nflverse, ~10 minutes to a working environment."
+	description="Postgres + uv + nflverse — working environment in ~10 minutes."
 />
 <LinkCard
-	title="See the deployed L5 app"
+	title="The Playbook"
+	href="/how-it-works/"
+	description="Lessons, drills, capstones — the unlock loop."
+/>
+<LinkCard
+	title="Game Day"
 	href="https://app.1pride.app"
 	description="The whole curriculum's destination — Lions analytics, end to end."
 	target="_blank"

@@ -9,8 +9,15 @@ export default defineConfig({
 		starlight({
 			title: '1PRIDE',
 			description:
-				'Run your reps. Climb the depth chart. A self-paced data curriculum on Detroit Lions data.',
+				'Training the next generation of NFL analysts. Run your reps, climb the depth chart.',
 			customCss: ['./src/styles/custom.css'],
+			// Override Starlight's built-in splash Hero with the Honolulu
+			// Rebuild hero (Hero.astro). Per design brief §3: green grid
+			// line, keyed lion + tap-to-roar, spinning wireframe football,
+			// solid/outline hero type, blueprint annotations.
+			components: {
+				Hero: './src/components/Hero.astro',
+			},
 			// Open Graph + Twitter + theme color. The og:image points at
 			// the L5 app's dynamic OG endpoint so both sites share one
 			// branded image. Cross-domain OG works fine on every major

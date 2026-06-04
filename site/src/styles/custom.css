@@ -1,94 +1,21 @@
-/* 1PRIDE — Honolulu Blue + Silver + White palette
-   Primary:   #0076B6  (Honolulu Blue — the main color)
-   Secondary: #B0B7BC  (Silver / steel)
-   Surface:   #FFFFFF  (White)
-   Ink:       #0A1929  (Navy-tinted near-black, body text only)
+/* 1PRIDE — Honolulu Rebuild stylesheet
+   Per design brief v-next ("Honolulu Rebuild")
 
-   No navy as a surface — Starlight's dark default backdrop is forcibly
-   replaced with white below. */
+   Hard rules:
+     · NO navy. The only blue is Honolulu (#0076B6). Pressed/hover capped
+       at --honolulu-700 (#00659C) — still clearly blue, never darker.
+     · Body text on white = --ink (Lions black #0B0B0C, not navy).
+     · White on Honolulu surfaces; ink on white surfaces. Silver is
+       borders/labels/large display only — never small body text.
 
-/* ─── Honolulu Blue page background ── strict Lions palette: page chrome
-       and splash heroes are saturated Honolulu blue with white text; the
-       inner content panel on long-form pages (lessons, about) stays
-       light so 78 pages of curriculum remain readable. */
-html, body {
-	background-color: var(--lions-blue) !important;
-	color: #ffffff;
-}
-:root, :root[data-theme='light'], :root[data-theme='dark'] {
-	--sl-color-bg: var(--lions-blue);
-	--sl-color-bg-nav: var(--lions-blue);
-	--sl-color-bg-sidebar: var(--lions-blue);
-	--sl-color-text: #ffffff;
-	--sl-color-text-accent: #ffffff;
-	--sl-color-accent-high: #ffffff;
-}
-.main-frame, .page, main { background-color: var(--lions-blue) !important; }
+   Page bg is paper white by default. The splash Hero (Hero.astro) owns
+   its own Honolulu-blue surface + retro-green grid + lion/football. */
 
-/* Splash pages — fully Honolulu blue, white headlines */
-[data-has-hero] body,
-[data-has-hero] .main-pane,
-[data-has-hero] main { background-color: var(--lions-blue) !important; }
-
-/* Sidebar + header chrome — blue with white text */
-header[class*='Header'],
-.sidebar,
-.sidebar-content,
-nav[aria-label] {
-	background-color: var(--lions-blue) !important;
-	color: #ffffff;
-}
-.sidebar-content a,
-.sidebar-content summary,
-.sidebar-content .large {
-	color: #ffffff !important;
-}
-.sidebar-content a[aria-current='page'] {
-	background: rgba(255, 255, 255, 0.18) !important;
-	color: #ffffff !important;
-}
-
-/* Lesson / About content panel — light card on the blue field for
-   readable long-form. Starlight wraps article content in `.sl-markdown-content`. */
-:not([data-has-hero]) .sl-markdown-content,
-:not([data-has-hero]) main article {
-	background: #ffffff;
-	color: var(--lions-ink);
-	padding: 2rem 2.5rem;
-	border-radius: 0;
-	margin-top: 1rem;
-}
-:not([data-has-hero]) .sl-markdown-content h1,
-:not([data-has-hero]) .sl-markdown-content h2,
-:not([data-has-hero]) .sl-markdown-content h3,
-:not([data-has-hero]) .sl-markdown-content p,
-:not([data-has-hero]) .sl-markdown-content li {
-	color: var(--lions-ink);
-}
-
-/* Splash hero — pure Honolulu blue, white display headline */
-[data-has-hero] .hero {
-	background: var(--lions-blue) !important;
-}
-[data-has-hero] .hero h1 {
-	color: #ffffff !important;
-}
-[data-has-hero] .hero .tagline {
-	color: var(--lions-silver-light) !important;
-}
-
-/* Splash body MDX (subhead + section H2s) on the blue page */
-[data-has-hero] .sl-markdown-content { color: #ffffff; }
-[data-has-hero] .sl-markdown-content h2,
-[data-has-hero] .sl-markdown-content h3,
-[data-has-hero] .sl-markdown-content p,
-[data-has-hero] .sl-markdown-content li { color: #ffffff; }
-[data-has-hero] .sl-markdown-content :not(pre) > code {
-	background: rgba(255, 255, 255, 0.18) !important;
-	color: #ffffff !important;
-}
-
-@import url('https://fonts.googleapis.com/css2?family=Antonio:wght@400;500;600;700&display=swap');
+/* Brief typography pairing:
+   Display:  Archivo (wdth=125 → "Archivo Expanded") — athletic + retro-future
+   UI:       Saira — techy grotesque
+   Mono:     JetBrains Mono — HUD labels, code, query results */
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,400..900&family=Saira:wght@300..700&family=JetBrains+Mono:wght@400..700&display=swap');
 
 :root {
 	--sl-color-accent-low: #002a47;
@@ -111,9 +38,17 @@ nav[aria-label] {
 	--lions-silver-dark: #6a7178;
 	--lions-ink: #0a1929;
 
-	--sl-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+	--sl-font: 'Saira', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
 	--sl-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-	--font-display: 'Antonio', 'Inter', sans-serif;
+	--font-display: 'Archivo', 'Saira', sans-serif;
+
+	/* Legacy aliases (so older `--lions-*` uses keep working while the
+	   broader codebase migrates to the brief's canonical names) */
+	--lions-blue: var(--honolulu);
+	--lions-silver: var(--silver);
+	--lions-silver-light: var(--silver-light);
+	--lions-silver-dark: #6a7178;
+	--lions-ink: var(--ink);
 }
 
 :root[data-theme='light'] {

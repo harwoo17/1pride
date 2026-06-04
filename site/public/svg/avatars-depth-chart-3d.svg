@@ -1,0 +1,207 @@
+<svg viewBox="0 0 1360 1010" xmlns="http://www.w3.org/2000/svg" font-family="Arial, Helvetica, sans-serif">
+  <defs>
+    <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+      <path d="M60 0H0V60" fill="none" stroke="#34E27A" stroke-width="1" opacity="0.14"/>
+    </pattern>
+    <radialGradient id="chrome" cx="38%" cy="32%" r="75%">
+      <stop offset="0%" stop-color="#ffffff"/><stop offset="35%" stop-color="#dfe4e7"/>
+      <stop offset="72%" stop-color="#b0b7bc"/><stop offset="100%" stop-color="#71777c"/>
+    </radialGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#56b5e8"/><stop offset="50%" stop-color="#0076b6"/>
+      <stop offset="100%" stop-color="#005075"/>
+    </linearGradient>
+    <radialGradient id="green" cx="38%" cy="32%" r="75%">
+      <stop offset="0%" stop-color="#9af3bb"/><stop offset="55%" stop-color="#34e27a"/>
+      <stop offset="100%" stop-color="#16934e"/>
+    </radialGradient>
+    <radialGradient id="gold" cx="38%" cy="32%" r="75%">
+      <stop offset="0%" stop-color="#fff6cf"/><stop offset="55%" stop-color="#e9c95a"/>
+      <stop offset="100%" stop-color="#9c7a1e"/>
+    </radialGradient>
+    <linearGradient id="silver" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#eef1f3"/><stop offset="55%" stop-color="#b0b7bc"/>
+      <stop offset="100%" stop-color="#6f767b"/>
+    </linearGradient>
+    <radialGradient id="spot" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4"/>
+    </filter>
+
+    <!-- BASE BUST (origin = head center). Reused by every tier via <use>. -->
+    <g id="bust">
+      <ellipse cx="0" cy="162" rx="86" ry="16" fill="#001a26" opacity="0.30" filter="url(#soft)"/>
+      <!-- pedestal -->
+      <ellipse cx="0" cy="150" rx="72" ry="15" fill="url(#silver)"/>
+      <path d="M-72 150 v10 a72 15 0 0 0 144 0 v-10" fill="#7d848a"/>
+      <!-- shoulders / torso -->
+      <path d="M-80 122 C-80 70 -42 58 0 58 C42 58 80 70 80 122 Z" fill="url(#blue)"/>
+      <path d="M0 58 L0 122" stroke="#003e5c" stroke-width="2" opacity="0.5"/>
+      <path d="M-80 110 L80 110" stroke="#34e27a" stroke-width="3" opacity="0.55"/>
+      <!-- neck -->
+      <rect x="-13" y="38" width="26" height="26" rx="8" fill="#9aa1a6"/>
+      <!-- head -->
+      <circle cx="0" cy="0" r="48" fill="url(#chrome)"/>
+      <ellipse cx="-16" cy="-18" rx="15" ry="11" fill="#ffffff" opacity="0.75"/>
+      <path d="M-44 16 A48 48 0 0 0 -8 44" stroke="#34e27a" stroke-width="2.5" fill="none" opacity="0.5"/>
+      <!-- visor -->
+      <rect x="-30" y="-10" width="60" height="18" rx="9" fill="url(#blue)"/>
+      <rect x="-26" y="-7" width="20" height="5" rx="2.5" fill="#9af3bb" opacity="0.6"/>
+    </g>
+  </defs>
+
+  <!-- backdrop -->
+  <rect width="1360" height="1010" fill="#0076b6"/>
+  <rect width="1360" height="1010" fill="url(#grid)"/>
+
+  <!-- header -->
+  <text x="40" y="50" fill="#ffffff" font-size="30" font-weight="900" letter-spacing="1">1PRIDE — DEPTH CHART AVATARS</text>
+  <text x="40" y="74" fill="#cfe6f4" font-size="13" font-family="monospace" letter-spacing="2">LATE-90s PRE-RENDERED 3D · GLOSSY CHROME + HONOLULU · v1 MOCKUP</text>
+  <line x1="40" y1="90" x2="1320" y2="90" stroke="#b0b7bc" stroke-width="1" opacity="0.5"/>
+
+  <!-- ============ ROW 1 ============ -->
+
+  <!-- 01 ANALYST: headset + clipboard -->
+  <g transform="translate(200,250)">
+    <circle cx="0" cy="60" r="150" fill="url(#spot)"/>
+    <use href="#bust"/>
+    <!-- headset -->
+    <path d="M-50 -4 Q0 -70 50 -4" stroke="url(#chrome)" stroke-width="9" fill="none"/>
+    <circle cx="-50" cy="-2" r="11" fill="url(#chrome)"/><circle cx="50" cy="-2" r="11" fill="url(#chrome)"/>
+    <path d="M50 4 Q44 30 22 31" stroke="#9aa1a6" stroke-width="4" fill="none"/>
+    <circle cx="20" cy="31" r="6" fill="#34e27a"/>
+    <!-- clipboard -->
+    <g transform="translate(46,86) rotate(10)">
+      <rect x="-22" y="-30" width="44" height="58" rx="4" fill="#ffffff" stroke="#b0b7bc"/>
+      <rect x="-10" y="-36" width="20" height="10" rx="3" fill="#0076b6"/>
+      <line x1="-14" y1="-14" x2="14" y2="-14" stroke="#0076b6" stroke-width="2"/>
+      <line x1="-14" y1="-2" x2="14" y2="-2" stroke="#34e27a" stroke-width="2"/>
+      <line x1="-14" y1="10" x2="8" y2="10" stroke="#b0b7bc" stroke-width="2"/>
+    </g>
+    <circle cx="-66" cy="-58" r="18" fill="url(#green)"/><text x="-66" y="-52" text-anchor="middle" fill="#06351c" font-size="16" font-weight="900">1</text>
+  </g>
+  <text x="200" y="470" text-anchor="middle" fill="#ffffff" font-size="17" font-weight="800">ANALYST</text>
+  <text x="200" y="492" text-anchor="middle" fill="#cfe6f4" font-size="11" font-family="monospace">headset + clipboard · entry rep</text>
+
+  <!-- 02 SCOUT: binoculars -->
+  <g transform="translate(520,250)">
+    <circle cx="0" cy="60" r="150" fill="url(#spot)"/>
+    <use href="#bust"/>
+    <g>
+      <rect x="-28" y="-14" width="24" height="24" rx="6" fill="url(#silver)" stroke="#5e6469"/>
+      <rect x="4" y="-14" width="24" height="24" rx="6" fill="url(#silver)" stroke="#5e6469"/>
+      <circle cx="-16" cy="-2" r="6" fill="#06202e"/><circle cx="16" cy="-2" r="6" fill="#06202e"/>
+      <circle cx="-18" cy="-4" r="2" fill="#9af3bb"/><circle cx="14" cy="-4" r="2" fill="#9af3bb"/>
+    </g>
+    <circle cx="-66" cy="-58" r="18" fill="url(#green)"/><text x="-66" y="-52" text-anchor="middle" fill="#06351c" font-size="16" font-weight="900">2</text>
+  </g>
+  <text x="520" y="470" text-anchor="middle" fill="#ffffff" font-size="17" font-weight="800">SCOUT</text>
+  <text x="520" y="492" text-anchor="middle" fill="#cfe6f4" font-size="11" font-family="monospace">binoculars · reads the field</text>
+
+  <!-- 03 POSITION COACH: whistle -->
+  <g transform="translate(840,250)">
+    <circle cx="0" cy="60" r="150" fill="url(#spot)"/>
+    <use href="#bust"/>
+    <path d="M-10 44 L-2 100" stroke="#06202e" stroke-width="2.5"/><path d="M10 44 L2 100" stroke="#06202e" stroke-width="2.5"/>
+    <g transform="translate(0,102)">
+      <rect x="-14" y="-9" width="22" height="16" rx="6" fill="url(#green)"/>
+      <circle cx="2" cy="-1" r="4" fill="#06351c"/>
+      <rect x="8" y="-7" width="9" height="7" rx="3" fill="#16934e"/>
+    </g>
+    <circle cx="-66" cy="-58" r="18" fill="url(#green)"/><text x="-66" y="-52" text-anchor="middle" fill="#06351c" font-size="16" font-weight="900">3</text>
+  </g>
+  <text x="840" y="470" text-anchor="middle" fill="#ffffff" font-size="17" font-weight="800">POSITION COACH</text>
+  <text x="840" y="492" text-anchor="middle" fill="#cfe6f4" font-size="11" font-family="monospace">whistle · drills the unit</text>
+
+  <!-- 04 COORDINATOR: laminated call-sheet -->
+  <g transform="translate(1160,250)">
+    <circle cx="0" cy="60" r="150" fill="url(#spot)"/>
+    <use href="#bust"/>
+    <g transform="translate(50,80) rotate(14)">
+      <rect x="-26" y="-34" width="52" height="66" rx="5" fill="#ffffff" stroke="#0076b6" stroke-width="2"/>
+      <rect x="-26" y="-34" width="52" height="14" rx="5" fill="#0076b6"/>
+      <line x1="-18" y1="-8" x2="18" y2="-8" stroke="#34e27a" stroke-width="2"/>
+      <line x1="-18" y1="2" x2="18" y2="2" stroke="#b0b7bc" stroke-width="2"/>
+      <line x1="-18" y1="12" x2="18" y2="12" stroke="#b0b7bc" stroke-width="2"/>
+      <line x1="-18" y1="22" x2="8" y2="22" stroke="#0076b6" stroke-width="2"/>
+    </g>
+    <circle cx="-66" cy="-58" r="18" fill="url(#green)"/><text x="-66" y="-52" text-anchor="middle" fill="#06351c" font-size="16" font-weight="900">4</text>
+  </g>
+  <text x="1160" y="470" text-anchor="middle" fill="#ffffff" font-size="17" font-weight="800">COORDINATOR</text>
+  <text x="1160" y="492" text-anchor="middle" fill="#cfe6f4" font-size="11" font-family="monospace">call-sheet · scripts the plan</text>
+
+  <!-- ============ ROW 2 ============ -->
+
+  <!-- 05 HEAD COACH: visor cap + headset -->
+  <g transform="translate(360,660)">
+    <circle cx="0" cy="60" r="150" fill="url(#spot)"/>
+    <use href="#bust"/>
+    <!-- cap dome + brim -->
+    <path d="M-46 -10 A48 48 0 0 1 46 -10 Q0 -34 -46 -10 Z" fill="url(#blue)"/>
+    <path d="M-50 -10 Q-30 -2 -2 -4 L-2 -12 Q-34 -16 -56 -16 Z" fill="#005075"/>
+    <rect x="-8" y="-30" width="16" height="6" rx="3" fill="#34e27a"/>
+    <!-- headset -->
+    <circle cx="-50" cy="2" r="10" fill="url(#chrome)"/><circle cx="50" cy="2" r="10" fill="url(#chrome)"/>
+    <path d="M50 8 Q44 32 22 33" stroke="#9aa1a6" stroke-width="4" fill="none"/><circle cx="20" cy="33" r="6" fill="#34e27a"/>
+    <circle cx="-66" cy="-58" r="18" fill="url(#green)"/><text x="-66" y="-52" text-anchor="middle" fill="#06351c" font-size="16" font-weight="900">5</text>
+  </g>
+  <text x="360" y="880" text-anchor="middle" fill="#ffffff" font-size="17" font-weight="800">HEAD COACH</text>
+  <text x="360" y="902" text-anchor="middle" fill="#cfe6f4" font-size="11" font-family="monospace">visor + headset · runs game day</text>
+
+  <!-- 06 GENERAL MANAGER: suit + roster board -->
+  <g transform="translate(680,660)">
+    <circle cx="0" cy="60" r="150" fill="url(#spot)"/>
+    <use href="#bust"/>
+    <!-- tie / suit -->
+    <path d="M0 58 L-9 70 L0 118 L9 70 Z" fill="#0b0b0c"/>
+    <path d="M-22 60 L0 58 L-9 70 Z" fill="#e9ecee"/><path d="M22 60 L0 58 L9 70 Z" fill="#e9ecee"/>
+    <!-- roster tablet -->
+    <g transform="translate(-50,84) rotate(-12)">
+      <rect x="-24" y="-32" width="48" height="62" rx="5" fill="url(#silver)" stroke="#5e6469"/>
+      <rect x="-18" y="-26" width="36" height="50" rx="3" fill="#06202e"/>
+      <line x1="-14" y1="-16" x2="14" y2="-16" stroke="#34e27a" stroke-width="2"/>
+      <line x1="-14" y1="-6" x2="14" y2="-6" stroke="#56b5e8" stroke-width="2"/>
+      <line x1="-14" y1="4" x2="14" y2="4" stroke="#56b5e8" stroke-width="2"/>
+      <line x1="-14" y1="14" x2="6" y2="14" stroke="#9aa1a6" stroke-width="2"/>
+    </g>
+    <circle cx="-66" cy="-58" r="18" fill="url(#green)"/><text x="-66" y="-52" text-anchor="middle" fill="#06351c" font-size="16" font-weight="900">6</text>
+  </g>
+  <text x="680" y="880" text-anchor="middle" fill="#ffffff" font-size="17" font-weight="800">GENERAL MANAGER</text>
+  <text x="680" y="902" text-anchor="middle" fill="#cfe6f4" font-size="11" font-family="monospace">suit + roster board · builds the team</text>
+
+  <!-- 07 OWNER: silver blazer + gold ring (premium gold accents) -->
+  <g transform="translate(1000,660)">
+    <circle cx="0" cy="60" r="160" fill="url(#spot)"/>
+    <use href="#bust"/>
+    <!-- gold pedestal ring -->
+    <ellipse cx="0" cy="150" rx="72" ry="15" fill="none" stroke="url(#gold)" stroke-width="4"/>
+    <!-- gold lapel + pocket pin -->
+    <path d="M-20 60 L0 58 L-8 84 Z" fill="url(#gold)" opacity="0.9"/>
+    <path d="M20 60 L0 58 L8 84 Z" fill="url(#gold)" opacity="0.9"/>
+    <path d="M0 58 L-7 70 L0 112 L7 70 Z" fill="#0b0b0c"/>
+    <circle cx="30" cy="92" r="5" fill="url(#gold)"/>
+    <!-- floating gold ring crest -->
+    <g transform="translate(60,-58)">
+      <circle r="15" fill="none" stroke="url(#gold)" stroke-width="6"/>
+      <circle cy="-15" r="6" fill="url(#gold)"/>
+      <path d="M-3 -18 L0 -24 L3 -18 Z" fill="#fff6cf"/>
+    </g>
+    <circle cx="-66" cy="-58" r="18" fill="url(#gold)"/><text x="-66" y="-52" text-anchor="middle" fill="#3a2c06" font-size="16" font-weight="900">7</text>
+  </g>
+  <text x="1000" y="880" text-anchor="middle" fill="#ffffff" font-size="17" font-weight="800">OWNER</text>
+  <text x="1000" y="902" text-anchor="middle" fill="#ffe9a8" font-size="11" font-family="monospace">silver blazer + gold ring · top of the chart</text>
+
+  <!-- legend -->
+  <line x1="40" y1="936" x2="1320" y2="936" stroke="#b0b7bc" stroke-width="1" opacity="0.4"/>
+  <text x="40" y="966" fill="#cfe6f4" font-size="12" font-family="monospace" letter-spacing="2">MATERIALS</text>
+  <g transform="translate(180,961)">
+    <circle cx="0" cy="-4" r="11" fill="url(#chrome)"/><text x="18" y="0" fill="#fff" font-size="12" font-family="monospace">Chrome head</text>
+    <circle cx="200" cy="-4" r="11" fill="url(#blue)"/><text x="218" y="0" fill="#fff" font-size="12" font-family="monospace">Honolulu uniform</text>
+    <circle cx="430" cy="-4" r="11" fill="url(#green)"/><text x="448" y="0" fill="#fff" font-size="12" font-family="monospace">Green accent / badge</text>
+    <circle cx="680" cy="-4" r="11" fill="url(#gold)"/><text x="698" y="0" fill="#fff" font-size="12" font-family="monospace">Gold = Owner only</text>
+  </g>
+  <text x="1320" y="966" text-anchor="end" fill="#9fc4dc" font-size="11" font-family="monospace">key light: upper-left · chrome rim · soft floor shadow · 3/4 bust</text>
+</svg>

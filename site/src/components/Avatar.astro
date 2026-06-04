@@ -104,14 +104,21 @@ const badgeText = gold ? '#3a2c06' : '#06351c';
 			</g>
 		)}
 		{tier === 2 && (
-			<g>{/* binoculars raised to the visor — two clear barrels + lenses */}
-				<rect x="66" y="72" width="26" height="30" rx="7" fill="#1b1c1d" stroke="#3a3d40" stroke-width="1.5" />
-				<rect x="108" y="72" width="26" height="30" rx="7" fill="#1b1c1d" stroke="#3a3d40" stroke-width="1.5" />
-				<rect x="90" y="80" width="20" height="9" rx="3" fill="#3a3d40" />
-				<circle cx="79" cy="100" r="8" fill="#0b0b0c" stroke="#16934e" stroke-width="2.4" />
-				<circle cx="121" cy="100" r="8" fill="#0b0b0c" stroke="#16934e" stroke-width="2.4" />
-				<circle cx="76" cy="97" r="2.4" fill="#9af3bb" />
-				<circle cx="118" cy="97" r="2.4" fill="#9af3bb" />
+			<g>{/* stopwatch — Quality Control times the reps */}
+				<circle cx="100" cy="151" r="16" fill="#eef1f3" stroke="#16934e" stroke-width="2.6" />
+				<circle cx="100" cy="151" r="16" fill="none" stroke="#6f767b" stroke-width="0.8" opacity="0.5" />
+				<rect x="95" y="129" width="10" height="7" rx="2" fill="#6f767b" />
+				<line x1="100" y1="129" x2="100" y2="125" stroke="#6f767b" stroke-width="2.6" stroke-linecap="round" />
+				<line x1="113" y1="138" x2="116" y2="135" stroke="#6f767b" stroke-width="2.2" stroke-linecap="round" />
+				{/* hands */}
+				<line x1="100" y1="151" x2="100" y2="141" stroke="#0076b6" stroke-width="2.4" stroke-linecap="round" />
+				<line x1="100" y1="151" x2="108" y2="154" stroke="#16934e" stroke-width="2.2" stroke-linecap="round" />
+				<circle cx="100" cy="151" r="2.2" fill="#0b0b0c" />
+				{/* tick marks */}
+				<circle cx="100" cy="139" r="1" fill="#16934e" />
+				<circle cx="112" cy="151" r="1" fill="#6f767b" />
+				<circle cx="100" cy="163" r="1" fill="#6f767b" />
+				<circle cx="88" cy="151" r="1" fill="#6f767b" />
 			</g>
 		)}
 		{tier === 3 && (

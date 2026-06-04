@@ -12,7 +12,7 @@ const lessons = defineCollection({
 		title: z.string(),
 		tier: z.enum([
 			'Analyst',
-			'Scout',
+			'Quality Control',
 			'Position Coach',
 			'Coordinator',
 			'Head Coach',

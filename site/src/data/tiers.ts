@@ -23,12 +23,12 @@ export const TIERS: Tier[] = [
 		unlock: 'Start here — clear the run-game drill in The Film Room.',
 	},
 	{
-		slug: 'scout',
+		slug: 'quality-control',
 		n: 2,
-		label: 'Scout',
-		prop: 'Binoculars',
+		label: 'Quality Control',
+		prop: 'Stopwatch',
 		accent: 'green',
-		blurb: 'Find the signal. JOINs, GROUP BY, comparative reads.',
+		blurb: 'Chart the film. JOINs, GROUP BY, comparative reads — tag the plays and time the reps coaches act on.',
 		unlock: 'Bank the Analyst drills + the season-recap capstone.',
 	},
 	{

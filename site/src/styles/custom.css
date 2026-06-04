@@ -115,11 +115,11 @@ body::before {
 	pointer-events: none;
 	background-image:
 		/* 5-yard heavier lines */
-		repeating-linear-gradient(0deg, rgba(255,255,255,0.16) 0 2px, transparent 2px 480px),
+		repeating-linear-gradient(0deg, rgba(255,255,255,0.22) 0 2px, transparent 2px 480px),
 		/* yard lines */
-		repeating-linear-gradient(0deg, rgba(255,255,255,0.06) 0 1px, transparent 1px 96px),
-		/* hash-mark columns (left + right of center) */
-		repeating-linear-gradient(90deg, transparent 0 33.33%, rgba(255,255,255,0.05) 33.33% calc(33.33% + 1px), transparent calc(33.33% + 1px) 66.66%, rgba(255,255,255,0.05) 66.66% calc(66.66% + 1px), transparent calc(66.66% + 1px));
+		repeating-linear-gradient(0deg, rgba(255,255,255,0.11) 0 1px, transparent 1px 96px),
+		/* hash-mark columns (at the thirds) */
+		repeating-linear-gradient(90deg, transparent 0 33.33%, rgba(255,255,255,0.08) 33.33% calc(33.33% + 1px), transparent calc(33.33% + 1px) 66.66%, rgba(255,255,255,0.08) 66.66% calc(66.66% + 1px), transparent calc(66.66% + 1px));
 }
 /* keep page content above the field */
 .main-frame, header[class*='Header'], .sidebar, .hero, main, .lx { position: relative; z-index: 1; }
@@ -132,12 +132,15 @@ body::before {
 	--sl-color-hairline: rgba(255, 255, 255, 0.22);
 	--sl-color-hairline-light: rgba(255, 255, 255, 0.18);
 }
+/* Chrome is TRANSPARENT so the body's Honolulu field-grid shows through
+   the whole page (header, sidebar, main, splash). The honolulu base
+   color comes from <body>. */
 .main-frame, .page, main,
 header[class*='Header'],
 .sidebar, .sidebar-content,
 [data-has-hero] .main-pane,
 [data-has-hero] main {
-	background-color: var(--honolulu, #0076b6) !important;
+	background-color: transparent !important;
 	color: #ffffff;
 }
 /* Sidebar links + nav text → white on the blue */

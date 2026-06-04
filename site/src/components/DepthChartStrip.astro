@@ -1,0 +1,58 @@
+---
+// Compact depth-chart strip for the homepage — the 7 tier avatars (the
+// real 3D busts, full color) in a row with rank + label, linking to the
+// full Depth Chart. Condensed: one band instead of seven stacked cards.
+import { TIERS } from '~/data/tiers';
+import Avatar from '~/components/Avatar.astro';
+---
+
+<a class="dcs" href="/depth-chart/">
+	{TIERS.map((t) => (
+		<span class={`dcs-tier accent-${t.accent}`}>
+			<Avatar tier={t.n} size={84} />
+			<span class="dcs-rank">{String(t.n).padStart(2, '0')}</span>
+			<span class="dcs-label">{t.label}</span>
+		</span>
+	))}
+</a>
+
+<style>
+	.dcs {
+		display: grid;
+		grid-auto-flow: column;
+		grid-auto-columns: 1fr;
+		gap: 0.5rem;
+		align-items: end;
+		padding: 1rem 0.5rem 0.75rem;
+		text-decoration: none;
+		overflow-x: auto;
+		scrollbar-width: none;
+	}
+	.dcs::-webkit-scrollbar { display: none; }
+	.dcs-tier {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.25rem;
+		min-width: 86px;
+		transition: transform 180ms ease-out;
+	}
+	.dcs-tier :global(.avatar svg) { transition: filter 180ms ease-out; }
+	.dcs:hover .dcs-tier { opacity: 0.55; }
+	.dcs .dcs-tier:hover { opacity: 1; transform: translateY(-4px); }
+	.dcs-rank {
+		font-family: var(--sl-font-mono, monospace);
+		font-size: 0.6rem;
+		letter-spacing: 0.12em;
+		color: var(--silver-light, #d7dce0);
+	}
+	.dcs-label {
+		font-family: var(--font-display, sans-serif);
+		font-weight: 700;
+		font-size: 0.78rem;
+		color: #ffffff;
+		text-align: center;
+		line-height: 1.05;
+	}
+	.accent-gold .dcs-label { color: #f1d27a; }
+</style>

@@ -101,9 +101,28 @@ dialog[aria-label*='Search' i],
    surfaces, white on Honolulu surfaces" rule, with Honolulu as the
    surface that dominates the page. */
 html, body {
-	background: var(--honolulu, #0076b6) !important;
+	background-color: var(--honolulu, #0076b6) !important;
 	color: #ffffff;
 }
+/* Football-field grid across the whole page — yard lines (every 96px)
+   with a heavier 5-yard line (every 480px) and faint vertical hash
+   columns. Fixed so it reads as a field the content scrolls over. */
+body::before {
+	content: '';
+	position: fixed;
+	inset: 0;
+	z-index: 0;
+	pointer-events: none;
+	background-image:
+		/* 5-yard heavier lines */
+		repeating-linear-gradient(0deg, rgba(255,255,255,0.16) 0 2px, transparent 2px 480px),
+		/* yard lines */
+		repeating-linear-gradient(0deg, rgba(255,255,255,0.06) 0 1px, transparent 1px 96px),
+		/* hash-mark columns (left + right of center) */
+		repeating-linear-gradient(90deg, transparent 0 33.33%, rgba(255,255,255,0.05) 33.33% calc(33.33% + 1px), transparent calc(33.33% + 1px) 66.66%, rgba(255,255,255,0.05) 66.66% calc(66.66% + 1px), transparent calc(66.66% + 1px));
+}
+/* keep page content above the field */
+.main-frame, header[class*='Header'], .sidebar, .hero, main, .lx { position: relative; z-index: 1; }
 :root, :root[data-theme='light'], :root[data-theme='dark'] {
 	--sl-color-bg: var(--honolulu, #0076b6);
 	--sl-color-bg-nav: var(--honolulu, #0076b6);

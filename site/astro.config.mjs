@@ -32,13 +32,19 @@ export default defineConfig({
 					content:
 						"try{localStorage.setItem('starlight-theme','light');document.documentElement.dataset.theme='light';}catch(e){}",
 				},
-				// Audio language: soft Lion roar on first click + a synthesized
-				// click sound on every button/link press after that. Mirrors the
-				// app's SoundLayer for the curriculum site.
+				// Sound system (brief §11). Football audio, accessibility-first:
+				//   · NEVER autoplay — every sound fires on a user gesture only
+				//   · snap  → synthesized, on primary button/link press
+				//   · whistle → synthesized, exposed as window.PRIDE.whistle()
+				//     for level-up / correct-answer (paired with a visual)
+				//   · roar → lives on the hero lion (Hero.astro), not here
+				//   · Global mute toggle injected bottom-right, persists
+				//     'pride-muted' to localStorage (read by Hero.astro too)
+				//   · Never conveys information by sound alone
 				{
 					tag: 'script',
 					content:
-						"(function(){var first=true,actx=null;function g(){if(!actx&&(window.AudioContext||window.webkitAudioContext))actx=new(window.AudioContext||window.webkitAudioContext)();if(actx&&actx.state==='suspended')actx.resume();return actx;}function c(){var x=g();if(!x)return;var t=x.currentTime,o=x.createOscillator(),G=x.createGain();o.type='triangle';o.frequency.setValueAtTime(880,t);o.frequency.exponentialRampToValueAtTime(440,t+0.06);G.gain.setValueAtTime(0.001,t);G.gain.exponentialRampToValueAtTime(0.18,t+0.005);G.gain.exponentialRampToValueAtTime(0.001,t+0.08);o.connect(G).connect(x.destination);o.start(t);o.stop(t+0.1);}function r(){try{var a=new Audio('/sounds/lion-roar.mp3');a.volume=0.32;a.play().catch(function(){});}catch(e){}}document.addEventListener('click',function(e){var t=e.target;if(!t.closest||!t.closest('button, a[href]'))return;if(first){first=false;r();}c();});})();",
+						"(function(){var KEY='pride-muted';var actx=null;function muted(){return localStorage.getItem(KEY)==='1';}function ctx(){if(!actx&&(window.AudioContext||window.webkitAudioContext))actx=new(window.AudioContext||window.webkitAudioContext)();if(actx&&actx.state==='suspended')actx.resume();return actx;}function snap(){if(muted())return;var x=ctx();if(!x)return;var t=x.currentTime;var o=x.createOscillator(),g=x.createGain();o.type='square';o.frequency.setValueAtTime(220,t);o.frequency.exponentialRampToValueAtTime(90,t+0.04);g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.14,t+0.004);g.gain.exponentialRampToValueAtTime(0.0001,t+0.07);o.connect(g).connect(x.destination);o.start(t);o.stop(t+0.08);var nb=x.createBuffer(1,x.sampleRate*0.03,x.sampleRate),d=nb.getChannelData(0);for(var i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*(1-i/d.length);var n=x.createBufferSource();n.buffer=nb;var ng=x.createGain();ng.gain.setValueAtTime(0.12,t);ng.gain.exponentialRampToValueAtTime(0.0001,t+0.03);n.connect(ng).connect(x.destination);n.start(t);n.stop(t+0.04);}function whistle(){if(muted())return;var x=ctx();if(!x)return;var t=x.currentTime;for(var k=0;k<2;k++){var o=x.createOscillator(),g=x.createGain();o.type='sine';var s=t+k*0.16;o.frequency.setValueAtTime(2600,s);o.frequency.linearRampToValueAtTime(3100,s+0.02);var lfo=x.createOscillator(),lg=x.createGain();lfo.frequency.setValueAtTime(28,s);lg.gain.setValueAtTime(45,s);lfo.connect(lg).connect(o.frequency);g.gain.setValueAtTime(0.0001,s);g.gain.exponentialRampToValueAtTime(0.16,s+0.01);g.gain.setValueAtTime(0.16,s+0.1);g.gain.exponentialRampToValueAtTime(0.0001,s+0.14);o.connect(g).connect(x.destination);o.start(s);o.stop(s+0.15);lfo.start(s);lfo.stop(s+0.15);}}window.PRIDE={whistle:whistle,snap:snap,muted:muted};document.addEventListener('click',function(e){var t=e.target;if(!t.closest)return;if(t.closest('#prideMute'))return;if(t.closest('button, a[href], [role=button]'))snap();});function mountToggle(){if(document.getElementById('prideMute'))return;var b=document.createElement('button');b.id='prideMute';b.type='button';b.setAttribute('aria-label','Toggle sound');b.style.cssText='position:fixed;right:16px;bottom:16px;z-index:9999;width:40px;height:40px;border-radius:999px;border:1px solid #B0B7BC;background:#0076B6;color:#fff;font-family:monospace;font-size:15px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;';function paint(){b.textContent=muted()?'\\uD83D\\uDD07':'\\uD83D\\uDD0A';b.setAttribute('aria-pressed',muted()?'true':'false');}paint();b.addEventListener('click',function(){localStorage.setItem(KEY,muted()?'0':'1');paint();if(!muted())snap();});document.body.appendChild(b);}if(document.body)mountToggle();else document.addEventListener('DOMContentLoaded',mountToggle);})();",
 				},
 				{
 					tag: 'meta',

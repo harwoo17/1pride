@@ -1,0 +1,185 @@
+---
+// Inline header search (overrides Starlight's modal search). Lions-silver
+// bar, white text; results drop down IN PLACE under the bar — no separate
+// screen. Filters a small build-time index (/search-index.json).
+---
+
+<div class="px-search">
+	<svg class="px-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+		<circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2.2" />
+		<line x1="16.5" y1="16.5" x2="21" y2="21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+	</svg>
+	<input
+		type="search"
+		id="pxSearch"
+		class="px-search-input"
+		placeholder="Search the playbook…"
+		autocomplete="off"
+		spellcheck="false"
+		aria-label="Search"
+		aria-expanded="false"
+		aria-controls="pxResults"
+	/>
+	<kbd class="px-search-kbd">⌘K</kbd>
+	<div id="pxResults" class="px-results" role="listbox" hidden></div>
+</div>
+
+<style is:global>
+	.px-search {
+		position: relative;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		width: min(360px, 60vw);
+		padding: 0 0.7rem;
+		height: 38px;
+		background: var(--silver, #b0b7bc);
+		border: 1px solid var(--silver-dark, #6a7178);
+		border-radius: 8px;
+		color: #ffffff;
+	}
+	.px-search:focus-within {
+		border-color: #ffffff;
+		box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35);
+	}
+	.px-search-icon { color: #ffffff; opacity: 0.9; flex-shrink: 0; }
+	.px-search-input {
+		flex: 1;
+		min-width: 0;
+		background: transparent;
+		border: 0;
+		outline: 0;
+		color: #ffffff !important;
+		-webkit-text-fill-color: #ffffff;
+		font-family: var(--sl-font, system-ui), sans-serif;
+		font-size: 0.9rem;
+	}
+	.px-search-input::placeholder { color: rgba(255, 255, 255, 0.85); }
+	/* hide the native search clear button (keeps the white-on-silver clean) */
+	.px-search-input::-webkit-search-cancel-button { -webkit-appearance: none; }
+	.px-search-kbd {
+		flex-shrink: 0;
+		font-family: var(--sl-font-mono, monospace);
+		font-size: 0.66rem;
+		color: #ffffff;
+		background: rgba(255, 255, 255, 0.22);
+		border: 1px solid rgba(255, 255, 255, 0.4);
+		border-radius: 4px;
+		padding: 0.05rem 0.35rem;
+	}
+	/* dropdown — in place, not a modal */
+	.px-results {
+		position: absolute;
+		top: calc(100% + 6px);
+		left: 0;
+		right: 0;
+		z-index: 80;
+		max-height: 60vh;
+		overflow-y: auto;
+		background: #ffffff;
+		border: 1px solid var(--silver, #b0b7bc);
+		border-radius: 10px;
+		box-shadow: 0 12px 30px -12px rgba(0, 0, 0, 0.4);
+		padding: 0.35rem;
+	}
+	.px-results[hidden] { display: none; }
+	.px-result {
+		display: block;
+		padding: 0.5rem 0.65rem;
+		border-radius: 7px;
+		text-decoration: none;
+		color: var(--ink, #0b0b0c);
+	}
+	.px-result:hover,
+	.px-result.is-active {
+		background: var(--honolulu, #0076b6);
+		color: #ffffff;
+	}
+	.px-result .r-title {
+		font-family: var(--font-display, sans-serif);
+		font-weight: 700;
+		font-size: 0.92rem;
+	}
+	.px-result .r-section {
+		font-family: var(--sl-font-mono, monospace);
+		font-size: 0.62rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		opacity: 0.65;
+	}
+	.px-empty {
+		padding: 0.75rem;
+		font-size: 0.85rem;
+		color: var(--silver-dark, #6a7178);
+	}
+</style>
+
+<script is:inline>
+	(function () {
+		var input = document.getElementById('pxSearch');
+		var panel = document.getElementById('pxResults');
+		if (!input || !panel) return;
+		var index = [];
+		var active = -1;
+
+		fetch('/search-index.json')
+			.then(function (r) { return r.json(); })
+			.then(function (d) { index = d || []; })
+			.catch(function () {});
+
+		function score(item, q) {
+			var t = item.title.toLowerCase();
+			var s = (item.section || '').toLowerCase();
+			var d = (item.desc || '').toLowerCase();
+			if (t === q) return 100;
+			if (t.indexOf(q) === 0) return 80;
+			if (t.indexOf(q) > -1) return 60;
+			if (s.indexOf(q) > -1) return 30;
+			if (d.indexOf(q) > -1) return 20;
+			return 0;
+		}
+
+		function render(q) {
+			if (!q) { panel.hidden = true; input.setAttribute('aria-expanded', 'false'); return; }
+			var matches = index
+				.map(function (it) { return { it: it, sc: score(it, q) }; })
+				.filter(function (m) { return m.sc > 0; })
+				.sort(function (a, b) { return b.sc - a.sc; })
+				.slice(0, 8);
+			active = -1;
+			if (!matches.length) {
+				panel.innerHTML = '<div class="px-empty">No plays match “' + q.replace(/</g, '') + '”.</div>';
+			} else {
+				panel.innerHTML = matches.map(function (m, i) {
+					return '<a class="px-result" role="option" data-i="' + i + '" href="' + m.it.url + '">' +
+						'<span class="r-section">' + m.it.section + '</span><br>' +
+						'<span class="r-title">' + m.it.title + '</span></a>';
+				}).join('');
+			}
+			panel.hidden = false;
+			input.setAttribute('aria-expanded', 'true');
+		}
+
+		input.addEventListener('input', function () { render(input.value.trim().toLowerCase()); });
+		input.addEventListener('focus', function () { if (input.value.trim()) render(input.value.trim().toLowerCase()); });
+
+		input.addEventListener('keydown', function (e) {
+			var opts = panel.querySelectorAll('.px-result');
+			if (e.key === 'ArrowDown') { e.preventDefault(); active = Math.min(active + 1, opts.length - 1); }
+			else if (e.key === 'ArrowUp') { e.preventDefault(); active = Math.max(active - 1, 0); }
+			else if (e.key === 'Enter') { if (opts[active]) { e.preventDefault(); window.location.href = opts[active].getAttribute('href'); } return; }
+			else if (e.key === 'Escape') { panel.hidden = true; input.blur(); return; }
+			else return;
+			opts.forEach(function (o, i) { o.classList.toggle('is-active', i === active); });
+			if (opts[active]) opts[active].scrollIntoView({ block: 'nearest' });
+		});
+
+		document.addEventListener('click', function (e) {
+			if (!e.target.closest('.px-search')) { panel.hidden = true; input.setAttribute('aria-expanded', 'false'); }
+		});
+
+		document.addEventListener('keydown', function (e) {
+			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); input.focus(); }
+		});
+	})();
+</script>

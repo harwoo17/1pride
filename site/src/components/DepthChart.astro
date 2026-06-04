@@ -1,0 +1,152 @@
+---
+// The Depth Chart — the 7-tier ladder (brief §8). Renders top-down
+// (Owner first), each rung an Avatar bust + label + blurb + unlock note.
+// `unlocked` controls how many tiers read as earned vs. locked silhouette.
+import { TIERS } from '~/data/tiers';
+import Avatar from '~/components/Avatar.astro';
+
+interface Props {
+	unlocked?: number; // how many tiers (from the bottom) are unlocked
+}
+const { unlocked = 1 } = Astro.props;
+// Climb reads top→bottom = Owner→Analyst.
+const ladder = [...TIERS].reverse();
+---
+
+<div class="depth-chart">
+	<p class="dc-kicker">FIG. 07 — THE DEPTH CHART · CLIMB THE LADDER</p>
+	<ol class="dc-ladder">
+		{ladder.map((t) => {
+			const locked = t.n > unlocked;
+			return (
+				<li class={`dc-rung ${locked ? 'is-locked' : 'is-open'} accent-${t.accent}`}>
+					<div class="dc-bust">
+						<Avatar tier={t.n} size={120} locked={locked} />
+					</div>
+					<div class="dc-body">
+						<div class="dc-head">
+							<span class="dc-rank">TIER {String(t.n).padStart(2, '0')}</span>
+							<h3 class="dc-label">{t.label}</h3>
+							<span class={`dc-status ${locked ? '' : 'open'}`}>
+								{locked ? 'LOCKED' : t.n === unlocked ? 'CURRENT' : 'EARNED'}
+							</span>
+						</div>
+						<p class="dc-blurb">{t.blurb}</p>
+						<p class="dc-unlock"><span class="dc-prop">{t.prop}</span> · {t.unlock}</p>
+					</div>
+				</li>
+			);
+		})}
+	</ol>
+</div>
+
+<style>
+	.depth-chart { margin: 1.5rem 0 2rem; }
+	.dc-kicker {
+		font-family: var(--sl-font-mono, monospace);
+		font-size: 0.7rem;
+		letter-spacing: 0.2em;
+		color: var(--silver, #b0b7bc);
+		margin: 0 0 1.25rem;
+	}
+	.dc-ladder {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		position: relative;
+	}
+	/* the connecting depth-chart spine */
+	.dc-ladder::before {
+		content: '';
+		position: absolute;
+		left: 60px;
+		top: 60px;
+		bottom: 60px;
+		width: 2px;
+		background: repeating-linear-gradient(180deg, var(--silver, #b0b7bc) 0 6px, transparent 6px 12px);
+		opacity: 0.5;
+		z-index: 0;
+	}
+	.dc-rung {
+		position: relative;
+		z-index: 1;
+		display: grid;
+		grid-template-columns: 120px 1fr;
+		align-items: center;
+		gap: 1.25rem;
+		padding: 0.85rem 1.1rem;
+		background: var(--paper, #fff);
+		border: 1px solid var(--silver, #b0b7bc);
+		border-radius: 12px;
+		transition: transform 180ms ease-out, box-shadow 180ms ease-out, border-color 180ms ease-out;
+	}
+	.dc-rung.is-open:hover {
+		transform: translateX(4px);
+		border-color: var(--honolulu, #0076b6);
+		box-shadow: 0 8px 22px -12px rgba(0, 118, 182, 0.4);
+	}
+	.dc-rung.is-locked {
+		background: rgba(255, 255, 255, 0.55);
+		border-style: dashed;
+		border-color: var(--silver, #b0b7bc);
+	}
+	.dc-rung.accent-gold.is-open {
+		border-color: #e9c95a;
+		box-shadow: 0 0 0 1px #e9c95a inset, 0 8px 26px -14px rgba(233, 201, 90, 0.6);
+	}
+	.dc-bust { display: flex; justify-content: center; }
+	.dc-head {
+		display: flex;
+		align-items: baseline;
+		gap: 0.6rem;
+		flex-wrap: wrap;
+	}
+	.dc-rank {
+		font-family: var(--sl-font-mono, monospace);
+		font-size: 0.66rem;
+		letter-spacing: 0.18em;
+		color: var(--silver-dark, #6a7178);
+	}
+	.dc-label {
+		font-family: var(--font-display, sans-serif);
+		font-weight: 800;
+		font-size: 1.4rem;
+		margin: 0;
+		color: var(--ink, #0b0b0c) !important;
+		letter-spacing: -0.01em;
+	}
+	.dc-status {
+		font-family: var(--sl-font-mono, monospace);
+		font-size: 0.6rem;
+		letter-spacing: 0.14em;
+		padding: 0.12rem 0.5rem;
+		border-radius: 4px;
+		background: var(--silver-light, #d7dce0);
+		color: var(--silver-dark, #6a7178);
+	}
+	.dc-status.open {
+		background: var(--honolulu, #0076b6);
+		color: #fff;
+	}
+	.dc-blurb {
+		margin: 0.4rem 0 0.3rem;
+		font-size: 0.95rem;
+		color: var(--ink, #0b0b0c) !important;
+		opacity: 0.82;
+	}
+	.dc-unlock {
+		margin: 0;
+		font-family: var(--sl-font-mono, monospace);
+		font-size: 0.68rem;
+		color: var(--silver-dark, #6a7178) !important;
+	}
+	.dc-prop { color: var(--honolulu, #0076b6) !important; font-weight: 700; }
+	.accent-gold .dc-prop { color: #9c7a1e !important; }
+	@media (max-width: 640px) {
+		.dc-rung { grid-template-columns: 84px 1fr; gap: 0.85rem; }
+		.dc-ladder::before { left: 44px; }
+	}
+</style>

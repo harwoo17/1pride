@@ -117,6 +117,7 @@ export default defineConfig({
                 label: 'Start here',
                 items: [
                     { label: 'About 1PRIDE', slug: 'about' },
+                    { label: 'The Depth Chart', slug: 'depth-chart' },
                     { label: 'How it works', slug: 'how-it-works' },
                     { label: 'Setup', slug: 'setup' },
                 ],

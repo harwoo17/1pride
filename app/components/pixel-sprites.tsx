@@ -24,7 +24,7 @@ const C = {
   gold: "#d8dde0",
   goldDeep: "#8a9095",
   white: "#ffffff",
-  ink: "#0a1929",
+  ink: "#0b0b0c",
 } as const;
 
 export type LionExpression =

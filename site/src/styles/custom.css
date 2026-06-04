@@ -18,7 +18,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,400..900&family=Saira:wght@300..700&family=JetBrains+Mono:wght@400..700&display=swap');
 
 :root {
-	--sl-color-accent-low: #002a47;
+	/* Accent + neutrals — ZERO navy. Every former navy hex (#002a47,
+	   #0a1929) and blue-tinted dark gray is replaced with Honolulu, a
+	   light honolulu tint, or a neutral (blue-free) gray / Lions black. */
+	--sl-color-accent-low: #00659c;   /* honolulu-700, never navy */
 	--sl-color-accent: #0076b6;
 	--sl-color-accent-high: #b3d8ec;
 
@@ -27,16 +30,16 @@
 	--sl-color-gray-2: #c4c9cd;
 	--sl-color-gray-3: #8a9095;
 	--sl-color-gray-4: #545a60;
-	--sl-color-gray-5: #2a2f33;
-	--sl-color-gray-6: #1a1d20;
-	--sl-color-black: #0a1929;
+	--sl-color-gray-5: #2c2e30;   /* neutral, blue cast removed */
+	--sl-color-gray-6: #1b1c1d;   /* neutral, blue cast removed */
+	--sl-color-black: #0b0b0c;    /* Lions black (ink), not navy */
 
 	/* Custom 1PRIDE tokens used by hero + badge components */
 	--lions-blue: #0076b6;
-	--lions-blue-deep: #002a47;
+	--lions-blue-deep: #00659c;   /* was navy #002a47 → honolulu-700 */
 	--lions-silver: #b0b7bc;
 	--lions-silver-dark: #6a7178;
-	--lions-ink: #0a1929;
+	--lions-ink: #0b0b0c;         /* was navy #0a1929 → Lions black */
 
 	--sl-font: 'Saira', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
 	--sl-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -54,7 +57,38 @@
 :root[data-theme='light'] {
 	--sl-color-accent-low: #cfe5f1;
 	--sl-color-accent: #0076b6;
-	--sl-color-accent-high: #003a5a;
+	--sl-color-accent-high: #00659c;   /* was navy-ish #003a5a → honolulu-700 */
+}
+
+/* ─── Search bar — Detroit Lions silver (no navy) ───────────────────
+   Starlight's header search button defaults to a dark navy chip. Recolor
+   to Lions silver with ink text + a darker-silver border. */
+button[data-open-modal],
+.search-container button[data-open-modal] {
+	background: var(--silver, #b0b7bc) !important;
+	color: var(--ink, #0b0b0c) !important;
+	border: 1px solid var(--silver-dark, #6a7178) !important;
+}
+button[data-open-modal] :is(svg, kbd, span) {
+	color: var(--ink, #0b0b0c) !important;
+	opacity: 0.85;
+}
+button[data-open-modal] kbd {
+	background: var(--silver-light, #d7dce0) !important;
+	border-color: var(--silver-dark, #6a7178) !important;
+}
+button[data-open-modal]:hover {
+	background: var(--silver-light, #d7dce0) !important;
+	border-color: var(--honolulu, #0076b6) !important;
+}
+/* Search modal panel — light surface, no navy */
+dialog[aria-label*='Search' i],
+.pagefind-ui,
+#starlight__search dialog {
+	--pagefind-ui-background: #ffffff;
+	--pagefind-ui-text: var(--ink, #0b0b0c);
+	--pagefind-ui-border: var(--silver, #b0b7bc);
+	--pagefind-ui-primary: var(--honolulu, #0076b6);
 }
 
 /* ─── SURFACE — HONOLULU BLUE IS THE MAIN COLOR ──────────────────────

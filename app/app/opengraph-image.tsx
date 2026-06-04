@@ -15,7 +15,7 @@ const LIONS_BLUE_DEEP = "#0076B6"; /* navy stripped — points at Honolulu blue 
 const SILVER = "#B0B7BC";
 const SILVER_LIGHT = "#d8dde0";
 const SILVER_DARK = "#6a7178";
-const INK = "#0a1929";
+const INK = "#0b0b0c"; /* Lions black — navy cast removed */
 
 export default async function OGImage() {
   return new ImageResponse(

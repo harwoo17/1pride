@@ -1,0 +1,119 @@
+---
+// src/pages/lessons/[...slug].astro
+//
+// Renders one lesson: the MDX body + The Film Room seeded with its starterQuery.
+// This connects schema (config.ts) -> content (the .mdx) -> playground (FilmRoom.tsx).
+
+import { getCollection, render } from 'astro:content';
+import FilmRoom from '../../components/FilmRoom.tsx';
+import { seasonWeekView } from '../../lib/season';
+
+export async function getStaticPaths() {
+  const lessons = await getCollection('lessons');
+  return lessons
+    .sort((a, b) => a.data.order - b.data.order)
+    .map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const { title, tier, kicker, section, dataset, starterQuery, vizSpec } = entry.data;
+
+// If this lesson references a 2026 view (e.g. "pbp_2026"), build it from the manifest.
+const name2026 = dataset.find((d: string) => d.endsWith('_2026'));
+const extra = name2026 ? await seasonWeekView(name2026, '2026') : null;
+const extraViews = extra ? [extra] : [];
+
+// --- ASTRO VERSION NOTE -------------------------------------------------
+// Above is the Astro 5 content API. On older Astro (4.x) use instead:
+//   params: { slug: entry.slug }           // entry.slug, not entry.id
+//   const { Content } = await entry.render();   // method, not render(entry)
+// And in config.ts, Astro 5 prefers the glob() loader over `type: 'content'`.
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} — 1PRIDE</title>
+  </head>
+  <body>
+    <main class="lesson">
+      <p class="kicker">{kicker} · {section} · TIER: {tier}</p>
+      <h1>{title}</h1>
+
+      <article class="prose">
+        <Content />
+      </article>
+
+      <h2 class="kicker section-break">RUN THIS IN THE FILM ROOM</h2>
+      <FilmRoom
+        client:only="react"
+        initialQuery={starterQuery}
+        datasets={dataset}
+        vizSpec={vizSpec}
+        extraViews={extraViews}
+      />
+    </main>
+
+    <style>
+      :root {
+        --honolulu: #0076b6;
+        --silver: #b0b7bc;
+        --silver-light: #d7dce0;
+        --ink: #0b0b0c;
+        --retro-green: #34e27a;
+      }
+      .lesson {
+        max-width: 820px;
+        margin: 0 auto;
+        padding: 48px 24px 96px;
+        color: var(--ink);
+        font-family: "Saira", system-ui, sans-serif;
+      }
+      .kicker {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        letter-spacing: 2px;
+        color: var(--honolulu);
+        text-transform: uppercase;
+        margin: 0 0 8px;
+      }
+      .section-break {
+        margin-top: 48px;
+        padding-top: 16px;
+        border-top: 1px solid var(--silver);
+      }
+      h1 {
+        font-family: "Archivo Expanded", "Saira", sans-serif;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        font-size: clamp(34px, 6vw, 56px);
+        line-height: 1.02;
+        margin: 0 0 28px;
+      }
+      .prose :is(h2, h3) {
+        font-family: "Archivo Expanded", "Saira", sans-serif;
+        font-weight: 700;
+        margin-top: 36px;
+      }
+      .prose p, .prose li { line-height: 1.6; }
+      .prose pre {
+        background: #0b1f2b;
+        color: #e8f0f4;
+        padding: 16px;
+        border-radius: 8px;
+        border-left: 3px solid var(--retro-green);
+        overflow-x: auto;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+      }
+      .prose blockquote {
+        border-left: 3px solid var(--honolulu);
+        margin: 24px 0;
+        padding: 4px 0 4px 16px;
+        color: #444;
+      }
+    </style>
+  </body>
+</html>

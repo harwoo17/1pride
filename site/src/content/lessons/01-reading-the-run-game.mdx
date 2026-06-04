@@ -1,0 +1,126 @@
+---
+title: "Reading the Run Game"
+tier: "Analyst"
+order: 1
+dataset: "player_stats_2025"
+section: "The Playbook"
+kicker: "DRILL 01"
+prereqs: []
+# The lesson runner reads `starterQuery` and seeds it into The Film Room
+# when the learner hits "Run this in the Film Room."
+starterQuery: |
+  SELECT
+    player_display_name        AS player,
+    position,
+    SUM(carries)               AS carries,
+    SUM(rushing_yards)         AS rush_yds,
+    ROUND(SUM(rushing_yards) * 1.0 / NULLIF(SUM(carries), 0), 2) AS ypc
+  FROM player_stats_2025
+  WHERE recent_team = 'DET'
+  GROUP BY player_display_name, position
+  HAVING SUM(carries) >= 20
+  ORDER BY rush_yds DESC;
+---
+
+# Reading the Run Game
+
+**The question:** Who carried the Lions' run game in 2025, and who was actually *efficient* doing it?
+
+This is the first rep every analyst runs: turn a pile of play-by-play rows into a clean leaderboard, then read it honestly. Volume and efficiency are not the same stat — a back with 1,000 yards on 280 carries is a different story than one with 600 yards on 90.
+
+---
+
+## Install (the concept)
+
+Raw football data comes one row per **player per week**. To get a season leaderboard you have to **collapse** those rows into one row per player. That's three moves:
+
+- `GROUP BY player` — one bucket per player
+- `SUM(...)` — add up the weekly numbers inside each bucket
+- `ORDER BY ... DESC` — put the leaders on top
+
+Then one analyst's instinct: a **rate stat**. Total yards rewards whoever touched the ball most. Yards per carry (`ypc`) tells you who did the most *with each touch*. We compute both.
+
+> Note: column names in nflverse extracts occasionally differ (`recent_team` vs `team`, etc.). If a column errors, run `DESCRIBE SELECT * FROM player_stats_2025;` in The Film Room to see the real names, then adjust.
+
+---
+
+## Run the drill
+
+```sql
+SELECT
+  player_display_name        AS player,
+  position,
+  SUM(carries)               AS carries,
+  SUM(rushing_yards)         AS rush_yds,
+  ROUND(SUM(rushing_yards) * 1.0 / NULLIF(SUM(carries), 0), 2) AS ypc
+FROM player_stats_2025
+WHERE recent_team = 'DET'
+GROUP BY player_display_name, position
+HAVING SUM(carries) >= 20      -- drop noise: tiny sample sizes
+ORDER BY rush_yds DESC;
+```
+
+**Why the pieces matter**
+- `NULLIF(SUM(carries), 0)` guards against divide-by-zero (a receiver with a single end-around).
+- `HAVING` filters *after* aggregation — it trims players with too few carries to read into. `WHERE` can't do that; it runs before the SUM exists.
+
+---
+
+## Read the result
+
+Look for the **split between volume and rate**. The top of the `rush_yds` column is your workhorse. Now re-sort the same result by `ypc` in your head — does the order change? When the volume leader and the efficiency leader are *different* players, that gap is the actual analytical finding. That's the sentence you'd put in front of a coordinator.
+
+---
+
+## Visualize it
+
+A leaderboard is a ranking, and rankings read best as a **horizontal bar chart**: long bars = more yards, sorted top-to-bottom. Here's the Vega-Lite spec the Film Room renders from your result set:
+
+```json
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": { "name": "rows" },
+  "mark": { "type": "bar", "cornerRadiusEnd": 3 },
+  "encoding": {
+    "y": {
+      "field": "player",
+      "type": "nominal",
+      "sort": "-x",
+      "title": null
+    },
+    "x": {
+      "field": "rush_yds",
+      "type": "quantitative",
+      "title": "Rushing Yards — 2025"
+    },
+    "color": { "value": "#0076B6" }
+  },
+  "config": {
+    "background": null,
+    "view": { "stroke": null },
+    "axis": { "labelFont": "JetBrains Mono", "titleFont": "JetBrains Mono", "grid": false },
+    "font": "Saira"
+  }
+}
+```
+
+**The lesson inside the spec — encoding is everything:**
+- `y` is **nominal** (categories: players). Categories go on the axis you can stack vertically and label.
+- `x` is **quantitative** (a magnitude: yards). Magnitude maps to bar *length* — the thing your eye compares fastest.
+- `sort: "-x"` sorts the categories *by* the quantitative value, descending. This one line is what turns a bar chart into a leaderboard.
+
+If you swap which field goes on `x` vs `y`, or change a `type`, the chart changes meaning. That's the whole grammar: **you're not "making a bar chart," you're mapping data fields to visual channels.**
+
+---
+
+## Run the next rep (challenge)
+
+1. **Color by position.** Replace the `color` block with:
+   ```json
+   "color": { "field": "position", "type": "nominal", "scale": { "range": ["#0076B6", "#B0B7BC", "#34E27A"] } }
+   ```
+   Now you can see at a glance whether the yards came from RBs or got spread to other positions.
+
+2. **Switch the story to efficiency.** Change the `x` field from `"rush_yds"` to `"ypc"` and the title to `"Yards per Carry"`. Re-run. Does the leaderboard reorder? Write one sentence explaining the gap between the volume chart and the efficiency chart — that sentence is your first piece of analysis.
+
+> **Unlock:** finish both challenges to bank this rep toward **Scout.**

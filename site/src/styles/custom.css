@@ -197,6 +197,22 @@ body:has(.hero) .sl-markdown-content .card :not(pre) > code {
 	color: var(--honolulu, #0076b6) !important;
 	opacity: 1;
 }
+
+/* …same exemption for the FieldJourney detail panel (white card) — keep
+   its ink/honolulu text instead of the splash white-on-blue override */
+body:has(.hero) .sl-markdown-content .fj-panel .fj-ptitle,
+body:has(.hero) .sl-markdown-content .fj-panel .fj-pblurb {
+	color: var(--ink, #0b0b0c) !important;
+}
+body:has(.hero) .sl-markdown-content .fj-panel .fj-pkick {
+	color: var(--honolulu, #0076b6) !important;
+}
+body:has(.hero) .sl-markdown-content .fj-panel .fj-punlock {
+	color: var(--silver-dark, #6a7178) !important;
+}
+body:has(.hero) .sl-markdown-content .fj-panel .fj-punlock span {
+	color: #ffffff !important;
+}
 body:has(.hero) .sl-markdown-content :not(pre) > code {
 	background: rgba(255, 255, 255, 0.16) !important;
 	color: #ffffff !important;

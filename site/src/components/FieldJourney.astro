@@ -1,0 +1,216 @@
+---
+// FieldJourney — an interactive drive down the field. The 7 tiers are
+// yard-markers from the practice squad (own end zone) to the front office
+// (the score). Click a marker — or snap the next play — to advance the
+// ball; the detail card + first-down line update to demo that level.
+import { TIERS } from '~/data/tiers';
+import Avatar from '~/components/Avatar.astro';
+
+// left% of each tier marker along the field (tier 1 near own goal line,
+// tier 7 in the opponent's end zone = the touchdown)
+const POS = [9, 22, 35, 48, 61, 74, 90];
+const YARD = ['OWN 10', 'OWN 30', 'OWN 48', 'OPP 48', 'OPP 30', 'OPP 12', 'TOUCHDOWN'];
+---
+
+<section class="fj" id="fieldJourney" data-pos={JSON.stringify(POS)} data-yard={JSON.stringify(YARD)}>
+	<div class="fj-board">
+		<span class="fj-down">1ST &amp; 10</span>
+		<span class="fj-sep">·</span>
+		<span class="fj-ballon">BALL ON <b id="fjYard">{YARD[0]}</b></span>
+		<span class="fj-now" id="fjNow">TIER 01 — ANALYST</span>
+	</div>
+
+	<div class="fj-field" id="fjField">
+		<div class="fj-ez fj-ez-l"><span>PRACTICE SQUAD</span></div>
+		<div class="fj-ez fj-ez-r"><span>FRONT OFFICE</span></div>
+		<div class="fj-turf"></div>
+		<div class="fj-fdline" id="fjLine" style={`left:${POS[0]}%`}></div>
+		{TIERS.map((t, i) => (
+			<button
+				class:list={['fj-marker', { 'is-active': i === 0 }]}
+				data-i={i}
+				style={`left:${POS[i]}%`}
+				type="button"
+				aria-label={`${t.label} — tier ${t.n}`}
+			>
+				<span class="fj-av"><Avatar tier={t.n} size={56} /></span>
+				<span class="fj-mn">{String(t.n).padStart(2, '0')}</span>
+			</button>
+		))}
+	</div>
+
+	<div class="fj-panels">
+		{TIERS.map((t, i) => (
+			<article class="fj-panel" data-i={i} hidden={i !== 0}>
+				<div class="fj-pav"><Avatar tier={t.n} size={128} /></div>
+				<div class="fj-pbody">
+					<p class="fj-pkick">TIER {String(t.n).padStart(2, '0')} · {t.prop}</p>
+					<h3 class="fj-ptitle">{t.label}</h3>
+					<p class="fj-pblurb">{t.blurb}</p>
+					<p class="fj-punlock"><span>UNLOCK</span> {t.unlock}</p>
+				</div>
+			</article>
+		))}
+	</div>
+
+	<div class="fj-controls">
+		<button id="fjPrev" class="fj-btn" type="button">◄ Audible back</button>
+		<div class="fj-dots" id="fjDots">
+			{TIERS.map((_, i) => <span class:list={['fj-dot', { 'is-active': i === 0 }]} data-i={i}></span>)}
+		</div>
+		<button id="fjNext" class="fj-btn fj-next" type="button">Snap the next play ►</button>
+	</div>
+</section>
+
+<style is:global>
+	.fj { margin: 1rem 0 1.5rem; }
+	.fj-board {
+		display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap;
+		font-family: var(--sl-font-mono, monospace);
+		font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+		color: var(--silver-light, #d7dce0);
+		margin-bottom: 0.75rem;
+	}
+	.fj-board b { color: #fff; }
+	.fj-down { color: var(--retro-green, #34e27a); font-weight: 700; }
+	.fj-now { margin-left: auto; color: #fff; font-weight: 700; }
+
+	.fj-field {
+		position: relative;
+		height: 168px;
+		border: 1px solid rgba(255,255,255,0.4);
+		border-radius: 10px;
+		overflow: hidden;
+		background:
+			repeating-linear-gradient(90deg, rgba(255,255,255,0.16) 0 2px, transparent 2px 9.09%);
+	}
+	.fj-turf { position: absolute; inset: 0; pointer-events: none;
+		background: radial-gradient(ellipse at 50% 120%, rgba(52,226,122,0.10), transparent 70%); }
+	.fj-ez {
+		position: absolute; top: 0; bottom: 0; width: 9%;
+		display: flex; align-items: center; justify-content: center;
+		background: rgba(255,255,255,0.10);
+	}
+	.fj-ez-l { left: 0; border-right: 2px solid #fff; }
+	.fj-ez-r { right: 0; border-left: 2px solid #fff; background: rgba(52,226,122,0.16); }
+	.fj-ez span {
+		writing-mode: vertical-rl; transform: rotate(180deg);
+		font-family: var(--font-display, sans-serif); font-weight: 800;
+		font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase;
+		color: #fff; opacity: 0.85;
+	}
+	.fj-ez-r span { transform: none; writing-mode: vertical-rl; }
+	.fj-fdline {
+		position: absolute; top: 0; bottom: 0; width: 2px;
+		background: var(--retro-green, #34e27a);
+		box-shadow: 0 0 8px rgba(52,226,122,0.8);
+		transform: translateX(-1px);
+		transition: left 380ms cubic-bezier(0.22,0.61,0.36,1);
+		z-index: 2;
+	}
+	.fj-marker {
+		position: absolute; top: 50%; transform: translate(-50%, -50%);
+		display: flex; flex-direction: column; align-items: center; gap: 1px;
+		background: none; border: 0; padding: 0; cursor: pointer;
+		opacity: 0.55; transition: opacity 180ms ease, transform 220ms cubic-bezier(0.22,0.61,0.36,1);
+		z-index: 3;
+	}
+	.fj-marker .fj-av { filter: drop-shadow(0 4px 8px rgba(0,0,0,0.35)); line-height: 0; }
+	.fj-marker .fj-mn {
+		font-family: var(--sl-font-mono, monospace); font-size: 0.6rem;
+		color: #fff; background: rgba(0,0,0,0.35); border-radius: 4px; padding: 0 0.3rem;
+	}
+	.fj-marker:hover { opacity: 0.9; }
+	.fj-marker.is-active { opacity: 1; transform: translate(-50%, -58%) scale(1.18); }
+	.fj-marker.is-active .fj-mn { background: var(--retro-green, #34e27a); color: #06351c; font-weight: 700; }
+
+	.fj-panels { margin-top: 1rem; }
+	.fj-panel {
+		display: grid; grid-template-columns: 128px 1fr; gap: 1.25rem; align-items: center;
+		background: var(--paper, #fff); color: var(--ink, #0b0b0c);
+		border: 1px solid var(--silver, #b0b7bc); border-radius: 12px;
+		padding: 1.25rem 1.5rem;
+		animation: fj-in 320ms ease-out;
+	}
+	.fj-panel[hidden] { display: none; }
+	@keyframes fj-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+	.fj-pav { display: flex; justify-content: center; }
+	.fj-pkick {
+		font-family: var(--sl-font-mono, monospace); font-size: 0.7rem;
+		letter-spacing: 0.14em; text-transform: uppercase; color: var(--honolulu, #0076b6); margin: 0 0 0.25rem;
+	}
+	.fj-ptitle {
+		font-family: var(--font-display, sans-serif); font-weight: 800; letter-spacing: -0.01em;
+		font-size: 1.7rem; margin: 0 0 0.4rem; color: var(--ink, #0b0b0c);
+	}
+	.fj-pblurb { margin: 0 0 0.5rem; color: var(--ink, #0b0b0c); opacity: 0.85; }
+	.fj-punlock { margin: 0; font-size: 0.85rem; color: var(--silver-dark, #6a7178); }
+	.fj-punlock span {
+		font-family: var(--sl-font-mono, monospace); font-size: 0.62rem; letter-spacing: 0.12em;
+		background: var(--honolulu, #0076b6); color: #fff; padding: 0.1rem 0.4rem; border-radius: 4px; margin-right: 0.4rem;
+	}
+
+	.fj-controls { display: flex; align-items: center; gap: 1rem; margin-top: 1rem; }
+	.fj-btn {
+		font-family: var(--sl-font-mono, monospace); font-size: 0.74rem; letter-spacing: 0.06em;
+		background: rgba(255,255,255,0.1); color: #fff;
+		border: 1px solid rgba(255,255,255,0.45); border-radius: 8px;
+		padding: 0.55rem 0.9rem; cursor: pointer; transition: background 160ms, transform 120ms;
+	}
+	.fj-btn:hover { background: rgba(255,255,255,0.2); }
+	.fj-btn:active { transform: scale(0.97); }
+	.fj-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+	.fj-next { margin-left: auto; background: var(--retro-green, #34e27a); color: #06351c; border-color: var(--retro-green, #34e27a); font-weight: 700; }
+	.fj-next:hover { background: #58ed95; }
+	.fj-dots { display: flex; gap: 0.4rem; }
+	.fj-dot { width: 8px; height: 8px; border-radius: 999px; background: rgba(255,255,255,0.35); transition: background 160ms, transform 160ms; }
+	.fj-dot.is-active { background: var(--retro-green, #34e27a); transform: scale(1.3); }
+
+	@media (max-width: 600px) {
+		.fj-panel { grid-template-columns: 1fr; text-align: center; }
+		.fj-marker .fj-av :global(svg) { width: 40px; height: 40px; }
+		.fj-now { width: 100%; margin-left: 0; }
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.fj-fdline, .fj-marker, .fj-panel { transition: none; animation: none; }
+	}
+</style>
+
+<script is:inline>
+	(function () {
+		var root = document.getElementById('fieldJourney');
+		if (!root) return;
+		var pos = JSON.parse(root.dataset.pos);
+		var yard = JSON.parse(root.dataset.yard);
+		var markers = [].slice.call(root.querySelectorAll('.fj-marker'));
+		var panels = [].slice.call(root.querySelectorAll('.fj-panel'));
+		var dots = [].slice.call(root.querySelectorAll('.fj-dot'));
+		var line = document.getElementById('fjLine');
+		var yardEl = document.getElementById('fjYard');
+		var nowEl = document.getElementById('fjNow');
+		var prev = document.getElementById('fjPrev');
+		var next = document.getElementById('fjNext');
+		var n = markers.length;
+		var cur = 0;
+
+		function go(i) {
+			i = Math.max(0, Math.min(n - 1, i));
+			cur = i;
+			markers.forEach(function (m, k) { m.classList.toggle('is-active', k === i); });
+			panels.forEach(function (p, k) { p.hidden = k !== i; });
+			dots.forEach(function (d, k) { d.classList.toggle('is-active', k === i); });
+			line.style.left = pos[i] + '%';
+			yardEl.textContent = yard[i];
+			var label = panels[i].querySelector('.fj-ptitle').textContent;
+			nowEl.textContent = 'TIER ' + ('0' + (i + 1)).slice(-2) + ' — ' + label.toUpperCase();
+			prev.disabled = i === 0;
+			next.textContent = i >= n - 1 ? 'Touchdown ✓' : 'Snap the next play ►';
+			// whistle on reaching the front office (paired with the visual)
+			if (i === n - 1 && window.PRIDE && window.PRIDE.whistle) window.PRIDE.whistle();
+		}
+
+		markers.forEach(function (m) { m.addEventListener('click', function () { go(+m.dataset.i); }); });
+		prev.addEventListener('click', function () { go(cur - 1); });
+		next.addEventListener('click', function () { go(cur >= n - 1 ? 0 : cur + 1); });
+	})();
+</script>

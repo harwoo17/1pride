@@ -69,25 +69,16 @@
     --retro-green: #34e27a;
     position: relative;
     overflow: hidden;
-    background: var(--honolulu);
+    /* transparent — shares the single page-wide grid from body::before
+       so there's one continuous grid, not a second one that scrolls */
+    background: transparent;
     color: #fff;
     min-height: 88vh;
     display: flex;
     align-items: center;
   }
-  .grid-bg {
-    position: absolute;
-    inset: 0;
-    /* crisp retro-green blueprint lines (color carries its own alpha, so
-       the lines read clearly instead of being washed out by a low layer
-       opacity); only the far edges fade */
-    background-image:
-      linear-gradient(rgba(52,226,122,0.30) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(52,226,122,0.30) 1px, transparent 1px);
-    background-size: 56px 56px;
-    -webkit-mask-image: radial-gradient(ellipse 135% 115% at 50% 45%, #000 80%, transparent 100%);
-            mask-image: radial-gradient(ellipse 135% 115% at 50% 45%, #000 80%, transparent 100%);
-  }
+  /* grid now lives on body::before (one grid for the whole page) */
+  .grid-bg { display: none; }
   /* CRT vignette + faint scanlines (brief §12) — tasteful, off when
      the visitor prefers reduced motion */
   .hero::after {

@@ -104,9 +104,10 @@ html, body {
 	background-color: var(--honolulu, #0076b6) !important;
 	color: #ffffff;
 }
-/* Football-field grid across the whole page — yard lines (every 96px)
-   with a heavier 5-yard line (every 480px) and faint vertical hash
-   columns. Fixed so it reads as a field the content scrolls over. */
+/* ONE clean retro-green blueprint grid for the entire page. Fixed, so it
+   sits behind all content as a single continuous field — the hero is
+   transparent and shares this same grid (no second, scrolling grid to
+   clash with it). */
 body::before {
 	content: '';
 	position: fixed;
@@ -114,12 +115,9 @@ body::before {
 	z-index: 0;
 	pointer-events: none;
 	background-image:
-		/* 5-yard heavier lines */
-		repeating-linear-gradient(0deg, rgba(255,255,255,0.22) 0 2px, transparent 2px 480px),
-		/* yard lines */
-		repeating-linear-gradient(0deg, rgba(255,255,255,0.11) 0 1px, transparent 1px 96px),
-		/* hash-mark columns (at the thirds) */
-		repeating-linear-gradient(90deg, transparent 0 33.33%, rgba(255,255,255,0.08) 33.33% calc(33.33% + 1px), transparent calc(33.33% + 1px) 66.66%, rgba(255,255,255,0.08) 66.66% calc(66.66% + 1px), transparent calc(66.66% + 1px));
+		linear-gradient(rgba(52,226,122,0.11) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(52,226,122,0.11) 1px, transparent 1px);
+	background-size: 64px 64px;
 }
 /* keep page content above the field */
 .main-frame, header[class*='Header'], .sidebar, .hero, main, .lx { position: relative; z-index: 1; }
@@ -209,6 +207,12 @@ body:has(.hero) .sl-markdown-content .fj-panel .fj-pblurb {
 }
 body:has(.hero) .sl-markdown-content .fj-panel .fj-pkick {
 	color: var(--honolulu, #0076b6) !important;
+}
+body:has(.hero) .sl-markdown-content .fj-panel .fj-learn-kick {
+	color: #16934e !important;
+}
+body:has(.hero) .sl-markdown-content .fj-panel .fj-learn :is(pre, code) {
+	color: #eef1f3 !important;
 }
 body:has(.hero) .sl-markdown-content .fj-panel .fj-punlock {
 	color: var(--silver-dark, #6a7178) !important;
